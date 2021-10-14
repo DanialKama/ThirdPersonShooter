@@ -1,3 +1,4 @@
+
 # Third Person Shooter
 
 Made by Unreal Engine 5
@@ -26,7 +27,7 @@ This repository contains:
 - AI respawn system
 - Level Manager and Interactable actors (like an automatic door)
 - Level Streaming blueprints that interact with other actors (load level opens door after the stream is complete or unload level start unloading after doors is close)
-- Helicopter pawn, fully controllable and includes sound effects
+- Controllable vehicles, helicopter, and jet
 
 Minor details:
 Assertion failed solved by unchecking Async Loading Thread Enabled.
@@ -39,4 +40,5 @@ Here are some contents that I used in this project:
 - [Military Weapons Dark](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-dark)
 - [Military Weapons Silver](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-silver)
 - [AH-64D Apache Longbow (West)](https://www.unrealengine.com/marketplace/en-US/product/ah-64d-apache-longbow-us)
+- [Fighter F/A-18C Hornet (West)](https://www.unrealengine.com/marketplace/en-US/product/fighter-f-a-18c-hornet)
 - Most animations are from the [Mixamo](https://www.mixamo.com/)

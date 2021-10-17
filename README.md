@@ -41,5 +41,5 @@ Here are some contents that I used in this project:
 - [Military Weapons Silver](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-silver)
 - [AH-64D Apache Longbow (West)](https://www.unrealengine.com/marketplace/en-US/product/ah-64d-apache-longbow-us)
 - [Fighter F/A-18C Hornet (West)](https://www.unrealengine.com/marketplace/en-US/product/fighter-f-a-18c-hornet)
-- Some 3D models from [cgtrader](https://www.cgtrader.com/)
+- Some free 3D models from [cgtrader](https://www.cgtrader.com/)
 - Most animations are from the [Mixamo](https://www.mixamo.com/)

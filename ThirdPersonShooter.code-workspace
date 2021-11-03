@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "ThirdPersonShooter",
+			"path": "."
+		},
+		{
+			"name": "UE5",
+			"path": "X:\\Program Files\\UE_5.0EA"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off"
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cpptools"
+		]
+	}
+}

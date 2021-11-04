@@ -11,3 +11,11 @@ enum class EItemType : uint8
 	Ammo	UMETA(DisplayName = "Ammo"),
 	Health	UMETA(DisplayName = "Health")
 };
+
+UENUM(BlueprintType, Category = "Pickup")
+enum class EPickupState : uint8
+{
+	Drop	UMETA(DisplayName = "Drop"),
+	Pickup	UMETA(DisplayName = "Pickup"),
+	Remove	UMETA(DisplayName = "Remove")
+};

@@ -26,7 +26,12 @@ void APickup::Tick(float DeltaTime)
 }
 
 // Interfaces
-void APickup::GetPickupReference_Implementation(APickup*& Reference)
+void APickup::GetPickupReference_Implementation(APickup* &Reference)
 {
 	Reference = this;
+}
+
+void APickup::SetPickupStatus_Implementation(EPickupState PickupState)
+{
+	
 }

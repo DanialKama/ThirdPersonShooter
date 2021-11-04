@@ -21,7 +21,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Interfaces
-	virtual void GetPickupReference_Implementation(APickup*& Reference) override;
+	virtual void GetPickupReference_Implementation(APickup* &Reference) override;
+	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;
 	
 protected:
 	// Called when the game starts or when spawned

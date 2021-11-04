@@ -27,6 +27,9 @@ APickup_Weapon::APickup_Weapon()
 	// Component Overlap
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickup_Weapon::OnBoxBeginOverlap);
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickup_Weapon::OnBoxEndOverlap);
+
+	// Set value defaults
+	bDoOnce = true;
 }
 
 void APickup_Weapon::BeginPlay()
@@ -40,6 +43,7 @@ void APickup_Weapon::BeginPlay()
 void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Overlap with %s"), *OtherActor->GetName()));
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);

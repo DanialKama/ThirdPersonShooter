@@ -1,21 +1,19 @@
-
+﻿
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/PickupEnums.h"
-#include "PickupInterface.generated.h"
-
-class APickup;
+#include "Enums/WeaponEnums.h"
+#include "AIControllerInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
-class UPickupInterface : public UInterface
+class UAIControllerInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class THIRDPERSONSHOOTER_API IPickupInterface
+class THIRDPERSONSHOOTER_API IAIControllerInterface
 {
 	GENERATED_BODY()
 
@@ -23,8 +21,5 @@ class THIRDPERSONSHOOTER_API IPickupInterface
 public:
 	// Functions
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
-	void GetPickupReference(APickup* &Reference);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithoutOutput")
-	void SetPickupStatus(EPickupState PickupState);
+	void SetWeaponState(int32 AmmoInfo, EWeaponState WeaponState); // TODO Replace AmmoInfo with structure
 };

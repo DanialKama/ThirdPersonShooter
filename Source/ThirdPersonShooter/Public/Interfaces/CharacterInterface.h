@@ -20,8 +20,8 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 {
 	GENERATED_BODY()
 
-public:
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithoutOutput")
 	void SetPickup(EItemType PickupType, APickup* PickupReference);
 	// virtual void SetPickupPure(EItemType PickupType, APickup* PickupReference) = 0;

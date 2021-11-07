@@ -1,4 +1,3 @@
-// Danial Kama
 
 #pragma once
 

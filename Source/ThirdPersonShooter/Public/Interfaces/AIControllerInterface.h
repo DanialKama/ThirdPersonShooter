@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Enums/WeaponEnums.h"
+#include "Structs/AmmoComponentInfoStruct.h"
 #include "AIControllerInterface.generated.h"
 
 // This class does not need to be modified.
@@ -21,5 +22,5 @@ class THIRDPERSONSHOOTER_API IAIControllerInterface
 public:
 	// Functions
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
-	void SetWeaponState(int32 AmmoInfo, EWeaponState WeaponState); // TODO Replace AmmoInfo with structure
+	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
 };

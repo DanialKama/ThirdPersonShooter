@@ -1,17 +1,22 @@
 
 #include "Pickups/Pickup_Weapon.h"
+#include "Kismet/GameplayStatics.h"
+#include "Math/UnrealMathUtility.h"
 #include "AIController.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Components/AudioComponent.h"
-#include "Components/BoxComponent.h"
-#include "Components/WidgetComponent.h"
-#include "Components/AmmoComponent.h"
+#include "Perception/AISense_Hearing.h"
+#include "Sound/SoundCue.h"
+// Interfaces
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
-#include "Kismet/GameplayStatics.h"
-#include "Math/UnrealMathUtility.h"
-#include "Sound/SoundCue.h"
+// Components
+#include "Components/BoxComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/AmmoComponent.h"
+// Structs
+#include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
 APickup_Weapon::APickup_Weapon()
@@ -60,7 +65,8 @@ APickup_Weapon::APickup_Weapon()
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickup_Weapon::OnBoxEndOverlap);
 
 	// Set value defaults
-	bDoOnce = true;
+	bDoOnceFire = true;
+	bDoOnceWidget = true;
 }
 
 
@@ -71,10 +77,88 @@ void APickup_Weapon::BeginPlay()
 	SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
 }
 
+void APickup_Weapon::StartFireWeapon()
+{
+	if(bCanFire)
+	{
+		if(bDoOnceFire)
+		{
+			bDoOnceFire = false;
+			FireWeapon();
+			
+			if(bOwnerIsAI || WeaponInfo.bIsAutomatic)
+			{
+				GetWorldTimerManager().SetTimer(FireWeaponTimer,this, &APickup_Weapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
+			}
+			FTimerHandle ResetDoOnceTimer;
+			GetWorldTimerManager().SetTimer(ResetDoOnceTimer, this, &APickup_Weapon::CoolDownDelay, WeaponInfo.CoolDownTime);
+		}
+	}
+	else
+	{
+		StopFireWeapon();
+		if(AmmoComponent->CurrentMagazineAmmo <= 0 && !AmmoComponent->NoAmmoLeftToReload())
+		{
+			SetWeaponState_Implementation(EWeaponState::NeedToReload);
+		}
+		else
+		{
+			if(AmmoComponent->NoAmmoLeftToReload())
+			{
+				SetWeaponState_Implementation(EWeaponState::Empty);
+			}
+		}
+	}
+}
+
+void APickup_Weapon::FireWeapon()
+{
+	AmmoComponent->ReduceAmmo();
+	WeaponFireEffect();
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, TEXT("Weapon"));
+	SpawnProjectile();
+
+	if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
+	{
+		PlayerControllerInterface->PlayCameraShake(CameraShake);
+	}
+	FTimerHandle ResetAnimationTimer;
+	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
+
+	if(EmptyShell.Num() > 0)
+	{
+	// TODO fix and improve spawn actor
+		FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
+		FRotator Rotation = SkeletalMesh->GetSocketRotation(TEXT("EjectorSocket"));
+		// FActorSpawnParameters ActorSpawnParameters;
+		// GetWorld()->SpawnActor<EmptyShell[0]>(Location, Rotation, ActorSpawnParameters);
+	}
+}
+
+void APickup_Weapon::StopFireWeapon()
+{
+	GetWorldTimerManager().ClearTimer(FireWeaponTimer);
+	// Play an empty animation to reset bones position
+	SkeletalMesh->PlayAnimation(nullptr, false);
+}
+
+// Play weapon fire sound and muzzle emitter by activate them and play weapon fire animation
+void APickup_Weapon::WeaponFireEffect()
+{
+	
+}
+
+void APickup_Weapon::SpawnProjectile()
+{
+	
+}
+
 void APickup_Weapon::RaiseWeapon() const
 {
 	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
+	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
+	
 	if(bOwnerIsAI)
 	{
 		IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner()); // TODO Get AI Controller
@@ -82,11 +166,11 @@ void APickup_Weapon::RaiseWeapon() const
 		{
 			if(AmmoComponent->BetterToReload())
 			{
-				Interface->SetWeaponState(0 ,EWeaponState::BetterToReload);
+				Interface->SetWeaponState(AmmoComponentInfo ,EWeaponState::BetterToReload);
 			}
 			else
 			{
-				Interface->SetWeaponState(0, EWeaponState::Idle);
+				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
 			}
 		}
 	}
@@ -97,11 +181,11 @@ void APickup_Weapon::RaiseWeapon() const
 		{
 			if(AmmoComponent->BetterToReload())
 			{
-				Interface->SetWeaponState(0, EWeaponState::BetterToReload);
+				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::BetterToReload);
 			}
 			else
 			{
-				Interface->SetWeaponState(0, EWeaponState::Idle);
+				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
 			}
 		}
 	}
@@ -116,11 +200,7 @@ void APickup_Weapon::LowerWeapon() const
 void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// if(PickupOwner)
-	// {
-	// 	OwnerController = Cast<AController>(PickupOwner->GetController());
-	// }
-	// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Overlap with %s"), *OtherActor->GetName()));
+	// If OtherActor is player
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
@@ -129,12 +209,11 @@ void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AAct
 			Interface->SetPickup(EItemType::Weapon, this);
 			// Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, this); // For calling blueprint implementation
 			
-			if (bDoOnce)
+			if (bDoOnceWidget)
 			{
-				// Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
-				bDoOnce = false;
+				// TODO Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
+				bDoOnceWidget = false;
 			}
-			// If OtherActor is player
 			Widget->SetVisibility(true);
 			SkeletalMesh->SetRenderCustomDepth(true);
 		}
@@ -178,17 +257,18 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
 		SetLifeSpan(0.0f);
 		bOwnerIsAI = GetOwner()->ActorHasTag(TEXT("AI"));
-		if(bOwnerIsAI)
+		
+		if(PickupOwner)
 		{
-			// OwnerAIController = Cast<AAIController>(GetOwner());
-			// if(OwnerAIController)
-			// {
-			// 	AIControllerInterface = Cast<IAIControllerInterface>(OwnerAIController);
-			// }
-		}
-		else
-		{
-			// OwnerController = Cast<AController>(GetOwner());
+			OwnerController = Cast<AController>(PickupOwner->GetController());
+			if(bOwnerIsAI)
+			{
+				AIControllerInterface = Cast<IAIControllerInterface>(OwnerController);
+			}
+			else
+			{
+				PlayerControllerInterface = Cast<IPlayerControllerInterface>(OwnerController);
+			}
 		}
 		break;
 
@@ -206,13 +286,29 @@ void APickup_Weapon::SetCanFire_Implementation(const bool bInCanFire)
 
 void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
+	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
+
 	if(bOwnerIsAI && AIControllerInterface)
 	{
-		AIControllerInterface->SetWeaponState(0, WeaponState);
+		AIControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
 	}
-	else
+	else if(!bOwnerIsAI && PlayerControllerInterface)
 	{
-		
+		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
 	}
+	// TODO
 }
 // End Of interfaces
+
+//Delays
+void APickup_Weapon::CoolDownDelay()
+{
+	bDoOnceFire = true;
+}
+
+void APickup_Weapon::ResetAnimationDelay() const
+{
+	SkeletalMesh->PlayAnimation(nullptr, false);
+}
+
+// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Overlap with %s"), *OtherActor->GetName()));

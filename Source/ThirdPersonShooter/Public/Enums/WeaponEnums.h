@@ -3,7 +3,7 @@
 
 #include "WeaponEnums.generated.h"
 
-UENUM(BlueprintType, Category = "Weapon")
+UENUM(BlueprintType, Category = "Enums")
 enum class EWeaponState : uint8
 {
 	Idle			UMETA(DisplayName = "Idle"),
@@ -18,7 +18,7 @@ enum class EWeaponState : uint8
 	Overheat		UMETA(DisplayName = "Overheat")
 };
 
-UENUM(BlueprintType, Category = "WEapon")
+UENUM(BlueprintType, Category = "Enums")
 enum class EWeaponType : uint8
 {
 	Pistol		UMETA(DisplayName = "Pistol"),
@@ -28,4 +28,21 @@ enum class EWeaponType : uint8
 	Shotgun		UMETA(DisplayName = "Shotgun"),
 	Sniper		UMETA(DisplayName = "Sniper"),
 	Launcher	UMETA(DisplayName = "Launcher")
+};
+
+UENUM(BlueprintType, Category = "Enums")
+enum class EAmmoType : uint8
+{
+	AssaultRifleNormal			UMETA(DisplayName = "Assault Rifle Normal"),
+	AssaultRifleAntiArmor		UMETA(DisplayName = "Assault Rifle Anti-armor"),
+	LightPistolNormal			UMETA(DisplayName = "Light Pistol Normal"),
+	HeavyPistolNormal			UMETA(DisplayName = "Heavy Pistol Normal"),
+	HeavyPistolAntiArmor		UMETA(DisplayName = "Heavy Pistol Anti-armor"),
+	ShotgunNormal				UMETA(DisplayName = "Shotgun Normal"),
+	ShotgunDragonsBreath		UMETA(DisplayName = "Shotgun Dragons Breath"),
+	SniperRifleNormal			UMETA(DisplayName = "Sniper Rifle Normal"),
+	SniperRifleAntiArmor		UMETA(DisplayName = "Sniper Rifle Anti-armor"),
+	GrenadeLauncherExplosive	UMETA(DisplayName = "Grenade Launcher Explosive"),
+	GrenadeLauncherSmoke		UMETA(DisplayName = "Grenade Launcher Smoke"),
+	RocketLauncher				UMETA(DisplayName = "Rocket Launcher")
 };

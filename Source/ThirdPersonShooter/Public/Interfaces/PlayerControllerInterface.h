@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Enums/WeaponEnums.h"
+#include "Structs/AmmoComponentInfoStruct.h"
 #include "PlayerControllerInterface.generated.h"
 
 // This class does not need to be modified.
@@ -21,5 +22,8 @@ class THIRDPERSONSHOOTER_API IPlayerControllerInterface
 	public:
 	// Functions
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
-	void SetWeaponState(int32 AmmoInfo, EWeaponState WeaponState); // TODO Replace AmmoInfo with structure
+	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
+	void PlayCameraShake(UCameraShakeBase* CameraShake);
 };

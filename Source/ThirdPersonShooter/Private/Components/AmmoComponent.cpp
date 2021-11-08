@@ -1,6 +1,7 @@
 
 #include "Components/AmmoComponent.h"
 #include "Interfaces/CommonInterface.h"
+#include "Structs/AmmoComponentInfoStruct.h"
 #include "Math/UnrealMathUtility.h"
 
 // Sets default values for this component's properties
@@ -105,6 +106,11 @@ void UAmmoComponent::AddAmmo(int32 AmmoAmount)
 	{
 		CommonInterface->SetWeaponState(EWeaponState::AmmoAdded);
 	}
+}
+
+FAmmoComponentInfo UAmmoComponent::GetAmmoComponentInfo() const
+{
+	return FAmmoComponentInfo(NoAmmoLeftToReload(), CurrentAmmo, MagazineSize, CurrentMagazineAmmo);
 }
 
 void UAmmoComponent::SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo)

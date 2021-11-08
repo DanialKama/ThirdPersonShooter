@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseComponent.h"
+#include "Structs/AmmoComponentInfoStruct.h"
 #include "AmmoComponent.generated.h"
 
 class ICommonInterface;
@@ -17,6 +18,9 @@ public:
 	UAmmoComponent();
 
 	// Functions
+	UFUNCTION(BlueprintCallable, Category = "Public")
+	FAmmoComponentInfo GetAmmoComponentInfo() const;
+	
 	UFUNCTION(BlueprintCallable, Category = "Public")
 	void SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo);
 

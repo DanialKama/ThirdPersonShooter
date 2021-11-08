@@ -3,7 +3,7 @@
 
 #include "PickupEnums.generated.h"
 
-UENUM(BlueprintType, Category = "Pickup")
+UENUM(BlueprintType, Category = "Enums")
 enum class EItemType : uint8
 {
 	Weapon	UMETA(DisplayName = "Weapon"),
@@ -11,7 +11,7 @@ enum class EItemType : uint8
 	Health	UMETA(DisplayName = "Health")
 };
 
-UENUM(BlueprintType, Category = "Pickup")
+UENUM(BlueprintType, Category = "Enums")
 enum class EPickupState : uint8
 {
 	Drop	UMETA(DisplayName = "Drop"),

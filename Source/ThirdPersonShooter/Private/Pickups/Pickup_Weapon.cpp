@@ -2,9 +2,13 @@
 #include "Pickups/Pickup_Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "DrawDebugHelpers.h"
 #include "AIController.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
+#include "Actors/EmptyShellActor.h"
+#include "Actors/ProjectileActor.h"
 // Interfaces
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/AIControllerInterface.h"
@@ -16,6 +20,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/AmmoComponent.h"
 // Structs
+#include "Camera/CameraComponent.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
@@ -36,26 +41,22 @@ APickup_Weapon::APickup_Weapon()
 	Widget->SetupAttachment(SkeletalMesh);
 
 	// Set component defaults
-	SkeletalMesh->SetComponentTickEnabled(false);
+	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
 	SkeletalMesh->CanCharacterStepUp(nullptr);
 	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	BoxCollision->SetBoxExtent(FVector (8.0f, 50.0f, 20.0f));
-	BoxCollision->SetComponentTickEnabled(false);
 	BoxCollision->bApplyImpulseOnDamage = false;
 	BoxCollision->SetGenerateOverlapEvents(true);
 	BoxCollision->CanCharacterStepUp(nullptr);
 	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	MuzzleFlash->SetComponentTickEnabled(false);
 	MuzzleFlash->SetAutoActivate(false);
 
-	FireSound->SetComponentTickEnabled(false);
 	FireSound->SetAutoActivate(false);
 
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
-	Widget->SetComponentTickEnabled(false);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Widget->SetVisibility(false);
@@ -67,6 +68,8 @@ APickup_Weapon::APickup_Weapon()
 	// Set value defaults
 	bDoOnceFire = true;
 	bDoOnceWidget = true;
+	IgnoredActorsByTrace.Add(this);
+	IgnoredActorsByTrace.Add(GetOwner());
 }
 
 
@@ -75,6 +78,11 @@ void APickup_Weapon::BeginPlay()
 	Super::BeginPlay();
 	
 	SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
+
+	if(Projectile.Num() > 0)
+	{
+		CurrentProjectile = Cast<AProjectileActor>(Projectile[0]);
+	}
 }
 
 void APickup_Weapon::StartFireWeapon()
@@ -125,13 +133,17 @@ void APickup_Weapon::FireWeapon()
 	FTimerHandle ResetAnimationTimer;
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
+	// Spawn Empty shell after each weapon fire
+	// TODO improve empty shell spawn based on ammo current ammo type
 	if(EmptyShell.Num() > 0)
 	{
-	// TODO fix and improve spawn actor
-		FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
-		FRotator Rotation = SkeletalMesh->GetSocketRotation(TEXT("EjectorSocket"));
-		// FActorSpawnParameters ActorSpawnParameters;
-		// GetWorld()->SpawnActor<EmptyShell[0]>(Location, Rotation, ActorSpawnParameters);
+		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
+		const FRotator Rotation = SkeletalMesh->GetSocketRotation(TEXT("EjectorSocket"));
+		FActorSpawnParameters ActorSpawnParameters;
+		ActorSpawnParameters.Owner = this;
+		ActorSpawnParameters.Instigator = GetInstigator();
+		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		GetWorld()->SpawnActor<AEmptyShellActor>(EmptyShell[0], Location, Rotation, ActorSpawnParameters);
 	}
 }
 
@@ -143,14 +155,126 @@ void APickup_Weapon::StopFireWeapon()
 }
 
 // Play weapon fire sound and muzzle emitter by activate them and play weapon fire animation
-void APickup_Weapon::WeaponFireEffect()
+void APickup_Weapon::WeaponFireEffect() const
 {
-	
+	FireSound->Activate(true);
+	MuzzleFlash->Activate(true);
+	SkeletalMesh->PlayAnimation(SkeletalMesh->AnimationData.AnimToPlay, false);
 }
 
 void APickup_Weapon::SpawnProjectile()
 {
+	if(CurrentProjectile)
+	{
+		for(int i = 1; i >= CurrentProjectile->NumberOfPellets; i++)
+		{
+			FVector Location;
+			FRotator Rotation;
+			FActorSpawnParameters ActorSpawnParameters;
+		
+			ProjectileLineTrace(Location, Rotation);
+			ActorSpawnParameters.Owner = this;
+			ActorSpawnParameters.Instigator = GetInstigator();
+			ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			// Spawn projectile
+			GetWorld()->SpawnActor<AProjectileActor>(Projectile[0], Location, Rotation, ActorSpawnParameters);
+		}
+	}
+}
+
+void APickup_Weapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation)
+{
+	FHitResult HitResult;
+	FVector Start;
+	FVector End;
+	FCollisionQueryParams CollisionQueryParams;
+	CalculateLineTrace(Start, End);
+	CollisionQueryParams.bTraceComplex = true;
+	CollisionQueryParams.AddIgnoredActors(IgnoredActorsByTrace);
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
+
+	// Draw debug line and box
+	if(bDrawLineTraceDebug)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
+		if(bHit)
+		{
+			DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(10, 10, 10), FColor::Green, false, 2.0f);
+		}
+	}
+
+	const FVector MuzzleLocation = SkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+
+	OutLocation = MuzzleLocation;
+
+	bHit ? OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.ImpactPoint) : OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.TraceEnd);
+}
+
+// Calculate line trace start and end points
+void APickup_Weapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
+{
+	FVector TraceStart;
+	FVector UpVector;
+	FVector RightVector;
+	FVector TraceEnd;
 	
+	if(bOwnerIsAI)
+	{
+		const FRotator SocketRotation = SkeletalMesh->GetSocketRotation(TEXT("MuzzleFlashSocket"));
+		TraceStart = SkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
+		UpVector = UKismetMathLibrary::GetUpVector(SocketRotation);
+		RightVector = UKismetMathLibrary::GetRightVector(SocketRotation);
+		const FRotator Points = RandomPointInCircle(FMath::FRandRange(WeaponInfo.MinFireOffset, WeaponInfo.MaxFireOffset) * WeaponInfo.WeaponSpreadCurve->GetFloatValue(FMath::FRand()), true);
+		TraceEnd = Points.RotateVector(UKismetMathLibrary::GetForwardVector(SocketRotation));
+	}
+	else
+	{
+		TraceStart = CameraComponent->GetComponentLocation();
+		RightVector = CameraComponent->GetRightVector();
+		UpVector = CameraComponent->GetUpVector();
+		// TODO replace random point in circle for weapon spread with add controller pitch
+		const FRotator Points = RandomPointInCircle(WeaponInfo.WeaponSpreadCurve->GetFloatValue(FMath::FRand()), false);
+		TraceEnd = Points.RotateVector(CameraComponent->GetForwardVector());
+	}
+
+	if(CurrentProjectile)
+	{
+		if(CurrentProjectile->NumberOfPellets > 1)
+		{
+			const FRotator Points = RandomPointInCircle(FMath::FRandRange(CurrentProjectile->PelletSpread * -1.0f, CurrentProjectile->PelletSpread), true);
+			OutStart = TraceStart;
+			OutEnd = (TraceStart + (TraceEnd * WeaponInfo.Range)) + (RightVector * Points.Roll) + (UpVector * Points.Pitch);
+		}
+		else
+		{
+			OutStart = TraceStart;
+			OutEnd = TraceStart + (TraceEnd * WeaponInfo.Range);
+		}
+	}
+}
+
+FRotator APickup_Weapon::RandomPointInCircle(const float Radius, const bool bIncludesNegative) const
+{
+	// Distance From Center can be a random value from 0 to Radius or just Radius
+	float DistanceFromCenter;
+	// DistanceFromCenter = FMath::FRandRange(0.0f, Radius); // Option 1
+	DistanceFromCenter = Radius; // Option 2
+	const float Angle = FMath::FRandRange(0.0f, 360.0f);
+
+	FRotator Points;
+	if(bIncludesNegative)
+	{
+		Points.Roll = DistanceFromCenter * UKismetMathLibrary::DegCos(Angle);
+		Points.Pitch = DistanceFromCenter * UKismetMathLibrary::DegSin(Angle);
+		Points.Yaw = 0.0f;
+	}
+	else
+	{
+		Points.Roll = abs(DistanceFromCenter * UKismetMathLibrary::DegCos(Angle));
+		Points.Pitch = abs(DistanceFromCenter * UKismetMathLibrary::DegSin(Angle));
+		Points.Yaw = 0.0f;
+	}
+	return Points;
 }
 
 void APickup_Weapon::RaiseWeapon() const

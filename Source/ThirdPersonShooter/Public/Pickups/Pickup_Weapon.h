@@ -17,6 +17,7 @@ class AAIController;
 class IAIControllerInterface;
 class IPlayerControllerInterface;
 class AEmptyShellActor;
+class AProjectileActor;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface
@@ -77,10 +78,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAmmoComponent* AmmoComponent;
 
-	// Variables
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Projectile")
-	TArray<AEmptyShellActor*> EmptyShell;
-	
+	// Variable
 	// Audio
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
 	USoundBase* FleshImpactSound;
@@ -113,10 +111,19 @@ private:
 	void FireWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void WeaponFireEffect();
+	void WeaponFireEffect() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void SpawnProjectile();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void CalculateLineTrace(FVector& OutStart, FVector& OutEnd);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (ToolTip = "Use in line trace for bullet spread. Set Includes Negative to false if do not want negative numbers in output (Mostly used for player character)"))
+	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
 	
 	void CoolDownDelay();
 	void ResetAnimationDelay() const;
@@ -134,10 +141,13 @@ private:
 	uint8 bDoOnceWidget : 1;
 	uint8 bDoOnceFire : 1;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Private")
+	UPROPERTY(BlueprintReadWrite, Category = "Private", meta=(AllowPrivateAccess=true))
+	uint8 bDrawLineTraceDebug : 1;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Private", meta=(AllowPrivateAccess=true))
 	uint8 bOwnerIsAI : 1;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Private")
+	UPROPERTY(BlueprintReadOnly, Category = "Private", meta=(AllowPrivateAccess=true))
 	uint8 bCanFire : 1;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Private|References", meta=(AllowPrivateAccess=true))
@@ -146,9 +156,23 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = "Private|References", meta=(AllowPrivateAccess=true))
 	AController* OwnerController;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<AProjectileActor>> Projectile;
+	
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<AEmptyShellActor>> EmptyShell;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	AProjectileActor* CurrentProjectile;
+
 	FTimerHandle FireWeaponTimer;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Private", meta = (AllowPrivateAccess = "True"))
+	TArray<AActor*> IgnoredActorsByTrace;
 
 	// Interfaces
 	IAIControllerInterface* AIControllerInterface;
 	IPlayerControllerInterface* PlayerControllerInterface;
 };
+
+// TODO check values and if not setting in blueprint then change BlueprintReadWrite to something else

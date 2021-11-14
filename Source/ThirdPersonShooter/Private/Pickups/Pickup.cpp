@@ -1,4 +1,3 @@
-// Danial Kama
 
 #include "Pickups/Pickup.h"
 
@@ -8,9 +7,9 @@ APickup::APickup()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
-
-	Scene->SetupAttachment(GetRootComponent());
+	// Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
+	//
+	// Scene->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned

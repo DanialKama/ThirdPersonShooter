@@ -34,7 +34,7 @@ APickup_Weapon::APickup_Weapon()
 	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
 	// Setup Attachment
-	SkeletalMesh->SetupAttachment(Scene);
+	SkeletalMesh->SetupAttachment(GetRootComponent());
 	BoxCollision->SetupAttachment(SkeletalMesh);
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
 	FireSound->SetupAttachment(SkeletalMesh);
@@ -44,7 +44,8 @@ APickup_Weapon::APickup_Weapon()
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
 	SkeletalMesh->CanCharacterStepUp(nullptr);
-	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);	// In blueprint set all collision responses for skeletal mesh to ignore and World Static to block
 
 	BoxCollision->SetBoxExtent(FVector (8.0f, 50.0f, 20.0f));
 	BoxCollision->bApplyImpulseOnDamage = false;

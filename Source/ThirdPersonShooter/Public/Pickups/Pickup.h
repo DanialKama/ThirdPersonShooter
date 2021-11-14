@@ -1,4 +1,3 @@
-// Danial Kama
 
 #pragma once
 
@@ -29,8 +28,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	USceneComponent* Scene;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	// USceneComponent* Scene;
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Variables|Dynamics")

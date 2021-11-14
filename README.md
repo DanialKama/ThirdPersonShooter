@@ -2,6 +2,7 @@
 
 Made by Unreal Engine 5
 If you have any questions or suggestions about this project, talk to me on [LinkedIn](https://www.linkedin.com/in/danialkamali/).
+You can also access the project launcher and pictures of the project [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
 
 This repository contains:
 - Test map
@@ -24,7 +25,7 @@ This repository contains:
 - Idle action and fall damage with getup animation based on mesh orientation
 - Control Rig for character foot place and Correct hands place on gun based on aiming state with IK
 - AI respawn system
-- Level Manager and Interactable actors (like an automatic door)
+- Level Manager and Interactable actors (like the automatic door)
 - Level Streaming blueprints that interact with other actors (load level opens door after the stream is complete or unload level start unloading after doors is close)
 - Controllable Pawns, helicopter, and jet
 - Chaos vehicle 
@@ -32,8 +33,6 @@ This repository contains:
 Minor details:
 Assertion failed solved by unchecking Async Loading Thread Enabled.
 Navigation failed on streamed level solved by set Runtime Generation to Dynamic.
-
-You can also access the project launcher [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
 
 Here are some contents that I used in this project:
 - [FPS Weapon Bundle](https://www.unrealengine.com/marketplace/en-US/product/fps-weapon-bundle)

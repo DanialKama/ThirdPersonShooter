@@ -71,7 +71,5 @@ private:
 	
 	// Variables
 	ICommonInterface* CommonInterface;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Private")
 	int32 CurrentAmmo = 0;
 };

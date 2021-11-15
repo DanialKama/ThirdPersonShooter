@@ -19,13 +19,13 @@ class THIRDPERSONSHOOTER_API ICommonInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// Functions
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput", meta = (ToolTip = "Health component call it when owner health is zero"))
+	// Without Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Health component call it when owner health is zero"))
 	void DeathTrigger();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
-	void SetCanFire(const bool bInCanFire);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithoutOutput")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
+	void SetCanFire(bool bInCanFire);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	void SetWeaponState(EWeaponState WeaponState);
 };

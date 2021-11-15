@@ -1,11 +1,12 @@
 
 #pragma once
 
+#include "UObject/NoExportTypes.h"
 #include "AmmoComponentInfoStruct.generated.h"
 
 // Ammo component info that owner needs
 USTRUCT(BlueprintType)
-struct FAmmoComponentInfo
+struct THIRDPERSONSHOOTER_API FAmmoComponentInfo
 {
 	GENERATED_BODY()
 
@@ -13,16 +14,16 @@ struct FAmmoComponentInfo
 
 	explicit FORCEINLINE FAmmoComponentInfo(uint8 InNoAmmoLeftToReload, int32 InCurrentAmmo, int32 InMagazineSize, int32 InCurrentMagazineAmmo);
 
-	UPROPERTY(BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	uint8 NoAmmoLeftToReload : 1;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	int32 CurrentAmmo = 0;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	int32 MagazineSize = 0;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	int32 CurrentMagazineAmmo = 0;
 
 	// Operators

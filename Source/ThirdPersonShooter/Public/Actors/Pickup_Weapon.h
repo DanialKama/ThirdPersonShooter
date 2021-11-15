@@ -18,6 +18,7 @@ class IAIControllerInterface;
 class IPlayerControllerInterface;
 class AEmptyShellActor;
 class AProjectileActor;
+class AMagazineActor;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface, public IWeaponInterface
@@ -29,30 +30,44 @@ public:
 	APickup_Weapon();
 
 	// Functions
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void StartFireWeapon();
 
-	UFUNCTION(BlueprintCallable, Category = "Public")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void StopFireWeapon();
 	
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void RaiseWeapon() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void LowerWeapon() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	void SetMagazineVisibility(bool Visible) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	void ReloadWeapon() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	bool CanPickupAmmo() const;
 	
 	// Interfaces
 	// Without Output
 	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
 	virtual void SetCanFire_Implementation(const bool bInCanFire) override;			// Common Interface, Call from ammo component
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
+	// With Output
+	virtual APickup_Weapon* GetWeaponReference_Implementation() override;			// Weapon Interface, Call from character base
 	
 	// Variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Public")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Variables|Public")
 	FWeaponInfo WeaponInfo;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Public|References")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Variables|Public", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Variables|Public")
+	TSubclassOf<AMagazineActor> MagazineActor;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -78,21 +93,24 @@ protected:
 	UAmmoComponent* AmmoComponent;
 
 	// Variable
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Emmiter")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
 	FVector MuzzleFlashScale = FVector::OneVector;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
+	FName MagazineBoneName;
 	
 	// Audio
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
 	USoundBase* ReloadSound;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
 	USoundCue* RaiseSound;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
 	USoundBase* LowerSound;
 
 	//Camera shake
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
 	UCameraShakeBase* CameraShake;
 	
 private:
@@ -131,38 +149,36 @@ private:
 	uint8 bDoOnceWidget : 1;
 	uint8 bDoOnceFire : 1;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Private", meta=(AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadWrite, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bDrawLineTraceDebug : 1;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Private", meta=(AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bOwnerIsAI : 1;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Private", meta=(AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bCanFire : 1;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Private|References", meta=(AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	AAIController* OwnerAIController;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Private|References", meta=(AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	AController* OwnerController;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AProjectileActor>> Projectile;
 	
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AEmptyShellActor>> EmptyShell;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
 	AProjectileActor* CurrentProjectile;
 
 	FTimerHandle FireWeaponTimer;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Private", meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "True"))
 	TArray<AActor*> IgnoredActorsByTrace;
 
 	// Interfaces
 	IAIControllerInterface* AIControllerInterface;
 	IPlayerControllerInterface* PlayerControllerInterface;
 };
-
-// TODO check values and if not setting in blueprint then change BlueprintReadWrite to something else

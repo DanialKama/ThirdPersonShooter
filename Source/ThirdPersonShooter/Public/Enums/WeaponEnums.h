@@ -8,12 +8,12 @@ enum class EWeaponState : uint8
 {
 	Idle			UMETA(DisplayName = "Idle"),
 	Firing			UMETA(DisplayName = "Firing"),
-	BetterToReload	UMETA(DisplayName = "BetterToReload"),
-	NeedToReload	UMETA(DisplayName = "NeedToReload"),
+	BetterToReload	UMETA(DisplayName = "Better To Reload"),
+	NeedToReload	UMETA(DisplayName = "Need To Reload"),
 	Reloading		UMETA(DisplayName = "Reloading"),
-	CancelReload	UMETA(DisplayName = "CancelReload"),
+	CancelReload	UMETA(DisplayName = "Cancel Reload"),
 	Reloaded		UMETA(DisplayName = "Reloaded"),
-	AmmoAdded		UMETA(DisplayName = "AmmoAdded"),
+	AmmoAdded		UMETA(DisplayName = "Ammo Added"),
 	Empty			UMETA(DisplayName = "Empty"),
 	Overheat		UMETA(DisplayName = "Overheat")
 };

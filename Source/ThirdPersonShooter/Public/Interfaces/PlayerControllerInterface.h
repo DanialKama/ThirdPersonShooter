@@ -19,11 +19,11 @@ class THIRDPERSONSHOOTER_API IPlayerControllerInterface
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-	public:
-	// Functions
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
+public:
+	// Without Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void PlayCameraShake(UCameraShakeBase* CameraShake);
 };

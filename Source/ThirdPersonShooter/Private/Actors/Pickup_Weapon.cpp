@@ -1,5 +1,5 @@
 
-#include "Pickups/Pickup_Weapon.h"
+#include "Actors/Pickup_Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -19,8 +19,9 @@
 #include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/AmmoComponent.h"
-// Structs
 #include "Camera/CameraComponent.h"
+// Structs
+#include "Chaos/ChaosGameplayEventDispatcher.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
@@ -322,6 +323,36 @@ void APickup_Weapon::LowerWeapon() const
 	UGameplayStatics::SpawnSoundAttached(LowerSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 }
 
+void APickup_Weapon::SetMagazineVisibility(const bool Visible) const
+{
+	if(Visible)
+	{
+		SkeletalMesh->UnHideBoneByName(MagazineBoneName);
+	}
+	else
+	{
+		SkeletalMesh->HideBoneByName(MagazineBoneName, EPhysBodyOp::PBO_None);
+	}
+}
+
+void APickup_Weapon::ReloadWeapon() const
+{
+	AmmoComponent->Reload();
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation());
+}
+
+bool APickup_Weapon::CanPickupAmmo() const
+{
+	int32 CurrentAmmo, MagazineSize, CurrentMagazineAmmo;
+	AmmoComponent->GetAmmoInfo(CurrentAmmo, MagazineSize, CurrentMagazineAmmo);
+
+	if(CurrentAmmo < AmmoComponent->MaxAmmo)
+	{
+		return true;
+	}
+	return false;
+}
+
 // Components overlap functions
 void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -347,7 +378,7 @@ void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AAct
 		// For C++ and blueprint
 		if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
-			ICharacterInterface::Execute_SetPickupCPP(OtherActor, EItemType::Weapon, this);
+			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
 
 			if (bDoOnceWidget)
 			{
@@ -377,7 +408,7 @@ void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		// For C++ and blueprint
 		if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
-			ICharacterInterface::Execute_SetPickupCPP(OtherActor, EItemType::Weapon, nullptr);
+			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
 
 			Widget->SetVisibility(false);
 			SkeletalMesh->SetRenderCustomDepth(false);
@@ -398,7 +429,6 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
 		SetLifeSpan(FMath::FRandRange(30.0f, 60.0f));
 		break;
- 
 	case 1:
 		// Pickup
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -420,7 +450,6 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 			}
 		}
 		break;
-
 	case 2:
 		// Remove
 		Destroy();
@@ -445,7 +474,55 @@ void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	{
 		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
 	}
-	// TODO
+	
+	switch(WeaponState)
+	{
+	case 0:
+		// Idle
+		break;
+	case 1:
+		// Firing
+		break;
+	case 2:
+		// Better To Reload
+		break;
+	case 3:
+		// Need To Reload
+		bCanFire = false;
+		StopFireWeapon();
+		break;
+	case 4:
+		// Reloading
+		bCanFire = false;
+		StopFireWeapon();
+		break;
+	case 5:
+		// Cancel Reload
+		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
+		break;
+	case 6:
+		// Reloaded
+		bCanFire = true;
+		break;
+	case 7:
+		// Ammo Added
+		break;
+	case 8:
+		// Empty
+		bCanFire = false;
+		StopFireWeapon();
+		break;
+	case 9:
+		// Overheat
+		bCanFire = false;
+		StopFireWeapon();
+		break;
+	}
+}
+
+APickup_Weapon* APickup_Weapon::GetWeaponReference_Implementation()
+{
+	return this;
 }
 // End Of interfaces
 

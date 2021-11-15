@@ -20,7 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Interfaces
-	virtual void GetPickupReference_Implementation(APickup* &Reference) override;
+	virtual APickup* GetPickupReference_Implementation() override;
 	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;
 	
 protected:

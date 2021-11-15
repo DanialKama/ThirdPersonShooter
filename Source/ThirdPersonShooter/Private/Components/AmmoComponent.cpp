@@ -24,7 +24,7 @@ void UAmmoComponent::SetupComponent()
 	{
 		if(CommonInterface)
 		{
-			CommonInterface->SetCanFire(false);
+			CommonInterface->Execute_SetCanFire(Owner, false);
 		}
 		// Optional, replace this code with interface call
 		// On Setup component will fill the mag if Current Magazine Ammo is zero
@@ -53,20 +53,20 @@ void UAmmoComponent::ReduceAmmo()
 		{
 			if(!NoAmmoLeftToReload())
 			{
-				CommonInterface->SetWeaponState(EWeaponState::NeedToReload);
+				CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::NeedToReload);
 			}
 		}
 		else if(BetterToReload())
 		{
 			if(!NoAmmoLeftToReload())
 			{
-				CommonInterface->SetWeaponState(EWeaponState::BetterToReload);
+				CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::BetterToReload);
 			}
 		}
-		CommonInterface->SetWeaponState(EWeaponState::Firing);
+		CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::Firing);
 		if(IsCompletelyEmpty())
 		{
-			CommonInterface->SetWeaponState(EWeaponState::Empty);
+			CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::Empty);
 		}
 	}
 }
@@ -90,11 +90,11 @@ void UAmmoComponent::Reload()
 				CurrentMagazineAmmo =+ CurrentAmmo;
 				CurrentAmmo = 0;
 			}
-			CommonInterface->SetWeaponState(EWeaponState::Reloaded);
+			CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
 		}
 		else
 		{
-			CommonInterface->SetWeaponState(EWeaponState::Empty);
+			CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::Empty);
 		}
 	}
 }
@@ -104,7 +104,7 @@ void UAmmoComponent::AddAmmo(int32 AmmoAmount)
 	CurrentAmmo = FMath::Clamp(AmmoAmount + CurrentAmmo, 0, MaxAmmo);
 	if(CommonInterface)
 	{
-		CommonInterface->SetWeaponState(EWeaponState::AmmoAdded);
+		CommonInterface->Execute_SetWeaponState(Owner, EWeaponState::AmmoAdded);
 	}
 }
 

@@ -17,5 +17,4 @@ void UBaseComponent::Initialize()
 
 void UBaseComponent::SetupComponent()
 {
-	
 }

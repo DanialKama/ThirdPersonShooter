@@ -21,10 +21,11 @@ class THIRDPERSONSHOOTER_API IPickupInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// Functions
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithOutput")
-	void GetPickupReference(APickup* &Reference);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WithoutOutput")
+	// With Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PickupInterface")
+	APickup* GetPickupReference();
+	
+	// Without Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PickupInterface", meta = (ToolTip = "Update pickup status"))
 	void SetPickupStatus(EPickupState PickupState);
 };

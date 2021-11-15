@@ -1,5 +1,5 @@
 
-#include "Pickups/Pickup.h"
+#include "Actors/Pickup.h"
 
 // Sets default values
 APickup::APickup()
@@ -27,9 +27,9 @@ void APickup::Tick(float DeltaTime)
 }
 
 // Interfaces
-void APickup::GetPickupReference_Implementation(APickup* &Reference)
+APickup* APickup::GetPickupReference_Implementation()
 {
-	Reference = this;
+	return this;
 }
 
 void APickup::SetPickupStatus_Implementation(EPickupState PickupState)

@@ -78,8 +78,9 @@ void APickup_Weapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
-
+	AmmoComponent->Initialize();
+	MuzzleFlash->SetRelativeScale3D(MuzzleFlashScale);
+	
 	if(Projectile.Num() > 0)
 	{
 		CurrentProjectile = Cast<AProjectileActor>(Projectile[0]);
@@ -328,12 +329,26 @@ void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	// If OtherActor is player
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
-		ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+		// For C++ only
+		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
 		if(Interface)
 		{
-			Interface->SetPickup(EItemType::Weapon, this);
+			Interface->SetPickupCPP(EItemType::Weapon, this);
 			// Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, this); // For calling blueprint implementation
 			
+			if (bDoOnceWidget)
+			{
+				// TODO Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
+				bDoOnceWidget = false;
+			}
+			Widget->SetVisibility(true);
+			SkeletalMesh->SetRenderCustomDepth(true);
+		}*/
+		// For C++ and blueprint
+		if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		{
+			ICharacterInterface::Execute_SetPickupCPP(OtherActor, EItemType::Weapon, this);
+
 			if (bDoOnceWidget)
 			{
 				// TODO Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
@@ -350,10 +365,19 @@ void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor
 {
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
-		ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+		// For C++ only
+		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
 		if(Interface)
 		{
-			Interface->SetPickup(EItemType::Weapon, nullptr);
+			Interface->SetPickupCPP(EItemType::Weapon, nullptr);
+
+			Widget->SetVisibility(false);
+			SkeletalMesh->SetRenderCustomDepth(false);
+		}*/
+		// For C++ and blueprint
+		if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		{
+			ICharacterInterface::Execute_SetPickupCPP(OtherActor, EItemType::Weapon, nullptr);
 
 			Widget->SetVisibility(false);
 			SkeletalMesh->SetRenderCustomDepth(false);

@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-// #include "Interfaces/WeaponInterface.h"
+#include "Interfaces/WeaponInterface.h"
 #include "Interfaces/CommonInterface.h"
 #include "Structs/WeaponInfoStruct.h"
 #include "Pickup_Weapon.generated.h"
@@ -20,7 +20,7 @@ class AEmptyShellActor;
 class AProjectileActor;
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface
+class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface, public IWeaponInterface
 {
 	GENERATED_BODY()
 
@@ -42,12 +42,11 @@ public:
 	void LowerWeapon() const;
 	
 	// Interfaces
-	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;
-
-	virtual void SetCanFire_Implementation(const bool bInCanFire) override;
-
-	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
-
+	// Without Output
+	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
+	virtual void SetCanFire_Implementation(const bool bInCanFire) override;			// Common Interface, Call from ammo component
+	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
+	
 	// Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Public")
 	FWeaponInfo WeaponInfo;
@@ -79,19 +78,10 @@ protected:
 	UAmmoComponent* AmmoComponent;
 
 	// Variable
-	// Audio
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
-	USoundBase* FleshImpactSound;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Emmiter")
+	FVector MuzzleFlashScale = FVector::OneVector;
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
-	USoundBase* WoodImpactSound;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
-	USoundBase* MetalImpactSound;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
-	USoundBase* StoneImpactSound;
-
+	// Audio
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Effects|Audio")
 	USoundBase* ReloadSound;
 

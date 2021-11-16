@@ -21,10 +21,10 @@ void APickup::BeginPlay()
 }
 
 // Called every frame
-void APickup::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
+// void APickup::Tick(float DeltaTime)
+// {
+// 	Super::Tick(DeltaTime);
+// }
 
 // Interfaces
 APickup* APickup::GetPickupReference_Implementation()

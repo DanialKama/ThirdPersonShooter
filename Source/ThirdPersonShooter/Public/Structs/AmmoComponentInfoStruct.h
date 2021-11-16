@@ -12,10 +12,10 @@ struct THIRDPERSONSHOOTER_API FAmmoComponentInfo
 
 	FORCEINLINE FAmmoComponentInfo();
 
-	explicit FORCEINLINE FAmmoComponentInfo(uint8 InNoAmmoLeftToReload, int32 InCurrentAmmo, int32 InMagazineSize, int32 InCurrentMagazineAmmo);
+	explicit FORCEINLINE FAmmoComponentInfo(bool InbNoAmmoLeftToReload, int32 InCurrentAmmo, int32 InMagazineSize, int32 InCurrentMagazineAmmo);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	uint8 NoAmmoLeftToReload : 1;
+	bool bNoAmmoLeftToReload = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	int32 CurrentAmmo = 0;
@@ -35,19 +35,20 @@ FORCEINLINE FAmmoComponentInfo::FAmmoComponentInfo()
 {
 }
 
-FORCEINLINE FAmmoComponentInfo::FAmmoComponentInfo(const uint8 InNoAmmoLeftToReload, const int32 InCurrentAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo) : NoAmmoLeftToReload(InNoAmmoLeftToReload), CurrentAmmo(InCurrentAmmo), MagazineSize(InMagazineSize), CurrentMagazineAmmo(InCurrentMagazineAmmo)
+FORCEINLINE FAmmoComponentInfo::FAmmoComponentInfo(const bool InbNoAmmoLeftToReload, const int32 InCurrentAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo)
+: bNoAmmoLeftToReload(InbNoAmmoLeftToReload), CurrentAmmo(InCurrentAmmo), MagazineSize(InMagazineSize), CurrentMagazineAmmo(InCurrentMagazineAmmo)
 {
 }
 
 // Operators
 FORCEINLINE bool FAmmoComponentInfo::operator==(const FAmmoComponentInfo& V) const
 {
-	return NoAmmoLeftToReload == V.NoAmmoLeftToReload && CurrentAmmo == V.CurrentAmmo && MagazineSize == V.MagazineSize && CurrentMagazineAmmo == V.CurrentMagazineAmmo;
+	return bNoAmmoLeftToReload == V.bNoAmmoLeftToReload && CurrentAmmo == V.CurrentAmmo && MagazineSize == V.MagazineSize && CurrentMagazineAmmo == V.CurrentMagazineAmmo;
 }
 
 FORCEINLINE bool FAmmoComponentInfo::operator!=(const FAmmoComponentInfo& V) const
 {
-	return NoAmmoLeftToReload != V.NoAmmoLeftToReload || CurrentAmmo != V.CurrentAmmo || MagazineSize != V.MagazineSize || CurrentMagazineAmmo != V.CurrentMagazineAmmo;
+	return bNoAmmoLeftToReload != V.bNoAmmoLeftToReload || CurrentAmmo != V.CurrentAmmo || MagazineSize != V.MagazineSize || CurrentMagazineAmmo != V.CurrentMagazineAmmo;
 }
 
 // To use struct as key for maps

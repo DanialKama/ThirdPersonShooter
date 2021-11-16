@@ -17,7 +17,7 @@ public:
 	APickup();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	// virtual void Tick(float DeltaTime) override;
 
 	// Interfaces
 	virtual APickup* GetPickupReference_Implementation() override;

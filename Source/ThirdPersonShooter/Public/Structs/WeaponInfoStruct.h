@@ -13,7 +13,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 
 	FORCEINLINE FWeaponInfo();
 
-	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, uint8 InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, TArray<EAmmoType> InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* WeaponSpreadCurve);
+	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, bool InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, TArray<EAmmoType> InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	EWeaponType WeaponType = EWeaponType::Pistol;
@@ -25,7 +25,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 	float Range = 4000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	uint8 bIsAutomatic : 1;
+	bool bIsAutomatic = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float TimeBetweenShots = 0.5f;
@@ -43,7 +43,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 	float MaxFireOffset = 10.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	UCurveFloat* WeaponSpreadCurve;
+	UCurveFloat* WeaponSpreadCurve = nullptr;
 
 	// Operators
 	// bool operator==(const FWeaponInfo& V) const;
@@ -54,7 +54,8 @@ FORCEINLINE FWeaponInfo::FWeaponInfo()
 {
 }
 
-FORCEINLINE FWeaponInfo::FWeaponInfo(const EWeaponType InWeaponType, const FString InName, const float InRange, const uint8 InbIsAutomatic, const float InTimeBetweenShots, const float InCoolDownTime, const TArray<EAmmoType> InAmmoType, const float InMinFireOffset, const float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve) : WeaponType(InWeaponType), Name(InName), Range(InRange), bIsAutomatic(InbIsAutomatic), TimeBetweenShots(InTimeBetweenShots), CoolDownTime(InCoolDownTime), AmmoType(InAmmoType), MinFireOffset(InMinFireOffset), MaxFireOffset(InMaxFireOffset), WeaponSpreadCurve(InWeaponSpreadCurve)
+FORCEINLINE FWeaponInfo::FWeaponInfo(const EWeaponType InWeaponType, const FString InName, const float InRange, const bool InbIsAutomatic, const float InTimeBetweenShots, const float InCoolDownTime, const TArray<EAmmoType> InAmmoType, const float InMinFireOffset, const float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve)
+: WeaponType(InWeaponType), Name(InName), Range(InRange), bIsAutomatic(InbIsAutomatic), TimeBetweenShots(InTimeBetweenShots), CoolDownTime(InCoolDownTime), AmmoType(InAmmoType), MinFireOffset(InMinFireOffset), MaxFireOffset(InMaxFireOffset), WeaponSpreadCurve(InWeaponSpreadCurve)
 {
 }
 

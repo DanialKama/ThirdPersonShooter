@@ -1,3 +1,4 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Actors/Pickup_Weapon.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,14 +27,15 @@
 // Sets default values
 APickup_Weapon::APickup_Weapon()
 {
-	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
+	// Create components
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon Mesh"));
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
 	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
-	// Setup Attachment
+	// Setup components attachment
 	SkeletalMesh->SetupAttachment(GetRootComponent());
 	BoxCollision->SetupAttachment(SkeletalMesh);
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
@@ -43,7 +45,6 @@ APickup_Weapon::APickup_Weapon()
 	// Set component defaults
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
-	SkeletalMesh->CanCharacterStepUp(nullptr);
 	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);	// In blueprint set all collision responses for skeletal mesh to ignore and World Static to block
 

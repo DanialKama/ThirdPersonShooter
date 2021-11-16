@@ -50,6 +50,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	bool CanPickupAmmo() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	FVector GetLeftHandLocation() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	FVector GetLeftHandAimLocation() const;
 	
 	// Interfaces
 	// Without Output

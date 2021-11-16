@@ -21,7 +21,6 @@
 #include "Components/AmmoComponent.h"
 #include "Camera/CameraComponent.h"
 // Structs
-#include "Chaos/ChaosGameplayEventDispatcher.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
@@ -70,6 +69,7 @@ APickup_Weapon::APickup_Weapon()
 	// Set value defaults
 	bDoOnceFire = true;
 	bDoOnceWidget = true;
+	bCanFire = true;
 	IgnoredActorsByTrace.Add(this);
 	IgnoredActorsByTrace.Add(GetOwner());
 }
@@ -131,7 +131,7 @@ void APickup_Weapon::FireWeapon()
 
 	if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
 	{
-		PlayerControllerInterface->PlayCameraShake(CameraShake);
+		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
 	}
 	FTimerHandle ResetAnimationTimer;
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
@@ -353,6 +353,18 @@ bool APickup_Weapon::CanPickupAmmo() const
 	return false;
 }
 
+FVector APickup_Weapon::GetLeftHandLocation() const
+{
+	// Location use to adjust character left hand with IK in animation blueprint
+	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandSocket"));
+}
+
+FVector APickup_Weapon::GetLeftHandAimLocation() const
+{
+	// Location use to adjust character left hand with IK in animation blueprint
+	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
+}
+
 // Components overlap functions
 void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -447,6 +459,10 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 			else
 			{
 				PlayerControllerInterface = Cast<IPlayerControllerInterface>(OwnerController);
+				if(PlayerControllerInterface)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("PlayerControllerInterface")));
+				}
 			}
 		}
 		break;
@@ -465,7 +481,7 @@ void APickup_Weapon::SetCanFire_Implementation(const bool bInCanFire)
 void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
-
+	// For C++
 	if(bOwnerIsAI && AIControllerInterface)
 	{
 		AIControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
@@ -473,6 +489,18 @@ void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	else if(!bOwnerIsAI && PlayerControllerInterface)
 	{
 		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
+	}
+	// For C++ and blueprint
+	if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	{
+		if(bOwnerIsAI)
+		{
+			AIControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
+		}
+		else if(!bOwnerIsAI)
+		{
+			PlayerControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
+		}
 	}
 	
 	switch(WeaponState)

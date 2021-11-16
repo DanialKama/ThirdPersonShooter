@@ -7,6 +7,8 @@
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "PlayerControllerInterface.generated.h"
 
+class AShooterPlayerController;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
 class UPlayerControllerInterface : public UInterface
@@ -20,10 +22,17 @@ class THIRDPERSONSHOOTER_API IPlayerControllerInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	// With Output
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
+	// AShooterPlayerController* GetPlayerControllerReference();
+	
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void PlayCameraShake(UCameraShakeBase* CameraShake);
+	//
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
+	// void RespawnPlayer();
 };

@@ -1,18 +1,19 @@
 
 #pragma once
 
+#include "Engine/DataTable.h"
 #include "UObject/NoExportTypes.h"
 #include "ExplosiveProjectileInfoStruct.generated.h"
 
 // Projectile info that projectile class needs
 USTRUCT(BlueprintType)
-struct THIRDPERSONSHOOTER_API FExplosiveProjectileInfo
+struct FExplosiveProjectileInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	FORCEINLINE FExplosiveProjectileInfo();
 
-	explicit FORCEINLINE FExplosiveProjectileInfo(float InBaseDamage, float InMinimumDamage, float InDamageInnerRadius, float InDamageOuterRadius, UDamageType* InDamageType, float InStrainMagnitude, float InForceMagnitude, float InTorqueMagnitude);
+	explicit FORCEINLINE FExplosiveProjectileInfo(float InBaseDamage, float InMinimumDamage, float InDamageInnerRadius, float InDamageOuterRadius, TSubclassOf<UDamageType> InDamageType, float InStrainMagnitude, float InForceMagnitude, float InTorqueMagnitude);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float BaseDamage = 200.0f;
@@ -27,7 +28,7 @@ struct THIRDPERSONSHOOTER_API FExplosiveProjectileInfo
 	float DamageOuterRadius = 400.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	UDamageType* DamageType = nullptr;
+	TSubclassOf<UDamageType> DamageType;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
 	float StrainMagnitude = 2000.0f;
@@ -47,7 +48,7 @@ FORCEINLINE FExplosiveProjectileInfo::FExplosiveProjectileInfo()
 {
 }
 
-FORCEINLINE FExplosiveProjectileInfo::FExplosiveProjectileInfo(float InBaseDamage, float InMinimumDamage, float InDamageInnerRadius, float InDamageOuterRadius, UDamageType* InDamageType, float InStrainMagnitude, float InForceMagnitude, float InTorqueMagnitude)
+FORCEINLINE FExplosiveProjectileInfo::FExplosiveProjectileInfo(const float InBaseDamage, const float InMinimumDamage, const float InDamageInnerRadius, const float InDamageOuterRadius, TSubclassOf<UDamageType> InDamageType, const float InStrainMagnitude, const float InForceMagnitude, const float InTorqueMagnitude)
 : BaseDamage(InBaseDamage), MinimumDamage(InMinimumDamage), DamageInnerRadius(InDamageInnerRadius), DamageOuterRadius(InDamageOuterRadius), DamageType(InDamageType), StrainMagnitude(InStrainMagnitude), ForceMagnitude(InForceMagnitude), TorqueMagnitude(InTorqueMagnitude)
 {
 }

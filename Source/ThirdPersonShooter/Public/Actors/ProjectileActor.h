@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "Enums/WeaponEnums.h"
 #include "GameFramework/Actor.h"
+#include "Structs/ProjectileInfoStruct.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "ProjectileActor.generated.h"
 
@@ -20,10 +22,10 @@ public:
 	AProjectileActor();
 	
 	// Variables
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	int32 NumberOfPellets = 1;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	float PelletSpread = 0.0f;
 
 protected:
@@ -38,19 +40,30 @@ protected:
 	UProjectileMovementComponent* ProjectileMovement;
 
 	// Variables
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	EAmmoType AmmoType;
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	bool bIsExplosive;
-	// UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	bool bIsExplosive;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UDataTable* ProjectileDataTable;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UDataTable* ExplosiveProjectileDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UDataTable* ProjectileHitEffectDataTable;
+	
 private:
 	// Functions
-	UFUNCTION()    
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-	void SwitchOnSurfaceType(EPhysicalSurface SurfaceType);	// Switch on surface type to execute the appropriate effect
-	void HitEffect(UParticleSystem* Emitter, USoundCue* Sound, UMaterialInterface Decal, const FVector EmitterScale, FVector DecalSize, float DecalLifeSpan, bool bIsExplosive, const FHitResult HitResult);
+	
+	static float CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const FHitResult HitResult);
+	
+	void HitEffect(const FHitResult HitResult) const;
+	
 	static FRotator CalculateEmitterRotation(FVector ImpactNormal);
+	
 	static FRotator CalculateDecalRotation(FVector ImpactNormal);
 };

@@ -156,8 +156,8 @@ private:
 	uint8 bDoOnceWidget : 1;
 	uint8 bDoOnceFire : 1;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
-	uint8 bDrawLineTraceDebug : 1;
+	UPROPERTY(EditDefaultsOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
+	uint8 bDrawDebugLineTrace : 1;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bOwnerIsAI : 1;

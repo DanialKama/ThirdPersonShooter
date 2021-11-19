@@ -28,15 +28,15 @@
 APickup_Weapon::APickup_Weapon()
 {
 	// Create components
-	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon Mesh"));
-	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
-	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
-	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
-	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
+	SkeletalMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon Mesh"));
+	BoxCollision	= CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
+	MuzzleFlash		= CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
+	FireSound		= CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
+	Widget			= CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	AmmoComponent	= CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
 	// Setup components attachment
-	SkeletalMesh->SetupAttachment(GetRootComponent());
+	SetRootComponent(SkeletalMesh);
 	BoxCollision->SetupAttachment(SkeletalMesh);
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
 	FireSound->SetupAttachment(SkeletalMesh);
@@ -85,7 +85,7 @@ void APickup_Weapon::BeginPlay()
 	
 	if(Projectile.Num() > 0)
 	{
-		CurrentProjectile = Cast<AProjectileActor>(Projectile[0]);
+		CurrentProjectile = Projectile[0].GetDefaultObject();
 	}
 }
 
@@ -170,12 +170,12 @@ void APickup_Weapon::SpawnProjectile()
 {
 	if(CurrentProjectile)
 	{
-		for(int i = 1; i >= CurrentProjectile->NumberOfPellets; i++)
+		for(int i = 0; i < CurrentProjectile->NumberOfPellets; i++)
 		{
 			FVector Location;
 			FRotator Rotation;
 			FActorSpawnParameters ActorSpawnParameters;
-		
+
 			ProjectileLineTrace(Location, Rotation);
 			ActorSpawnParameters.Owner = this;
 			ActorSpawnParameters.Instigator = GetInstigator();
@@ -183,6 +183,10 @@ void APickup_Weapon::SpawnProjectile()
 			// Spawn projectile
 			GetWorld()->SpawnActor<AProjectileActor>(Projectile[0], Location, Rotation, ActorSpawnParameters);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No projectile to spawn!"))
 	}
 }
 
@@ -198,19 +202,17 @@ void APickup_Weapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRota
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 
 	// Draw debug line and box
-	if(bDrawLineTraceDebug)
+	if(bDrawDebugLineTrace)
 	{
 		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
 		if(bHit)
 		{
-			DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(10, 10, 10), FColor::Green, false, 2.0f);
+			DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(10, 10, 10), FColor::Red, false, 2.0f);
 		}
 	}
-
+	
 	const FVector MuzzleLocation = SkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
-
 	OutLocation = MuzzleLocation;
-
 	bHit ? OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.ImpactPoint) : OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.TraceEnd);
 }
 

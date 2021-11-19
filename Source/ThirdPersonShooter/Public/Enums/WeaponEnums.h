@@ -33,16 +33,16 @@ enum class EWeaponType : uint8
 UENUM(BlueprintType, Category = "Enums")
 enum class EAmmoType : uint8
 {
-	AssaultRifleNormal			UMETA(DisplayName = "Assault Rifle Normal"),
-	AssaultRifleAntiArmor		UMETA(DisplayName = "Assault Rifle Anti-armor"),
-	LightPistolNormal			UMETA(DisplayName = "Light Pistol Normal"),
-	HeavyPistolNormal			UMETA(DisplayName = "Heavy Pistol Normal"),
-	HeavyPistolAntiArmor		UMETA(DisplayName = "Heavy Pistol Anti-armor"),
-	ShotgunNormal				UMETA(DisplayName = "Shotgun Normal"),
-	ShotgunDragonsBreath		UMETA(DisplayName = "Shotgun Dragons Breath"),
-	SniperRifleNormal			UMETA(DisplayName = "Sniper Rifle Normal"),
-	SniperRifleAntiArmor		UMETA(DisplayName = "Sniper Rifle Anti-armor"),
-	GrenadeLauncherExplosive	UMETA(DisplayName = "Grenade Launcher Explosive"),
-	GrenadeLauncherSmoke		UMETA(DisplayName = "Grenade Launcher Smoke"),
-	RocketLauncher				UMETA(DisplayName = "Rocket Launcher")
+	AssaultRifleNormal			= 0		UMETA(DisplayName = "Assault Rifle Normal"),
+	AssaultRifleAntiArmor		= 1		UMETA(DisplayName = "Assault Rifle Anti-armor"),
+	LightPistolNormal			= 2		UMETA(DisplayName = "Light Pistol Normal"),
+	HeavyPistolNormal			= 3		UMETA(DisplayName = "Heavy Pistol Normal"),
+	HeavyPistolAntiArmor		= 4		UMETA(DisplayName = "Heavy Pistol Anti-armor"),
+	ShotgunNormal				= 5		UMETA(DisplayName = "Shotgun Normal"),
+	ShotgunDragonsBreath		= 6		UMETA(DisplayName = "Shotgun Dragons Breath"),
+	SniperRifleNormal			= 7		UMETA(DisplayName = "Sniper Rifle Normal"),
+	SniperRifleAntiArmor		= 8		UMETA(DisplayName = "Sniper Rifle Anti-armor"),
+	GrenadeLauncherExplosive	= 9		UMETA(DisplayName = "Grenade Launcher Explosive"),
+	GrenadeLauncherSmoke		= 10	UMETA(DisplayName = "Grenade Launcher Smoke"),
+	RocketLauncher				= 11	UMETA(DisplayName = "Rocket Launcher")
 };

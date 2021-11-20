@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Actors/ProjectileActor.h"
+#include "Actors/Projectile.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -12,7 +12,7 @@
 #include "Structs/ProjectileHitEffectStruct.h"
 
 // Sets default values
-AProjectileActor::AProjectileActor()
+AProjectile::AProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -28,10 +28,10 @@ AProjectileActor::AProjectileActor()
 
 	// Set component defaults
 	StaticMesh->SetNotifyRigidBodyCollision(true);
-	StaticMesh->SetGenerateOverlapEvents(true);
+	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
 	StaticMesh->bReturnMaterialOnMove = true;
-	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectileActor::OnHit);
+	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 
 	ProjectileMovement->InitialSpeed = 2000.0f;
 	ProjectileMovement->MaxSpeed = 2000.0f;
@@ -50,10 +50,8 @@ AProjectileActor::AProjectileActor()
 	}
 }
 
-void AProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(OtherActor != GetOwner()->GetOwner() && ProjectileHitEffectDataTable)	// Do not trigger by owner character TODO try not using this condition
-	{
 		const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 		
 		if(bIsExplosive && ExplosiveProjectileDataTable)
@@ -81,10 +79,9 @@ void AProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAct
 		}
 		HitEffect(Hit);
 		Destroy();
-	}
 }
 
-float AProjectileActor::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const FHitResult HitResult)
+float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const FHitResult HitResult)
 {
 	if(HitResult.PhysMaterial.IsValid())
 	{
@@ -121,7 +118,7 @@ float AProjectileActor::CalculatePointDamage(const FProjectileInfo* ProjectileIn
 	return ProjectileInfo->DefaultDamage;
 }
 
-void AProjectileActor::HitEffect(const FHitResult HitResult) const
+void AProjectile::HitEffect(const FHitResult HitResult) const
 {
 	FProjectileHitEffect* ProjectileHitEffect;
 	
@@ -139,7 +136,7 @@ void AProjectileActor::HitEffect(const FHitResult HitResult) const
 	if(ProjectileHitEffect)
 	{
 		// Spawn impact emitter
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileHitEffect->Emitter, HitResult.ImpactPoint, CalculateDecalRotation(HitResult.ImpactNormal), ProjectileHitEffect->EmitterScale);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileHitEffect->Emitter, HitResult.ImpactPoint, CalculateEmitterRotation(HitResult.ImpactNormal), ProjectileHitEffect->EmitterScale);
 	
 		// Spawn decal attached
 		UGameplayStatics::SpawnDecalAttached(ProjectileHitEffect->Decal, ProjectileHitEffect->DecalSize, HitResult.GetComponent(),
@@ -152,18 +149,22 @@ void AProjectileActor::HitEffect(const FHitResult HitResult) const
 		// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
 		if(bIsExplosive)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileHitEffect->ExplosiveEmitter, HitResult.ImpactPoint, CalculateDecalRotation(HitResult.ImpactNormal), ProjectileHitEffect->ExplosionEmitterScale);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileHitEffect->ExplosiveEmitter, HitResult.ImpactPoint, CalculateEmitterRotation(HitResult.ImpactNormal), ProjectileHitEffect->ExplosionEmitterScale);
 		}
 	}
 }
 
-FRotator AProjectileActor::CalculateEmitterRotation(FVector ImpactNormal)
+FRotator AProjectile::CalculateEmitterRotation(FVector ImpactNormal)
 {
-	const FRotator RotFromX = UKismetMathLibrary::MakeRotFromX(ImpactNormal);
-	return UKismetMathLibrary::MakeRotator(RotFromX.Roll, RotFromX.Pitch, RotFromX.Yaw);
+	const FRotator Rotator = UKismetMathLibrary::MakeRotFromX(ImpactNormal);
+	if(Rotator.Pitch <= 0)
+	{
+		return UKismetMathLibrary::MakeRotator(Rotator.Roll, Rotator.Pitch - 90.0f, Rotator.Yaw );
+	}
+	return UKismetMathLibrary::MakeRotator(Rotator.Roll, Rotator.Pitch + 90.0f, Rotator.Yaw );
 }
 
-FRotator AProjectileActor::CalculateDecalRotation(const FVector ImpactNormal)
+FRotator AProjectile::CalculateDecalRotation(const FVector ImpactNormal)
 {
 	const FRotator Rotator = UKismetMathLibrary::MakeRotFromX(ImpactNormal);
 	if(Rotator.Pitch < 0)

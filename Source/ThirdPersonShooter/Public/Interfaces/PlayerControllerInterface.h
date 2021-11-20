@@ -31,7 +31,7 @@ public:
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
-	void PlayCameraShake(UCameraShakeBase* CameraShake);
+	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShake);
 	//
 	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	// void RespawnPlayer();

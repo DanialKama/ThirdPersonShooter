@@ -8,8 +8,8 @@
 #include "AIController.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
-#include "Actors/EmptyShellActor.h"
-#include "Actors/ProjectileActor.h"
+#include "Actors/EmptyShell.h"
+#include "Actors/Projectile.h"
 // Interfaces
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/AIControllerInterface.h"
@@ -28,8 +28,8 @@
 APickup_Weapon::APickup_Weapon()
 {
 	// Create components
-	SkeletalMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon Mesh"));
-	BoxCollision	= CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
+	SkeletalMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	BoxCollision	= CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	MuzzleFlash		= CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
 	FireSound		= CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
 	Widget			= CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
@@ -71,8 +71,6 @@ APickup_Weapon::APickup_Weapon()
 	bDoOnceFire = true;
 	bDoOnceWidget = true;
 	bCanFire = true;
-	IgnoredActorsByTrace.Add(this);
-	IgnoredActorsByTrace.Add(GetOwner());
 }
 
 
@@ -100,7 +98,7 @@ void APickup_Weapon::StartFireWeapon()
 			
 			if(bOwnerIsAI || WeaponInfo.bIsAutomatic)
 			{
-				GetWorldTimerManager().SetTimer(FireWeaponTimer,this, &APickup_Weapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
+				GetWorldTimerManager().SetTimer(FireWeaponTimer, this, &APickup_Weapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
 			}
 			FTimerHandle ResetDoOnceTimer;
 			GetWorldTimerManager().SetTimer(ResetDoOnceTimer, this, &APickup_Weapon::CoolDownDelay, WeaponInfo.CoolDownTime);
@@ -138,7 +136,7 @@ void APickup_Weapon::FireWeapon()
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
 	// Spawn Empty shell after each weapon fire
-	// TODO improve empty shell spawn based on ammo current ammo type
+	// TODO improve empty shell spawn based on current ammo type
 	if(EmptyShell.Num() > 0)
 	{
 		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
@@ -147,7 +145,7 @@ void APickup_Weapon::FireWeapon()
 		ActorSpawnParameters.Owner = this;
 		ActorSpawnParameters.Instigator = GetInstigator();
 		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<AEmptyShellActor>(EmptyShell[0], Location, Rotation, ActorSpawnParameters);
+		GetWorld()->SpawnActor<AEmptyShell>(EmptyShell[0], Location, Rotation, ActorSpawnParameters);
 	}
 }
 
@@ -181,7 +179,7 @@ void APickup_Weapon::SpawnProjectile()
 			ActorSpawnParameters.Instigator = GetInstigator();
 			ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// Spawn projectile
-			GetWorld()->SpawnActor<AProjectileActor>(Projectile[0], Location, Rotation, ActorSpawnParameters);
+			GetWorld()->SpawnActor<AProjectile>(Projectile[0], Location, Rotation, ActorSpawnParameters);
 		}
 	}
 	else
@@ -451,6 +449,9 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
 		SetLifeSpan(0.0f);
 		bOwnerIsAI = GetOwner()->ActorHasTag(TEXT("AI"));
+		IgnoredActorsByTrace.Empty();
+		IgnoredActorsByTrace.Add(this);
+		IgnoredActorsByTrace.Add(GetOwner());
 		
 		if(PickupOwner)
 		{

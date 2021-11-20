@@ -14,6 +14,6 @@ void AShooterPlayerController::SetWeaponState_Implementation(FAmmoComponentInfo 
 {
 }
 
-void AShooterPlayerController::PlayCameraShake_Implementation(UCameraShakeBase* CameraShake)
+void AShooterPlayerController::PlayCameraShake_Implementation(TSubclassOf<UCameraShakeBase> CameraShake)
 {
 }

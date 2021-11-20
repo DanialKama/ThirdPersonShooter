@@ -17,9 +17,9 @@ class UAmmoComponent;
 class AAIController;
 class IAIControllerInterface;
 class IPlayerControllerInterface;
-class AEmptyShellActor;
-class AProjectileActor;
-class AMagazineActor;
+class AEmptyShell;
+class AProjectile;
+class AMagazine;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface, public IWeaponInterface
@@ -67,14 +67,14 @@ public:
 	virtual APickup_Weapon* GetWeaponReference_Implementation() override;			// Weapon Interface, Call from character base
 	
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Variables|Public")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Variables|Public", meta = (ToolTip = "use in line trace for player"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Variables|Public")
-	TSubclassOf<AMagazineActor> MagazineActor;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	TSubclassOf<AMagazine> Magazine;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -96,48 +96,48 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* Widget;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UAmmoComponent* AmmoComponent;
 
 	// Variable
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FVector MuzzleFlashScale = FVector::OneVector;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FName MagazineBoneName;
 	
 	// Audio
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
-	USoundBase* ReloadSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	USoundCue* ReloadSound;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	USoundCue* RaiseSound;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
-	USoundBase* LowerSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	USoundCue* LowerSound;
 
 	//Camera shake
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Variables|Protected")
-	UCameraShakeBase* CameraShake;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 private:
 	// Functions
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void FireWeapon();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void WeaponFireEffect() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void SpawnProjectile();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void CalculateLineTrace(FVector& OutStart, FVector& OutEnd);
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (ToolTip = "Use in line trace for bullet spread. Set Includes Negative to false if do not want negative numbers in output (Mostly used for player character)"))
+	UFUNCTION(BlueprintCallable, Category = "PickupWeapon", meta = (ToolTip = "Use in line trace for bullet spread. Set Includes Negative to false if do not want negative numbers in output (Mostly used for player character)"))
 	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
 	
 	void CoolDownDelay();
@@ -155,36 +155,32 @@ private:
 	// Variables
 	uint8 bDoOnceWidget : 1;
 	uint8 bDoOnceFire : 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
-	uint8 bDrawDebugLineTrace : 1;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bOwnerIsAI : 1;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
 	uint8 bCanFire : 1;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
-	AAIController* OwnerAIController;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta=(AllowPrivateAccess=true))
-	AController* OwnerController;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<AProjectileActor>> Projectile;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	uint8 bDrawDebugLineTrace : 1;
 	
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<AEmptyShellActor>> EmptyShell;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	TArray<TSubclassOf<AProjectile>> Projectile;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "true"))
-	AProjectileActor* CurrentProjectile;
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	AProjectile* CurrentProjectile;
 
 	FTimerHandle FireWeaponTimer;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Variables|Private", meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = True))
 	TArray<AActor*> IgnoredActorsByTrace;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	AAIController* OwnerAIController;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	AController* OwnerController;
+	
 	// Interfaces
 	IAIControllerInterface* AIControllerInterface;
 	IPlayerControllerInterface* PlayerControllerInterface;

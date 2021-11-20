@@ -8,18 +8,18 @@
 #include "GameFramework/Actor.h"
 #include "Structs/ProjectileInfoStruct.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "ProjectileActor.generated.h"
+#include "Projectile.generated.h"
 
 class USoundCue;
 
 UCLASS()
-class THIRDPERSONSHOOTER_API AProjectileActor : public AActor
+class THIRDPERSONSHOOTER_API AProjectile : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AProjectileActor();
+	AProjectile();
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
@@ -57,6 +57,7 @@ protected:
 	
 private:
 	// Functions
+	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 	static float CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const FHitResult HitResult);
@@ -66,4 +67,6 @@ private:
 	static FRotator CalculateEmitterRotation(FVector ImpactNormal);
 	
 	static FRotator CalculateDecalRotation(FVector ImpactNormal);
+
+	void IHateMyLife(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 };

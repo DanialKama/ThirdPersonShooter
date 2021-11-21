@@ -46,7 +46,7 @@ APickup_Weapon::APickup_Weapon()
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
 	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);	// In blueprint set all collision responses for skeletal mesh to ignore and World Static to block
+	SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);	// In blueprint set all collision responses for skeletal mesh to ignore and World Static to block
 
 	BoxCollision->SetBoxExtent(FVector (8.0f, 50.0f, 20.0f));
 	BoxCollision->bApplyImpulseOnDamage = false;
@@ -128,6 +128,7 @@ void APickup_Weapon::FireWeapon()
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, TEXT("Weapon"));
 	SpawnProjectile();
 
+	// Play camera shake if owner is player
 	if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
 	{
 		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
@@ -495,16 +496,13 @@ void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
 	}
 	// For C++ and blueprint
-	if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	if(bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{
-		if(bOwnerIsAI)
-		{
-			AIControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
-		}
-		else if(!bOwnerIsAI)
-		{
-			PlayerControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
-		}
+		AIControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
+	}
+	else if(!bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	{
+		PlayerControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
 	
 	switch(WeaponState)

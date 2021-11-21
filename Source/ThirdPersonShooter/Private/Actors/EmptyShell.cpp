@@ -19,7 +19,7 @@ AEmptyShell::AEmptyShell()
 	// Set component defaults
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
-	StaticMesh->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
+	StaticMesh->SetCollisionObjectType(ECC_GameTraceChannel2);
 	StaticMesh->OnComponentHit.AddDynamic(this, &AEmptyShell::OnHit);
 
 	ProjectileMovement->InitialSpeed = 250.0f;
@@ -27,7 +27,7 @@ AEmptyShell::AEmptyShell()
 	ProjectileMovement->ProjectileGravityScale = 2.0f;
 	ProjectileMovement->Velocity = FVector(-1.0f, 0.0f, 0.0f);
 
-	// Set value defaults
+	// Set variables defaults
 	bDoOnce = true;
 }
 

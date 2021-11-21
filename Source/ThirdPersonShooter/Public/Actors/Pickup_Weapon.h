@@ -72,9 +72,6 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	TSubclassOf<AMagazine> Magazine;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -166,6 +163,9 @@ private:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	TSubclassOf<AMagazine> Magazine;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	AProjectile* CurrentProjectile;

@@ -44,7 +44,7 @@ public:
 	void LowerWeapon() const;
 
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void SetMagazineVisibility(bool Visible) const;
+	void SetMagazineVisibility(bool bVisible) const;
 
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void ReloadWeapon() const;
@@ -150,7 +150,6 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
-	uint8 bDoOnceWidget : 1;
 	uint8 bDoOnceFire : 1;
 	uint8 bOwnerIsAI : 1;
 	uint8 bCanFire : 1;

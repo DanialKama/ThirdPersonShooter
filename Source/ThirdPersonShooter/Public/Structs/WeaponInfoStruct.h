@@ -19,7 +19,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 	EWeaponType WeaponType = EWeaponType::Pistol;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	FString Name = TEXT("Weapo");
+	FString Name = TEXT("Weapon");
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float Range = 4000.0f;

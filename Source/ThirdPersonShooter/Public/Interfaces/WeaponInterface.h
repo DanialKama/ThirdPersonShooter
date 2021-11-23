@@ -1,10 +1,10 @@
-
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/WeaponEnums.h"
+// #include "Enums/WeaponEnums.h"
 #include "WeaponInterface.generated.h"
 
 class APickup_Weapon;

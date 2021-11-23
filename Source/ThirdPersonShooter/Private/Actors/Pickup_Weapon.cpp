@@ -14,6 +14,7 @@
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
+#include "Interfaces/WidgetInterface.h"
 // Components
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -69,10 +70,8 @@ APickup_Weapon::APickup_Weapon()
 
 	// Set value defaults
 	bDoOnceFire = true;
-	bDoOnceWidget = true;
 	bCanFire = true;
 }
-
 
 void APickup_Weapon::BeginPlay()
 {
@@ -80,6 +79,19 @@ void APickup_Weapon::BeginPlay()
 	
 	AmmoComponent->Initialize();
 	MuzzleFlash->SetRelativeScale3D(MuzzleFlashScale);
+
+	// Set weapon info on widget to show it when the player overlap with weapon
+	// C++ only
+	/*IWidgetInterface* Interface = Cast<IWidgetInterface>(Widget->GetWidget());
+	if(Interface)
+	{
+		Interface->SetWeaponInfo(WeaponInfo);
+	}*/
+	// C++ and blueprint
+	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
+	{
+		IWidgetInterface::Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
+	}
 	
 	if(Projectile.Num() > 0)
 	{
@@ -129,10 +141,17 @@ void APickup_Weapon::FireWeapon()
 	SpawnProjectile();
 
 	// Play camera shake if owner is player
+	// C++
 	if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
 	{
 		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
 	}
+	// C++ and blueprint
+	if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()) && CameraShake)
+	{
+		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
+	}
+	
 	FTimerHandle ResetAnimationTimer;
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
@@ -290,7 +309,7 @@ void APickup_Weapon::RaiseWeapon() const
 	
 	if(bOwnerIsAI)
 	{
-		IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner()); // TODO Get AI Controller
+		IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner());
 		if(Interface)
 		{
 			if(AmmoComponent->BetterToReload())
@@ -325,9 +344,9 @@ void APickup_Weapon::LowerWeapon() const
 	UGameplayStatics::SpawnSoundAttached(LowerSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 }
 
-void APickup_Weapon::SetMagazineVisibility(const bool Visible) const
+void APickup_Weapon::SetMagazineVisibility(const bool bVisible) const
 {
-	if(Visible)
+	if(bVisible)
 	{
 		SkeletalMesh->UnHideBoneByName(MagazineBoneName);
 	}
@@ -367,69 +386,53 @@ FVector APickup_Weapon::GetLeftHandAimLocation() const
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
-// Components overlap functions
+// Overlap functions
 void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// If OtherActor is player
+	// C++ only
+	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+	if(Interface)
+	{
+		Interface->SetPickup(EItemType::Weapon, this);
+	}*/
+	// C++ and blueprint
+	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	{
+		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
+	}
+	
+	// If OtherActor is the player then show the widget
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
-		// For C++ only
-		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-		if(Interface)
-		{
-			Interface->SetPickupCPP(EItemType::Weapon, this);
-			// Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, this); // For calling blueprint implementation
-			
-			if (bDoOnceWidget)
-			{
-				// TODO Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
-				bDoOnceWidget = false;
-			}
-			Widget->SetVisibility(true);
-			SkeletalMesh->SetRenderCustomDepth(true);
-		}*/
-		// For C++ and blueprint
-		if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-		{
-			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
-
-			if (bDoOnceWidget)
-			{
-				// TODO Widget->GetWidget(); // Weapon Info Var data should send to widget by a interface
-				bDoOnceWidget = false;
-			}
-			Widget->SetVisibility(true);
-			SkeletalMesh->SetRenderCustomDepth(true);
-		}
+		Widget->SetVisibility(true);
+		SkeletalMesh->SetRenderCustomDepth(true);
 	}
 }
 
 void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	// C++ only
+	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+	if(Interface)
+	{
+		Interface->SetPickup(EItemType::Weapon, nullptr);
+	}*/
+	// C++ and blueprint
+	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	{
+		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
+	}
+
+	// If OtherActor is the player then hide the widget
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
-		// For C++ only
-		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-		if(Interface)
-		{
-			Interface->SetPickupCPP(EItemType::Weapon, nullptr);
-
-			Widget->SetVisibility(false);
-			SkeletalMesh->SetRenderCustomDepth(false);
-		}*/
-		// For C++ and blueprint
-		if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-		{
-			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
-
-			Widget->SetVisibility(false);
-			SkeletalMesh->SetRenderCustomDepth(false);
-		}
+		Widget->SetVisibility(false);
+		SkeletalMesh->SetRenderCustomDepth(false);
 	}
 }
-// End of component overlap functions
+// End of overlap functions
 
 // Interfaces
 void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
@@ -487,14 +490,14 @@ void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	// For C++
-	if(bOwnerIsAI && AIControllerInterface)
+	/*if(bOwnerIsAI && AIControllerInterface)
 	{
 		AIControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
 	}
 	else if(!bOwnerIsAI && PlayerControllerInterface)
 	{
 		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
-	}
+	}*/
 	// For C++ and blueprint
 	if(bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{

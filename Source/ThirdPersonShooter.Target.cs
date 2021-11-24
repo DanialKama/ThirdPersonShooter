@@ -10,5 +10,8 @@ public class ThirdPersonShooterTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.AddRange( new string[] { "ThirdPersonShooter" } );
+		
+		bCompileChaos = true;
+		bUseChaos = true;
 	}
 }

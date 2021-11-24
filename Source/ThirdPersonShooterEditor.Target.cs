@@ -10,5 +10,8 @@ public class ThirdPersonShooterEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.AddRange( new string[] { "ThirdPersonShooter" } );
+		
+		bCompileChaos = true;
+		bUseChaos = true;
 	}
 }

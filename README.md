@@ -25,7 +25,7 @@ You can also access the project launcher and pictures of the project [here](http
 - Level Manager and Interactable actors (like the automatic door)
 - Improved level Streaming blueprints (load or unload levels based on doors state)
 
-## Minor details:
+## Minor details
 Assertion failed solved by unchecking Async Loading Thread Enabled.
 Navigation failed on streamed level solved by set Runtime Generation to Dynamic.
 

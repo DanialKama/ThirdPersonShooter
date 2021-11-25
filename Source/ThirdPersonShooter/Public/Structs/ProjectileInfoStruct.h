@@ -13,7 +13,7 @@ struct FProjectileInfo : public FTableRowBase
 	FORCEINLINE FProjectileInfo();
 
 	explicit FORCEINLINE FProjectileInfo(float InDefaultDamage, float InDamageToHead, float InDamageToBody, float InDamageToHand,
-		float InDamageToLeg, float InDamageToWood, float InDamageToMetal, float InDamageToStone, TSubclassOf<UDamageType> InDamageType,
+		float InDamageToLeg, float InDamageToWood, float InDamageToMetal, float InDamageToStone,
 		float InStrainMagnitude, float InForceMagnitude, float InTorqueMagnitude);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
@@ -39,9 +39,6 @@ struct FProjectileInfo : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float DamageToStone = 60.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	TSubclassOf<UDamageType> DamageType;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
 	float StrainMagnitude = 1000.0f;
@@ -63,10 +60,10 @@ FORCEINLINE FProjectileInfo::FProjectileInfo()
 
 FORCEINLINE FProjectileInfo::FProjectileInfo(const float InDefaultDamage, const float InDamageToHead, const float InDamageToBody,
 	const float InDamageToHand, const float InDamageToLeg, const float InDamageToWood, const float InDamageToMetal,
-	const float InDamageToStone, TSubclassOf<UDamageType> InDamageType, const float InStrainMagnitude, const float InForceMagnitude,
+	const float InDamageToStone, const float InStrainMagnitude, const float InForceMagnitude,
 	const float InTorqueMagnitude) : DefaultDamage(InDefaultDamage) ,DamageToHead(InDamageToHead), DamageToBody(InDamageToBody),
 	DamageToHand(InDamageToHand), DamageToLeg(InDamageToLeg), DamageToWood(InDamageToWood), DamageToMetal(InDamageToMetal),
-	DamageToStone(InDamageToStone), DamageType(InDamageType), StrainMagnitude(InStrainMagnitude), ForceMagnitude(InForceMagnitude),
+	DamageToStone(InDamageToStone), StrainMagnitude(InStrainMagnitude), ForceMagnitude(InForceMagnitude),
 	TorqueMagnitude(InTorqueMagnitude)
 {
 }

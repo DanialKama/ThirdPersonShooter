@@ -306,10 +306,12 @@ void APickup_Weapon::RaiseWeapon() const
 	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
-	
+
+	// Report weapon state to owner on pickup
 	if(bOwnerIsAI)
 	{
-		IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner());
+		// C++ only
+		/*IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner());
 		if(Interface)
 		{
 			if(AmmoComponent->BetterToReload())
@@ -320,11 +322,24 @@ void APickup_Weapon::RaiseWeapon() const
 			{
 				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
 			}
+		}*/
+		// C++ and blueprint
+		if(OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+		{
+			if(AmmoComponent->BetterToReload())
+			{
+				IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
+			}
+			else
+			{
+				IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
+			}
 		}
 	}
 	else
 	{
-		IPlayerControllerInterface* Interface = Cast<IPlayerControllerInterface>(GetOwner());
+		// C++ only
+		/*IPlayerControllerInterface* Interface = Cast<IPlayerControllerInterface>(GetOwner());
 		if(Interface)
 		{
 			if(AmmoComponent->BetterToReload())
@@ -334,6 +349,18 @@ void APickup_Weapon::RaiseWeapon() const
 			else
 			{
 				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
+			}
+		}*/
+		// C++ and blueprint
+		if(OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+		{
+			if(AmmoComponent->BetterToReload())
+			{
+				IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
+			}
+			else
+			{
+				IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
 			}
 		}
 	}
@@ -397,7 +424,7 @@ void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AAct
 		Interface->SetPickup(EItemType::Weapon, this);
 	}*/
 	// C++ and blueprint
-	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
 	}

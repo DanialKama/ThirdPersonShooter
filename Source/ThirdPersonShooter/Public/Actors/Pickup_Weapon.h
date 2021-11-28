@@ -70,6 +70,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults")
+	UAnimInstance* OwnerAnimInstance;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
 	
@@ -102,6 +105,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FName MagazineBoneName;
+
+	//Recoil
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	FRotator RotationIntensity = FRotator(-10.0f, 0.0f, 0.0f);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 	// Audio
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
@@ -112,10 +122,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	USoundCue* LowerSound;
-
-	//Camera shake
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 private:
 	// Functions

@@ -15,6 +15,7 @@
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
 #include "Interfaces/WidgetInterface.h"
+#include "Interfaces/CharacterAnimationInterface.h"
 // Components
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -140,16 +141,32 @@ void APickup_Weapon::FireWeapon()
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, TEXT("Weapon"));
 	SpawnProjectile();
 
+	// Add recoil to character animation
+	if(OwnerAnimInstance)
+	{
+		// C++
+		/*ICharacterAnimationInterface* Interface = Cast<ICharacterAnimationInterface>(OwnerAnimInstance);
+		if(Interface)
+		{
+			Interface->Execute_AddRecoil(OwnerAnimInstance, RotationIntensity);
+		}*/
+		// C++ and blueprint
+		if (OwnerAnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
+		{
+			ICharacterAnimationInterface::Execute_AddRecoil(OwnerAnimInstance, RotationIntensity);
+		}
+	}
+
 	// Play camera shake if owner is player
 	// C++
-	if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
+	/*if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
 	{
 		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
-	}
+	}*/
 	// C++ and blueprint
 	if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()) && CameraShake)
 	{
-		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
+		IPlayerControllerInterface::Execute_PlayCameraShake(OwnerController, CameraShake);
 	}
 	
 	FTimerHandle ResetAnimationTimer;
@@ -471,6 +488,7 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SetOwner(nullptr);
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
+		OwnerAnimInstance = nullptr;
 		SetLifeSpan(FMath::FRandRange(30.0f, 60.0f));
 		break;
 	case 1:

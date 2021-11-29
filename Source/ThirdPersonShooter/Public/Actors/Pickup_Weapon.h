@@ -107,8 +107,11 @@ protected:
 	FName MagazineBoneName;
 
 	//Recoil
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	FRotator RotationIntensity = FRotator(-10.0f, 0.0f, 0.0f);
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Smaller number = more intensity"))
+	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Bigger number = faster control"))
+	float ControlTime = 0.25f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	TSubclassOf<UCameraShakeBase> CameraShake;
@@ -177,7 +180,7 @@ private:
 
 	FTimerHandle FireWeaponTimer;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = True))
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	TArray<AActor*> IgnoredActorsByTrace;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))

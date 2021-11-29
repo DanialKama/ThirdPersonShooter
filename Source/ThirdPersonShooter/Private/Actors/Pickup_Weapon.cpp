@@ -153,7 +153,7 @@ void APickup_Weapon::FireWeapon()
 		// C++ and blueprint
 		if (OwnerAnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
 		{
-			ICharacterAnimationInterface::Execute_AddRecoil(OwnerAnimInstance, RotationIntensity);
+			ICharacterAnimationInterface::Execute_AddRecoil(OwnerAnimInstance, RotationIntensity, ControlTime);
 		}
 	}
 

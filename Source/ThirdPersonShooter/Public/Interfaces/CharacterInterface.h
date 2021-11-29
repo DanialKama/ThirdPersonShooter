@@ -1,4 +1,4 @@
-
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -24,6 +24,9 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 public:
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void SetPickup(EItemType PickupType, APickup* PickupReference);	// TODO Rename after testing
+	void SetPickup(EItemType PickupType, APickup* PickupReference);
 	// virtual void SetPickupPure(EItemType PickupType, APickup* PickupReference) = 0;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	void AddRecoil(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil);
 };

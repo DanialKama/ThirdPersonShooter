@@ -49,7 +49,8 @@ void AMagazine::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPr
 		if(CollisionResponse.WorldStatic == ECR_Block)
 		{
 			FCollisionResponseContainer NewResponse;
-			NewResponse.PhysicsBody = ECollisionResponse::ECR_Ignore;
+			NewResponse.Pawn = ECR_Ignore;
+			NewResponse.PhysicsBody = ECR_Ignore;
 			StaticMesh->SetCollisionResponseToChannels(NewResponse);
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
 			bDoOnce = false;

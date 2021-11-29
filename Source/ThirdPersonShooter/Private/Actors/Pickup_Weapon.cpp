@@ -15,7 +15,6 @@
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
 #include "Interfaces/WidgetInterface.h"
-#include "Interfaces/CharacterAnimationInterface.h"
 // Components
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -141,19 +140,19 @@ void APickup_Weapon::FireWeapon()
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, TEXT("Weapon"));
 	SpawnProjectile();
 
-	// Add recoil to character animation
-	if(OwnerAnimInstance)
+	// Add recoil to character animation and player UI crosshair
+	if(Owner)
 	{
 		// C++
-		/*ICharacterAnimationInterface* Interface = Cast<ICharacterAnimationInterface>(OwnerAnimInstance);
+		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(Owner);
 		if(Interface)
 		{
-			Interface->Execute_AddRecoil(OwnerAnimInstance, RotationIntensity);
+			Interface->Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil);
 		}*/
 		// C++ and blueprint
-		if (OwnerAnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
+		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
-			ICharacterAnimationInterface::Execute_AddRecoil(OwnerAnimInstance, RotationIntensity, ControlTime);
+			ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil);
 		}
 	}
 
@@ -488,7 +487,6 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SetOwner(nullptr);
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
-		OwnerAnimInstance = nullptr;
 		SetLifeSpan(FMath::FRandRange(30.0f, 60.0f));
 		break;
 	case 1:

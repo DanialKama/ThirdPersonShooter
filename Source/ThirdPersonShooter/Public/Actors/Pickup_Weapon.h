@@ -70,9 +70,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults")
-	UAnimInstance* OwnerAnimInstance;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
 	
@@ -112,6 +109,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Bigger number = faster control"))
 	float ControlTime = 0.25f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Bigger number = more fedback"))
+	float CrosshairRecoil = 5.0f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	TSubclassOf<UCameraShakeBase> CameraShake;

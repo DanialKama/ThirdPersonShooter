@@ -5,12 +5,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
-// #include "UObject/ReflectedTypeAccessors.h"
 #include "Sound/SoundCue.h"
 // Structs
 #include "Structs/ExplosiveProjectileInfoStruct.h"
 #include "Structs/ProjectileInfoStruct.h"
-// #include "Structs/ProjectileHitEffectStruct.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -100,39 +98,25 @@ void AProjectile::HitEffect(const float SurfaceTypeIndex, const FHitResult HitRe
 	float DecalLifeSpan;
 	
 	CalculateProjectileHitInfo(SurfaceTypeIndex, Emitter, Sound, Decal, DecalSize, DecalLifeSpan);
-	
-	// FProjectileHitEffect* ProjectileHitEffect;
-	
-	// if(HitResult.PhysMaterial.IsValid())
-	// {
-	// 	const EPhysicalSurface SurfaceType = UGameplayStatics::GetSurfaceType(HitResult);
-	// 	const FName SurfaceName = FName(StaticEnum<EPhysicalSurface>()->GetDisplayNameTextByValue(SurfaceType).ToString());
-	// 	ProjectileHitEffect = ProjectileHitEffectDataTable->FindRow<FProjectileHitEffect>(SurfaceName, TEXT("Projectile Hit Effect Context"), true);
-	// }
-	// else
-	// {
-	// 	ProjectileHitEffect = ProjectileHitEffectDataTable->FindRow<FProjectileHitEffect>(TEXT("Default"), TEXT("Projectile Hit Effect Context"), true);
-	// }
-	
-	// if(ProjectileHitEffect)
-	// {
-		// Spawn impact emitter
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.ImpactPoint, CalculateEmitterRotation(HitResult.ImpactNormal));
-	
-		// Spawn decal attached
-		UGameplayStatics::SpawnDecalAttached(Decal, DecalSize, HitResult.GetComponent(),
-			HitResult.BoneName, HitResult.ImpactPoint, CalculateDecalRotation(HitResult.ImpactNormal),
-			EAttachLocation::KeepWorldPosition, DecalLifeSpan);
 
-		// Play sound at location
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
+	const FRotator SpawnRotation = UKismetMathLibrary::MakeRotFromX(HitResult.ImpactNormal);
+	
+	// Spawn impact emitter
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.ImpactPoint, SpawnRotation);
+	
+	// Spawn decal attached
+	UGameplayStatics::SpawnDecalAttached(Decal, DecalSize, HitResult.GetComponent(),
+		HitResult.BoneName, HitResult.ImpactPoint, SpawnRotation,
+		EAttachLocation::KeepWorldPosition, DecalLifeSpan);
 
-		// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
-		if(bIsExplosive)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosiveEmitter, HitResult.ImpactPoint, CalculateEmitterRotation(HitResult.ImpactNormal));
-		}
-	// }
+	// Play sound at location
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
+
+	// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
+	if(bIsExplosive)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosiveEmitter, HitResult.ImpactPoint, SpawnRotation);
+	}
 }
 
 float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const float SurfaceTypeIndex)
@@ -247,24 +231,4 @@ void AProjectile::CalculateProjectileHitInfo(const float SurfaceTypeIndex, UPart
 		DecalSize = ObjectDecalSize;
 		DecalLifeSpan = ObjectDecalLifeSpan;
 	}
-}
-
-FRotator AProjectile::CalculateEmitterRotation(FVector ImpactNormal)
-{
-	const FRotator Rotator = UKismetMathLibrary::MakeRotFromX(ImpactNormal);
-	if(Rotator.Pitch <= 0)
-	{
-		return UKismetMathLibrary::MakeRotator(Rotator.Roll, Rotator.Pitch - 90.0f, Rotator.Yaw );
-	}
-	return UKismetMathLibrary::MakeRotator(Rotator.Roll, Rotator.Pitch + 90.0f, Rotator.Yaw );
-}
-
-FRotator AProjectile::CalculateDecalRotation(const FVector ImpactNormal)
-{
-	const FRotator Rotator = UKismetMathLibrary::MakeRotFromX(ImpactNormal);
-	if(Rotator.Pitch < 0)
-	{
-		return Rotator;
-	}
-	return UKismetMathLibrary::MakeRotator(Rotator.Roll, Rotator.Pitch + 180.0f, Rotator.Yaw);
 }

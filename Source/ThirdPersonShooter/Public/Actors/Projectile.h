@@ -117,8 +117,4 @@ private:
 	
 	void CalculateProjectileHitInfo(const float SurfaceTypeIndex, UParticleSystem*& Emitter,
 		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
-	
-	static FRotator CalculateEmitterRotation(FVector ImpactNormal);
-	
-	static FRotator CalculateDecalRotation(FVector ImpactNormal);
 };

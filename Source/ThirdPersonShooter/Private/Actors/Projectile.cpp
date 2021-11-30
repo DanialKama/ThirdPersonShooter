@@ -149,6 +149,9 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, c
 	case 7:
 		// Stone
 		return ProjectileInfo->DamageToStone;
+	case 8:
+		// Dirt
+		return ProjectileInfo->DamageToDirt;
 	default: return ProjectileInfo->DefaultDamage;
 	}
 }
@@ -221,6 +224,14 @@ void AProjectile::CalculateProjectileHitInfo(const float SurfaceTypeIndex, UPart
 		Emitter = StoneHitEmitter;
 		Sound = ObjectHitSound;
 		Decal = StoneDecal;
+		DecalSize = ObjectDecalSize;
+		DecalLifeSpan = ObjectDecalLifeSpan;
+		break;
+	case 8:
+		// Dirt
+		Emitter = DirtHitEmitter;
+		Sound = ObjectHitSound;
+		Decal = DirtDecal;
 		DecalSize = ObjectDecalSize;
 		DecalLifeSpan = ObjectDecalLifeSpan;
 		break;

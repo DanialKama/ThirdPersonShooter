@@ -7,19 +7,18 @@ You can also access the project launcher and pictures of the project [here](http
 
 ## Concepts covered
 - Pickup system for weapons and ammo
-- Controllable Pawns, helicopter, and jet
-- Chaos vehicle 
+- Controllable Pawns (helicopter, jet, and chaos vehicle)
 - AI enemy and friend (based on Gameplay Tags) with damage, hearing, prediction, and sight senses and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigate to important places, search, retreat (on low health), and healing.
-- Chaos Destruction and Field Systems (plugin is in beta version and there are many bugs)
+- Chaos Destruction and Field Systems (plugin is in beta and not stable)
 - Health system, including reducing health based on damage type like point damage (rife bullet), radial damage (explosion), or fall damage, and health recovery based on stamina level.
 - Stamina system, including reducing stamina based on movement states like walking, running, sprinting, and stamina recovery.
 - Weapon system, including fire rate (time between shots), cool down time, supporting ammo types (projectile), auto fire support, max ammo, default ammo, mag size, reloading, fire sound, particle, and animation
-- Weapon related activities such ass swap, reload, drop with animations and sound, mag actor, and empty shell ejection
-- Weapon recoil (camera shake for player and aim offset for AI) and bullet spread based on Float Curves
+- Weapon related activities such ass switch, reload, drop with animations and sound, mag actor, and empty shell ejection
+- Weapon recoil (player camera shake, AI aim offset, and character animation) and bullet spread based on Float Curves
 - Projectile system, including reducing damage, impact particle, sound, and decal based on surface type (like flesh or surfaces), travel speed, trail emitter, and field impact on destructible objects
 - Advanced animation setups for every weapon type and every movement state and moving direction (2D blend space and aim offsets)
 - Body dismemberment based on hit bone
-- fall damage with getup animation based on mesh orientation and idle animation
+- fall damage with getup animation based on mesh orientation
 - Control Rig for character foot place and Correct hands place on gun based on aiming state with IK
 - AI respawn system
 - Level Manager and Interactable actors (like the automatic door)
@@ -36,4 +35,4 @@ The assets included are listed below, and some of them were made by myself.
 - [AH-64D Apache Longbow (West)](https://www.unrealengine.com/marketplace/en-US/product/ah-64d-apache-longbow-us)
 - [Fighter F/A-18C Hornet (West)](https://www.unrealengine.com/marketplace/en-US/product/fighter-f-a-18c-hornet)
 - Some free 3D models from [cgtrader](https://www.cgtrader.com/)
-- Most animations are from the [Mixamo](https://www.mixamo.com/)
+- Most animations are from [Mixamo](https://www.mixamo.com/) and sounds from [Freesound](https://freesound.org/)

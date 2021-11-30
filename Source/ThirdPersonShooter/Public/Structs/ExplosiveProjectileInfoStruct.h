@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "UObject/NoExportTypes.h"
 #include "ExplosiveProjectileInfoStruct.generated.h"
 
 // Projectile info that projectile class needs

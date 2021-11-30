@@ -70,6 +70,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
 	UParticleSystem* StoneHitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
+	UParticleSystem* DirtHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
 	UParticleSystem* ExplosiveEmitter;
@@ -99,6 +102,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
 	UMaterialInterface* StoneDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
+	UMaterialInterface* DirtDecal;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
 	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);

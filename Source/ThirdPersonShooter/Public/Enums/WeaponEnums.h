@@ -1,7 +1,17 @@
-﻿
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "WeaponEnums.generated.h"
+
+UENUM(BlueprintType, Category = "Enums")
+enum class EWeaponToDo : uint8
+{
+	NoWeapon		UMETA(DisplayName = "No Weapon"),
+	PrimaryWeapon	UMETA(DisplayName = "Primary Weapon"),
+	SecondaryWeapon	UMETA(DisplayName = "Secondary Weapon"),
+	SidearmWeapon	UMETA(DisplayName = "Sidearm Weapon")
+};
 
 UENUM(BlueprintType, Category = "Enums")
 enum class EWeaponState : uint8
@@ -30,19 +40,22 @@ enum class EWeaponType : uint8
 	Launcher	UMETA(DisplayName = "Launcher")
 };
 
-UENUM(BlueprintType, Category = "Enums")
-enum class EAmmoType : uint8
+UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))	// For weapons use as supported ammo types and for pickup ammo use as ammo type
+enum class EAmmoType
 {
-	AssaultRifleNormal			= 0		UMETA(DisplayName = "Assault Rifle Normal"),
-	AssaultRifleAntiArmor		= 1		UMETA(DisplayName = "Assault Rifle Anti-armor"),
-	LightPistolNormal			= 2		UMETA(DisplayName = "Light Pistol Normal"),
-	HeavyPistolNormal			= 3		UMETA(DisplayName = "Heavy Pistol Normal"),
-	HeavyPistolAntiArmor		= 4		UMETA(DisplayName = "Heavy Pistol Anti-armor"),
-	ShotgunNormal				= 5		UMETA(DisplayName = "Shotgun Normal"),
-	ShotgunDragonsBreath		= 6		UMETA(DisplayName = "Shotgun Dragons Breath"),
-	SniperRifleNormal			= 7		UMETA(DisplayName = "Sniper Rifle Normal"),
-	SniperRifleAntiArmor		= 8		UMETA(DisplayName = "Sniper Rifle Anti-armor"),
-	GrenadeLauncherExplosive	= 9		UMETA(DisplayName = "Grenade Launcher Explosive"),
-	GrenadeLauncherSmoke		= 10	UMETA(DisplayName = "Grenade Launcher Smoke"),
-	RocketLauncher				= 11	UMETA(DisplayName = "Rocket Launcher")
+	None						= 0x000		UMETA(Hidden),
+	AssaultRifleNormal			= 0x001		UMETA(DisplayName = "Assault Rifle Normal"),
+	AssaultRifleAntiArmor		= 0x002		UMETA(DisplayName = "Assault Rifle Anti-armor"),
+	LightPistolNormal			= 0x004		UMETA(DisplayName = "Light Pistol Normal"),
+	HeavyPistolNormal			= 0x008		UMETA(DisplayName = "Heavy Pistol Normal"),
+	HeavyPistolAntiArmor		= 0x010		UMETA(DisplayName = "Heavy Pistol Anti-armor"),
+	ShotgunNormal				= 0x020		UMETA(DisplayName = "Shotgun Normal"),
+	ShotgunDragonsBreath		= 0x040		UMETA(DisplayName = "Shotgun Dragons Breath"),
+	SniperRifleNormal			= 0x080		UMETA(DisplayName = "Sniper Rifle Normal"),
+	SniperRifleAntiArmor		= 0x100		UMETA(DisplayName = "Sniper Rifle Anti-armor"),
+	GrenadeLauncherExplosive	= 0x200		UMETA(DisplayName = "Grenade Launcher Explosive"),
+	GrenadeLauncherSmoke		= 0x400		UMETA(DisplayName = "Grenade Launcher Smoke"),
+	RocketLauncher				= 0x800		UMETA(DisplayName = "Rocket Launcher")
 };
+
+ENUM_CLASS_FLAGS(EAmmoType);

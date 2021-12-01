@@ -26,15 +26,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Components
-	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	// USceneComponent* Scene;
 	
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Variables|Dynamics")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	EItemType PickupType = EItemType::Weapon;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Protected|References")
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	APawn* PickupOwner;
 };

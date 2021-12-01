@@ -10,19 +10,16 @@
 #include "Sound/SoundCue.h"
 #include "Actors/EmptyShell.h"
 #include "Actors/Projectile.h"
-// Interfaces
-#include "Interfaces/CharacterInterface.h"
-#include "Interfaces/AIControllerInterface.h"
-#include "Interfaces/PlayerControllerInterface.h"
-#include "Interfaces/WidgetInterface.h"
-// Components
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/AmmoComponent.h"
 #include "Camera/CameraComponent.h"
-// Structs
+#include "Interfaces/CharacterInterface.h"
+#include "Interfaces/AIControllerInterface.h"
+#include "Interfaces/PlayerControllerInterface.h"
+#include "Interfaces/WidgetInterface.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
@@ -69,6 +66,7 @@ APickup_Weapon::APickup_Weapon()
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickup_Weapon::OnBoxEndOverlap);
 
 	// Set value defaults
+	PickupType = EItemType::Weapon;
 	bDoOnceFire = true;
 	bCanFire = true;
 }
@@ -85,7 +83,7 @@ void APickup_Weapon::BeginPlay()
 	/*IWidgetInterface* Interface = Cast<IWidgetInterface>(Widget->GetWidget());
 	if(Interface)
 	{
-		Interface->SetWeaponInfo(WeaponInfo);
+		Interface->Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
 	}*/
 	// C++ and blueprint
 	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
@@ -429,54 +427,6 @@ FVector APickup_Weapon::GetLeftHandAimLocation() const
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
-// Overlap functions
-void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	// C++ only
-	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-	if(Interface)
-	{
-		Interface->SetPickup(EItemType::Weapon, this);
-	}*/
-	// C++ and blueprint
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-	{
-		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
-	}
-	
-	// If OtherActor is the player then show the widget
-	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
-	{
-		Widget->SetVisibility(true);
-		SkeletalMesh->SetRenderCustomDepth(true);
-	}
-}
-
-void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	// C++ only
-	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-	if(Interface)
-	{
-		Interface->SetPickup(EItemType::Weapon, nullptr);
-	}*/
-	// C++ and blueprint
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-	{
-		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
-	}
-
-	// If OtherActor is the player then hide the widget
-	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
-	{
-		Widget->SetVisibility(false);
-		SkeletalMesh->SetRenderCustomDepth(false);
-	}
-}
-// End of overlap functions
-
 // Interfaces
 void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 {
@@ -601,6 +551,53 @@ APickup_Weapon* APickup_Weapon::GetWeaponReference_Implementation()
 	return this;
 }
 // End Of interfaces
+
+// Overlap functions
+void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// C++ only
+	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+	if(Interface)
+	{
+		Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, this);
+	}*/
+	// C++ and blueprint
+	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	{
+		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
+	}
+	
+	// If OtherActor is the player then show the widget
+	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	{
+		Widget->SetVisibility(true);
+		SkeletalMesh->SetRenderCustomDepth(true);
+	}
+}
+
+void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	// C++ only
+	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
+	if(Interface)
+	{
+		Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
+	}*/
+	// C++ and blueprint
+	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	{
+		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
+	}
+
+	// If OtherActor is the player then hide the widget
+	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	{
+		Widget->SetVisibility(false);
+		SkeletalMesh->SetRenderCustomDepth(false);
+	}
+}
+// End of overlap functions
 
 //Delays
 void APickup_Weapon::CoolDownDelay()

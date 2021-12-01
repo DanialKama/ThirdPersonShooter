@@ -24,9 +24,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")
 	void SetWeaponInfo(FWeaponInfo WeaponInfo);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")
-	void SetAmmoInfo(EAmmoType AmmoType, int32 Amount);
-
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface", meta = (ToolTip = "Do not select multiple for Ammo Type"))
+	void SetAmmoInfo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType, int32 Amount);
+	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")
 	void UpdateActorHealth(float HealthPercent);
 };

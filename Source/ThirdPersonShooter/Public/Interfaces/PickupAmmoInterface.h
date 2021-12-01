@@ -4,24 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "WeaponInterface.generated.h"
+#include "PickupAmmoInterface.generated.h"
 
-class APickup_Weapon;
+class APickupAmmo;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UWeaponInterface : public UInterface
+class UPickupAmmoInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class THIRDPERSONSHOOTER_API IWeaponInterface
+class THIRDPERSONSHOOTER_API IPickupAmmoInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// With Output
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WeaponInterface")
-	APickup_Weapon* GetWeaponReference();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PickupAmmoInterface")
+	APickupAmmo* GetPickupAmmoReference();
 };

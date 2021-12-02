@@ -32,5 +32,5 @@ public:
 	void SetPickup(EItemType PickupType, APickup* PickupReference);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void AddRecoil(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil);
+	void AddRecoil(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch);
 };

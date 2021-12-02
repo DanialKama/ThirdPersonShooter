@@ -113,6 +113,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Bigger number = more fedback"))
 	float CrosshairRecoil = 5.0f;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "Smaller number = more fedback"))
+	float ControllerPitch = -0.5f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	

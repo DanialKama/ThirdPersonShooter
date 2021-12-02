@@ -150,7 +150,7 @@ void APickup_Weapon::FireWeapon()
 		// C++ and blueprint
 		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
-			ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil);
+			ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
 		}
 	}
 
@@ -169,8 +169,7 @@ void APickup_Weapon::FireWeapon()
 	FTimerHandle ResetAnimationTimer;
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
-	// Spawn Empty shell after each weapon fire
-	// TODO improve empty shell spawn based on current ammo type
+	// Spawn Empty shell
 	if(EmptyShell.Num() > 0)
 	{
 		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));

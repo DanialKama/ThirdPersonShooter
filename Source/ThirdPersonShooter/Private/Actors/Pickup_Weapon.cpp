@@ -444,6 +444,17 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
 		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
 		SetLifeSpan(0.0f);
+		
+		// Determine if owner is player or AI controlled
+		if (Cast<APlayerController>(Owner->GetInstigatorController()))
+		{
+			bOwnerIsAI = false;
+		}
+		else
+		{
+			bOwnerIsAI = true;
+		}
+		
 		bOwnerIsAI = GetOwner()->ActorHasTag(TEXT("AI"));
 		IgnoredActorsByTrace.Empty();
 		IgnoredActorsByTrace.Add(this);

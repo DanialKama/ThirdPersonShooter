@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "WeaponInterface.generated.h"
 
-class APickup_Weapon;
+class APickupWeapon;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -23,5 +23,5 @@ class THIRDPERSONSHOOTER_API IWeaponInterface
 public:
 	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WeaponInterface")
-	APickup_Weapon* GetWeaponReference();
+	APickupWeapon* GetWeaponReference();
 };

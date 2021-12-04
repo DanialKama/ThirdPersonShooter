@@ -1,9 +1,9 @@
-﻿
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/WeaponEnums.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "AIControllerInterface.generated.h"
 

@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/WeaponEnums.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "PlayerControllerInterface.generated.h"
 

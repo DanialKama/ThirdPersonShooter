@@ -1,8 +1,10 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Components/AmmoComponent.h"
 #include "Interfaces/CommonInterface.h"
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "Math/UnrealMathUtility.h"
+#include "Enums/PickupEnums.h"
 
 // Sets default values for this component's properties
 UAmmoComponent::UAmmoComponent()

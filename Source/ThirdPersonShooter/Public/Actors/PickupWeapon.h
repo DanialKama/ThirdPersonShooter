@@ -7,7 +7,7 @@
 #include "Interfaces/WeaponInterface.h"
 #include "Interfaces/CommonInterface.h"
 #include "Structs/WeaponInfoStruct.h"
-#include "Pickup_Weapon.generated.h"
+#include "PickupWeapon.generated.h"
 
 class UBoxComponent;
 class UWidgetComponent;
@@ -22,13 +22,13 @@ class AProjectile;
 class AMagazine;
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickup_Weapon : public APickup, public ICommonInterface, public IWeaponInterface
+class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface, public IWeaponInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	APickup_Weapon();
+	APickupWeapon();
 
 	// Functions
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
@@ -59,12 +59,10 @@ public:
 	FVector GetLeftHandAimLocation() const;
 	
 	// Interfaces
-	// Without Output
 	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
+	virtual APickupWeapon* GetWeaponReference_Implementation() override;			// Weapon Interface, Call from character base
 	virtual void SetCanFire_Implementation(const bool bInCanFire) override;			// Common Interface, Call from ammo component
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
-	// With Output
-	virtual APickup_Weapon* GetWeaponReference_Implementation() override;			// Weapon Interface, Call from character base
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")

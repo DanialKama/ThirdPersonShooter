@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/WeaponEnums.h"
 #include "CommonInterface.generated.h"
 
 // This class does not need to be modified.

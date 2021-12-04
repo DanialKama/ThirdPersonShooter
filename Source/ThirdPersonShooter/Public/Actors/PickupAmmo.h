@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Pickup.h"
-#include "Enums/WeaponEnums.h"
 #include "Interfaces/PickupAmmoInterface.h"
 #include "PickupAmmo.generated.h"
 

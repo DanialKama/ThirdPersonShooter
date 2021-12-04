@@ -3,9 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Enums/CharacterEnums.h"
 #include "UObject/Interface.h"
 #include "Enums/PickupEnums.h"
-#include "Enums/WeaponEnums.h"
 #include "CharacterInterface.generated.h"
 
 class APickup;
@@ -24,10 +25,31 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// With Output
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get parent character reference"))
+	// BaseCharacter* GetCharacterReference(); TODO complete it after base character class implemented
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	bool IsPlayer();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	FGameplayTag GetTeamTag();
+	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	EWeaponToDo CanPickupAmmo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType);
 	
 	// Without Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	void SetMovementState(EMovementState MovementState, bool bRelatedToCrouch, bool bRelatedToProne);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	void SetHealthLevel(float Health);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Stamina Component call it when stamina is fully restored"))
+	void SetStaminaLevel(float Stamina, bool bIsFull);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
+	void SetInteractable(AActor* Interactable);
+	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetPickup(EItemType PickupType, APickup* PickupReference);
 

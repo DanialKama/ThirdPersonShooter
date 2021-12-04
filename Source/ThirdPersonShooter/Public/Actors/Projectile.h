@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Enums/WeaponEnums.h"
+#include "Enums/PickupEnums.h"
 #include "GameFramework/Actor.h"
 #include "Structs/ProjectileInfoStruct.h"
 #include "GameFramework/ProjectileMovementComponent.h"

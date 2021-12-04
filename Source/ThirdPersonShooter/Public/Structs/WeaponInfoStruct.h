@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Enums/WeaponEnums.h"
 #include "UObject/NoExportTypes.h"
+#include "Enums/PickupEnums.h"
 #include "WeaponInfoStruct.generated.h"
 
 // Ammo component info that owner needs

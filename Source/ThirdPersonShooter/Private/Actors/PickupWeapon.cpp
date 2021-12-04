@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Actors/Pickup_Weapon.h"
+#include "Actors/PickupWeapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -23,7 +23,7 @@
 #include "Structs/AmmoComponentInfoStruct.h"
 
 // Sets default values
-APickup_Weapon::APickup_Weapon()
+APickupWeapon::APickupWeapon()
 {
 	// Create components
 	SkeletalMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
@@ -62,8 +62,8 @@ APickup_Weapon::APickup_Weapon()
 	Widget->SetVisibility(false);
 
 	// Component Overlap
-	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickup_Weapon::OnBoxBeginOverlap);
-	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickup_Weapon::OnBoxEndOverlap);
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 
 	// Set value defaults
 	PickupType = EItemType::Weapon;
@@ -71,7 +71,7 @@ APickup_Weapon::APickup_Weapon()
 	bCanFire = true;
 }
 
-void APickup_Weapon::BeginPlay()
+void APickupWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -97,7 +97,7 @@ void APickup_Weapon::BeginPlay()
 	}
 }
 
-void APickup_Weapon::StartFireWeapon()
+void APickupWeapon::StartFireWeapon()
 {
 	if(bCanFire)
 	{
@@ -108,10 +108,10 @@ void APickup_Weapon::StartFireWeapon()
 			
 			if(bOwnerIsAI || WeaponInfo.bIsAutomatic)
 			{
-				GetWorldTimerManager().SetTimer(FireWeaponTimer, this, &APickup_Weapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
+				GetWorldTimerManager().SetTimer(FireWeaponTimer, this, &APickupWeapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
 			}
 			FTimerHandle ResetDoOnceTimer;
-			GetWorldTimerManager().SetTimer(ResetDoOnceTimer, this, &APickup_Weapon::CoolDownDelay, WeaponInfo.CoolDownTime);
+			GetWorldTimerManager().SetTimer(ResetDoOnceTimer, this, &APickupWeapon::CoolDownDelay, WeaponInfo.CoolDownTime);
 		}
 	}
 	else
@@ -131,7 +131,7 @@ void APickup_Weapon::StartFireWeapon()
 	}
 }
 
-void APickup_Weapon::FireWeapon()
+void APickupWeapon::FireWeapon()
 {
 	AmmoComponent->ReduceAmmo();
 	WeaponFireEffect();
@@ -167,7 +167,7 @@ void APickup_Weapon::FireWeapon()
 	}
 	
 	FTimerHandle ResetAnimationTimer;
-	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickup_Weapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
+	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickupWeapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
 	// Spawn Empty shell
 	if(EmptyShell.Num() > 0)
@@ -182,7 +182,7 @@ void APickup_Weapon::FireWeapon()
 	}
 }
 
-void APickup_Weapon::StopFireWeapon()
+void APickupWeapon::StopFireWeapon()
 {
 	GetWorldTimerManager().ClearTimer(FireWeaponTimer);
 	// Play an empty animation to reset bones position
@@ -190,14 +190,14 @@ void APickup_Weapon::StopFireWeapon()
 }
 
 // Play weapon fire sound and muzzle emitter by activate them and play weapon fire animation
-void APickup_Weapon::WeaponFireEffect() const
+void APickupWeapon::WeaponFireEffect() const
 {
 	FireSound->Activate(true);
 	MuzzleFlash->Activate(true);
 	SkeletalMesh->PlayAnimation(SkeletalMesh->AnimationData.AnimToPlay, false);
 }
 
-void APickup_Weapon::SpawnProjectile()
+void APickupWeapon::SpawnProjectile()
 {
 	if(CurrentProjectile)
 	{
@@ -221,7 +221,7 @@ void APickup_Weapon::SpawnProjectile()
 	}
 }
 
-void APickup_Weapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation)
+void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation)
 {
 	FHitResult HitResult;
 	FVector Start;
@@ -248,7 +248,7 @@ void APickup_Weapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRota
 }
 
 // Calculate line trace start and end points
-void APickup_Weapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
+void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 {
 	FVector TraceStart;
 	FVector UpVector;
@@ -290,7 +290,7 @@ void APickup_Weapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 	}
 }
 
-FRotator APickup_Weapon::RandomPointInCircle(const float Radius, const bool bIncludesNegative) const
+FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncludesNegative) const
 {
 	// Distance From Center can be a random value from 0 to Radius or just Radius
 	float DistanceFromCenter;
@@ -314,7 +314,7 @@ FRotator APickup_Weapon::RandomPointInCircle(const float Radius, const bool bInc
 	return Points;
 }
 
-void APickup_Weapon::RaiseWeapon() const
+void APickupWeapon::RaiseWeapon() const
 {
 	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
@@ -379,12 +379,12 @@ void APickup_Weapon::RaiseWeapon() const
 	}
 }
 
-void APickup_Weapon::LowerWeapon() const
+void APickupWeapon::LowerWeapon() const
 {
 	UGameplayStatics::SpawnSoundAttached(LowerSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 }
 
-void APickup_Weapon::SetMagazineVisibility(const bool bVisible) const
+void APickupWeapon::SetMagazineVisibility(const bool bVisible) const
 {
 	if(bVisible)
 	{
@@ -396,13 +396,13 @@ void APickup_Weapon::SetMagazineVisibility(const bool bVisible) const
 	}
 }
 
-void APickup_Weapon::ReloadWeapon() const
+void APickupWeapon::ReloadWeapon() const
 {
 	AmmoComponent->Reload();
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation());
 }
 
-bool APickup_Weapon::CanPickupAmmo() const
+bool APickupWeapon::CanPickupAmmo() const
 {
 	int32 CurrentAmmo, MagazineSize, CurrentMagazineAmmo;
 	AmmoComponent->GetAmmoInfo(CurrentAmmo, MagazineSize, CurrentMagazineAmmo);
@@ -414,20 +414,20 @@ bool APickup_Weapon::CanPickupAmmo() const
 	return false;
 }
 
-FVector APickup_Weapon::GetLeftHandLocation() const
+FVector APickupWeapon::GetLeftHandLocation() const
 {
 	// Location use to adjust character left hand with IK in animation blueprint
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandSocket"));
 }
 
-FVector APickup_Weapon::GetLeftHandAimLocation() const
+FVector APickupWeapon::GetLeftHandAimLocation() const
 {
 	// Location use to adjust character left hand with IK in animation blueprint
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
 // Interfaces
-void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
+void APickupWeapon::SetPickupStatus_Implementation(EPickupState PickupState)
 {
 	switch(PickupState)
 	{
@@ -455,7 +455,6 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 			bOwnerIsAI = true;
 		}
 		
-		bOwnerIsAI = GetOwner()->ActorHasTag(TEXT("AI"));
 		IgnoredActorsByTrace.Empty();
 		IgnoredActorsByTrace.Add(this);
 		IgnoredActorsByTrace.Add(GetOwner());
@@ -484,12 +483,12 @@ void APickup_Weapon::SetPickupStatus_Implementation(EPickupState PickupState)
 	}
 }
 
-void APickup_Weapon::SetCanFire_Implementation(const bool bInCanFire)
+void APickupWeapon::SetCanFire_Implementation(const bool bInCanFire)
 {
 	bCanFire = bInCanFire;
 }
 
-void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
+void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	// For C++
@@ -556,14 +555,14 @@ void APickup_Weapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	}
 }
 
-APickup_Weapon* APickup_Weapon::GetWeaponReference_Implementation()
+APickupWeapon* APickupWeapon::GetWeaponReference_Implementation()
 {
 	return this;
 }
 // End Of interfaces
 
 // Overlap functions
-void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// C++ only
@@ -586,7 +585,7 @@ void APickup_Weapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	}
 }
 
-void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APickupWeapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// C++ only
 	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
@@ -610,12 +609,12 @@ void APickup_Weapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor
 // End of overlap functions
 
 //Delays
-void APickup_Weapon::CoolDownDelay()
+void APickupWeapon::CoolDownDelay()
 {
 	bDoOnceFire = true;
 }
 
-void APickup_Weapon::ResetAnimationDelay() const
+void APickupWeapon::ResetAnimationDelay() const
 {
 	SkeletalMesh->PlayAnimation(nullptr, false);
 }

@@ -2,6 +2,8 @@
 
 #include "Actors/EmptyShell.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AEmptyShell::AEmptyShell()
@@ -37,8 +39,9 @@ void AEmptyShell::BeginPlay()
 	Super::BeginPlay();
 
 	// Simulate physics with a small delay to not collide with weapon but collide with ground
-	FTimerHandle SimulatePhysicsTimer;
-	GetWorldTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
+	// FTimerHandle SimulatePhysicsTimer;
+	// GetWorldTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
+	StartPhysics();
 }
 
 void AEmptyShell::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

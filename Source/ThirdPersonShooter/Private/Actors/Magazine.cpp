@@ -2,6 +2,7 @@
 
 #include "Actors/Magazine.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AMagazine::AMagazine()

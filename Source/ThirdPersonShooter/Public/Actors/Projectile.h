@@ -7,10 +7,10 @@
 #include "Enums/PickupEnums.h"
 #include "GameFramework/Actor.h"
 #include "Structs/ProjectileInfoStruct.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Projectile.generated.h"
 
 class USoundCue;
+class UProjectileMovementComponent;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AProjectile : public AActor
@@ -28,91 +28,17 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	float PelletSpread = 0.0f;
 
-protected:
-	// Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	UStaticMeshComponent* StaticMesh;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	UParticleSystemComponent* TrailParticle;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	UProjectileMovementComponent* ProjectileMovement;
-
-	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	uint8 bIsExplosive : 1;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	UDataTable* ProjectileDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	UDataTable* ExplosiveProjectileDataTable;
-
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	// UDataTable* ProjectileHitEffectDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	TSubclassOf<UDamageType> DamageType;
-
-	// Particle systems and particle spawn scale
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* FleshHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* WoodHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* MetalHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* StoneHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* DirtHitEmitter;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UParticleSystem* ExplosiveEmitter;
-	
-	// Sound Cues
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	USoundCue* FleshHitSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	USoundCue* ObjectHitSound;
-	
-	// Decals, decal spawn size, and decal life span
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UMaterialInterface* FleshDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	float FleshDecalLifeSpan = 20.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UMaterialInterface* WoodDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UMaterialInterface* MetalDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UMaterialInterface* StoneDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	UMaterialInterface* DirtDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects")
-	float ObjectDecalLifeSpan = 10.0f;
-	
 private:
+	// Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UParticleSystemComponent> TrailParticle;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
+
 	// Functions
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -123,4 +49,74 @@ private:
 	
 	void CalculateProjectileHitInfo(const float SurfaceTypeIndex, UParticleSystem*& Emitter,
 		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+
+	// Variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	uint8 bIsExplosive : 1;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ProjectileDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ExplosiveProjectileDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UDamageType> DamageType;
+
+	// Particle systems and particle spawn scale
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* FleshHitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* WoodHitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* MetalHitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* StoneHitEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* DirtHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ExplosiveEmitter;
+	
+	// Sound Cues
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	USoundCue* FleshHitSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	USoundCue* ObjectHitSound;
+	
+	// Decals, decal spawn size, and decal life span
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* FleshDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	float FleshDecalLifeSpan = 20.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* WoodDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* MetalDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* StoneDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* DirtDecal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	float ObjectDecalLifeSpan = 10.0f;
 };

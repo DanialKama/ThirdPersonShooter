@@ -30,7 +30,4 @@ protected:
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	EItemType PickupType = EItemType::Weapon;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
-	APawn* PickupOwner;
 };

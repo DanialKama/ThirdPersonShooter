@@ -12,8 +12,6 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PickupOwner = Cast<APawn>(GetOwner());
 }
 
 // Called every frame

@@ -6,7 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
-// Structs
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Structs/ExplosiveProjectileInfoStruct.h"
 #include "Structs/ProjectileInfoStruct.h"
 

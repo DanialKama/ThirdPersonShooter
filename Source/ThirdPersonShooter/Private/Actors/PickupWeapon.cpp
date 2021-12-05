@@ -459,9 +459,9 @@ void APickupWeapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		IgnoredActorsByTrace.Add(this);
 		IgnoredActorsByTrace.Add(GetOwner());
 		
-		if(PickupOwner)
+		if(Owner)
 		{
-			OwnerController = Cast<AController>(PickupOwner->GetController());
+			OwnerController = Cast<AController>(Owner->GetInstigatorController());
 			if(bOwnerIsAI)
 			{
 				AIControllerInterface = Cast<IAIControllerInterface>(OwnerController);

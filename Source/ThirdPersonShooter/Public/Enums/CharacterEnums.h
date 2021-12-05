@@ -21,3 +21,13 @@ enum class EInVehicleState : uint8
 	Gunner		UMETA(DisplayName = "Gunner"),
 	Passenger	UMETA(DisplayName = "Passenger")
 };
+
+UENUM(BlueprintType, Category = "CharacterEnums")
+enum class EHealthState : uint8
+{
+	Full			UMETA(DisplayName = "Health is full"),
+	Low				UMETA(DisplayName = "Health is low"),
+	RecoveryStarted	UMETA(DisplayName = "Health recovery started"),
+	RecoveryStopped	UMETA(DisplayName = "Health recovery stopped"),
+	Death			UMETA(DisplayName = "Death, health is zero")
+};

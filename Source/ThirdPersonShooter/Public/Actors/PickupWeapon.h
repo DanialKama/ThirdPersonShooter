@@ -102,9 +102,9 @@ public:
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	FWeaponInfo WeaponInfoOld;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	FWeaponInfoNew WeaponInfo;
+	FWeaponInfo WeaponInfo;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	// FWeaponInfoNew WeaponInfo;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;

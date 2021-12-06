@@ -292,7 +292,7 @@ FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncl
 
 void APickupWeapon::RaiseWeapon() const
 {
-	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 
@@ -378,6 +378,7 @@ void APickupWeapon::SetPickupStatus_Implementation(const EPickupState PickupStat
 		SetOwner(nullptr);
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
+		SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
 		SetLifeSpan(FMath::FRandRange(30.0f, 60.0f));
 		break;
 	case 1:
@@ -407,7 +408,7 @@ void APickupWeapon::SetPickupStatus_Implementation(const EPickupState PickupStat
 		{
 			bCharacterInterface = false;
 			bPlayerControllerInterface = false;
-			bAIControllerInterface = true;
+			bAIControllerInterface = false;
 
 			if(Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 			{
@@ -415,7 +416,7 @@ void APickupWeapon::SetPickupStatus_Implementation(const EPickupState PickupStat
 			}
 
 			OwnerController = Cast<AController>(Owner->GetInstigatorController());
-			if(bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+			if(OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 			{
 				bAIControllerInterface = true;
 			}

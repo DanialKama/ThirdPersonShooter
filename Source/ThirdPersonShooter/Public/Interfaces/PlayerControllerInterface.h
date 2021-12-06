@@ -1,4 +1,5 @@
-﻿
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -31,7 +32,7 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShake);
-	//
+	
 	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	// void RespawnPlayer();
 };

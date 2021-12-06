@@ -76,7 +76,7 @@ void APickupWeapon::BeginPlay()
 	Super::BeginPlay();
 	
 	AmmoComponent->Initialize();
-	MuzzleFlash->SetRelativeScale3D(MuzzleFlashScale);
+	MuzzleFlash->SetRelativeScale3D(WeaponDefaults.MuzzleFlashScale);
 
 	// Set weapon info on widget to show it when the player overlap with weapon
 	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
@@ -84,9 +84,9 @@ void APickupWeapon::BeginPlay()
 		IWidgetInterface::Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
 	}
 	
-	if(Projectile.Num() > 0)
+	if(WeaponDefaults.Projectile.Num() > 0)
 	{
-		CurrentProjectile = Projectile[0].GetDefaultObject();
+		CurrentProjectile = WeaponDefaults.Projectile[0].GetDefaultObject();
 	}
 }
 
@@ -134,19 +134,19 @@ void APickupWeapon::FireWeapon()
 	// Add recoil to character animation and player UI crosshair
 	if(bCharacterInterface)
 	{
-		ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
+		ICharacterInterface::Execute_AddRecoil(Owner, WeaponDefaults.RotationIntensity, WeaponDefaults.ControlTime, WeaponDefaults.CrosshairRecoil, WeaponDefaults.ControllerPitch);
 	}
 
-	if (bPlayerControllerInterface && CameraShake)
+	if (bPlayerControllerInterface && WeaponDefaults.CameraShake)
 	{
-		IPlayerControllerInterface::Execute_PlayCameraShake(OwnerController, CameraShake);
+		IPlayerControllerInterface::Execute_PlayCameraShake(OwnerController, WeaponDefaults.CameraShake);
 	}
 	
 	FTimerHandle ResetAnimationTimer;
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickupWeapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
 	// Spawn Empty shell
-	if(EmptyShell.Num() > 0)
+	if(WeaponDefaults.EmptyShell.Num() > 0)
 	{
 		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
 		const FRotator Rotation = SkeletalMesh->GetSocketRotation(TEXT("EjectorSocket"));
@@ -154,7 +154,7 @@ void APickupWeapon::FireWeapon()
 		ActorSpawnParameters.Owner = this;
 		ActorSpawnParameters.Instigator = GetInstigator();
 		ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<AEmptyShell>(EmptyShell[0], Location, Rotation, ActorSpawnParameters);
+		GetWorld()->SpawnActor<AEmptyShell>(WeaponDefaults.EmptyShell[0], Location, Rotation, ActorSpawnParameters);
 	}
 }
 
@@ -188,7 +188,7 @@ void APickupWeapon::SpawnProjectile()
 			ActorSpawnParameters.Instigator = GetInstigator();
 			ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// Spawn projectile
-			GetWorld()->SpawnActor<AProjectile>(Projectile[0], Location, Rotation, ActorSpawnParameters);
+			GetWorld()->SpawnActor<AProjectile>(WeaponDefaults.Projectile[0], Location, Rotation, ActorSpawnParameters);
 		}
 	}
 	else
@@ -292,7 +292,7 @@ FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncl
 
 void APickupWeapon::RaiseWeapon() const
 {
-	UGameplayStatics::SpawnSoundAttached(RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+	UGameplayStatics::SpawnSoundAttached(WeaponDefaults.RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 
@@ -323,25 +323,25 @@ void APickupWeapon::RaiseWeapon() const
 
 void APickupWeapon::LowerWeapon() const
 {
-	UGameplayStatics::SpawnSoundAttached(LowerSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+	UGameplayStatics::SpawnSoundAttached(WeaponDefaults.LowerSound, SkeletalMesh, TEXT("Root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 }
 
 void APickupWeapon::SetMagazineVisibility(const bool bVisible) const
 {
 	if(bVisible)
 	{
-		SkeletalMesh->UnHideBoneByName(MagazineBoneName);
+		SkeletalMesh->UnHideBoneByName(WeaponDefaults.MagazineBoneName);
 	}
 	else
 	{
-		SkeletalMesh->HideBoneByName(MagazineBoneName, EPhysBodyOp::PBO_None);
+		SkeletalMesh->HideBoneByName(WeaponDefaults.MagazineBoneName, EPhysBodyOp::PBO_None);
 	}
 }
 
 void APickupWeapon::ReloadWeapon() const
 {
 	AmmoComponent->Reload();
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponDefaults.ReloadSound, GetActorLocation());
 }
 
 bool APickupWeapon::CanPickupAmmo() const

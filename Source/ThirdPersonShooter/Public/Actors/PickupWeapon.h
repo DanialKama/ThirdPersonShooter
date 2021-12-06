@@ -22,39 +22,50 @@ class AProjectile;
 class AMagazine;
 
 USTRUCT(BlueprintType)
-struct FWeaponInfoNew
+struct FWeaponDefaults
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	FVector MuzzleFlashScale = FVector::OneVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	FName MagazineBoneName;
+
+	// Recoil
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more intensity"))
+	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	EWeaponType WeaponType = EWeaponType::Pistol;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = faster control"))
+	float ControlTime = 0.25f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	FString Name = TEXT("Weapon");
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = more fedback"))
+	float CrosshairRecoil = 5.0f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more fedback"))
+	float ControllerPitch = -0.5f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCameraShakeBase> CameraShake;
+	
+	// Audio
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	USoundCue* ReloadSound;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	float Range = 4000.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	USoundCue* RaiseSound;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	bool bIsAutomatic = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	float TimeBetweenShots = 0.5f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	float CoolDownTime = 0.5f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
-	int32 AmmoType = static_cast<int32>(EAmmoType::None);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Min Fire Offset is only for AI"))
-	float MinFireOffset = -10.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Max Fire Offset is only for AI"))
-	float MaxFireOffset = 10.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	UCurveFloat* WeaponSpreadCurve = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	USoundCue* LowerSound;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<AProjectile>> Projectile;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AMagazine> Magazine;
 };
 
 UCLASS()
@@ -103,8 +114,6 @@ public:
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	// FWeaponInfoNew WeaponInfo;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
@@ -166,51 +175,13 @@ private:
 
 	// Variables
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	FVector MuzzleFlashScale = FVector::OneVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	FName MagazineBoneName;
+	FWeaponDefaults WeaponDefaults;
 
-	// Recoil
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more intensity"))
-	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = faster control"))
-	float ControlTime = 0.25f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = more fedback"))
-	float CrosshairRecoil = 5.0f;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more fedback"))
-	float ControllerPitch = -0.5f;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UCameraShakeBase> CameraShake;
-	
-	// Audio
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	USoundCue* ReloadSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	USoundCue* RaiseSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	USoundCue* LowerSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	uint8 bDrawDebugLineTrace : 1;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<AProjectile>> Projectile;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AMagazine> Magazine;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	AProjectile* CurrentProjectile;
 

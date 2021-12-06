@@ -37,10 +37,10 @@ AEmptyShell::AEmptyShell()
 void AEmptyShell::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Simulate physics with a small delay to not collide with weapon but collide with ground
-	// FTimerHandle SimulatePhysicsTimer;
-	// GetWorldTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
+	FTimerHandle SimulatePhysicsTimer;
+	GetWorldTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
 	StartPhysics();
 }
 

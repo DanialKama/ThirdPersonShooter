@@ -43,11 +43,11 @@ private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	void HitEffect(const float SurfaceTypeIndex, const FHitResult HitResult) const;
+	void HitEffect(const FHitResult HitResult) const;
 
-	static float CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const float SurfaceTypeIndex);
+	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
 	
-	void CalculateProjectileHitInfo(const float SurfaceTypeIndex, UParticleSystem*& Emitter,
+	void CalculateProjectileHitInfo(UParticleSystem*& Emitter,
 		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
 
 	// Variables
@@ -119,4 +119,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	float ObjectDecalLifeSpan = 10.0f;
+
+	int32 SwitchExpression = 0;
 };

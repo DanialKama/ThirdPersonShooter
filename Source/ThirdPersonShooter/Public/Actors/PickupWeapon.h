@@ -21,6 +21,42 @@ class AEmptyShell;
 class AProjectile;
 class AMagazine;
 
+USTRUCT(BlueprintType)
+struct FWeaponInfoNew
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	EWeaponType WeaponType = EWeaponType::Pistol;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	FString Name = TEXT("Weapon");
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	float Range = 4000.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	bool bIsAutomatic = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	float TimeBetweenShots = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	float CoolDownTime = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
+	int32 AmmoType = static_cast<int32>(EAmmoType::None);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Min Fire Offset is only for AI"))
+	float MinFireOffset = -10.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Max Fire Offset is only for AI"))
+	float MaxFireOffset = 10.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UCurveFloat* WeaponSpreadCurve = nullptr;
+};
+
 UCLASS()
 class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface, public IWeaponInterface
 {
@@ -59,14 +95,16 @@ public:
 	FVector GetLeftHandAimLocation() const;
 	
 	// Interfaces
-	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
-	virtual APickupWeapon* GetWeaponReference_Implementation() override;			// Weapon Interface, Call from character base
-	virtual void SetCanFire_Implementation(const bool bInCanFire) override;			// Common Interface, Call from ammo component
-	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
+	virtual void SetPickupStatus_Implementation(const EPickupState PickupState) override;	// Pickup Interface, Call from character base
+	virtual APickupWeapon* GetWeaponReference_Implementation() override;					// Weapon Interface, Call from character base
+	virtual void SetCanFire_Implementation(const bool bInCanFire) override;					// Common Interface, Call from ammo component
+	virtual void SetWeaponState_Implementation(const EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	FWeaponInfo WeaponInfo;
+	FWeaponInfo WeaponInfoOld;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	FWeaponInfoNew WeaponInfo;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
@@ -127,9 +165,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
-	uint8 bDoOnceFire : 1;
-	uint8 bOwnerIsAI : 1;
-	uint8 bCanFire : 1;
+	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FVector MuzzleFlashScale = FVector::OneVector;
@@ -184,12 +220,5 @@ private:
 	TArray<AActor*> IgnoredActorsByTrace;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	AAIController* OwnerAIController;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	AController* OwnerController;
-	
-	// Interface References
-	IAIControllerInterface* AIControllerInterface;
-	IPlayerControllerInterface* PlayerControllerInterface;
 };

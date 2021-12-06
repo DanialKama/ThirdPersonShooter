@@ -24,6 +24,6 @@ protected:
 	virtual void SetupComponent();
 	
 	// Variables
-	UPROPERTY(BlueprintReadOnly, Category = "References")
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	AActor* Owner;
 };

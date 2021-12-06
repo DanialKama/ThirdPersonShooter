@@ -79,13 +79,6 @@ void APickupWeapon::BeginPlay()
 	MuzzleFlash->SetRelativeScale3D(MuzzleFlashScale);
 
 	// Set weapon info on widget to show it when the player overlap with weapon
-	// C++ only
-	/*IWidgetInterface* Interface = Cast<IWidgetInterface>(Widget->GetWidget());
-	if(Interface)
-	{
-		Interface->Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
-	}*/
-	// C++ and blueprint
 	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
 		IWidgetInterface::Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
@@ -139,29 +132,12 @@ void APickupWeapon::FireWeapon()
 	SpawnProjectile();
 
 	// Add recoil to character animation and player UI crosshair
-	if(Owner)
+	if(bCharacterInterface)
 	{
-		// C++
-		/*ICharacterInterface* Interface = Cast<ICharacterInterface>(Owner);
-		if(Interface)
-		{
-			Interface->Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil);
-		}*/
-		// C++ and blueprint
-		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-		{
-			ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
-		}
+		ICharacterInterface::Execute_AddRecoil(Owner, RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
 	}
 
-	// Play camera shake if owner is player
-	// C++
-	/*if(!bOwnerIsAI && PlayerControllerInterface && CameraShake)
-	{
-		PlayerControllerInterface->Execute_PlayCameraShake(OwnerController, CameraShake);
-	}*/
-	// C++ and blueprint
-	if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()) && CameraShake)
+	if (bPlayerControllerInterface && CameraShake)
 	{
 		IPlayerControllerInterface::Execute_PlayCameraShake(OwnerController, CameraShake);
 	}
@@ -321,60 +297,26 @@ void APickupWeapon::RaiseWeapon() const
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 
 	// Report weapon state to owner on pickup
-	if(bOwnerIsAI)
+	if(bAIControllerInterface)
 	{
-		// C++ only
-		/*IAIControllerInterface* Interface = Cast<IAIControllerInterface>(GetOwner());
-		if(Interface)
+		if(AmmoComponent->BetterToReload())
 		{
-			if(AmmoComponent->BetterToReload())
-			{
-				Interface->SetWeaponState(AmmoComponentInfo ,EWeaponState::BetterToReload);
-			}
-			else
-			{
-				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
-			}
-		}*/
-		// C++ and blueprint
-		if(OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+			IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
+		}
+		else
 		{
-			if(AmmoComponent->BetterToReload())
-			{
-				IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
-			}
-			else
-			{
-				IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
-			}
+			IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
 		}
 	}
-	else
+	else if(bPlayerControllerInterface)
 	{
-		// C++ only
-		/*IPlayerControllerInterface* Interface = Cast<IPlayerControllerInterface>(GetOwner());
-		if(Interface)
+		if(AmmoComponent->BetterToReload())
 		{
-			if(AmmoComponent->BetterToReload())
-			{
-				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::BetterToReload);
-			}
-			else
-			{
-				Interface->SetWeaponState(AmmoComponentInfo, EWeaponState::Idle);
-			}
-		}*/
-		// C++ and blueprint
-		if(OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+			IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
+		}
+		else
 		{
-			if(AmmoComponent->BetterToReload())
-			{
-				IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
-			}
-			else
-			{
-				IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
-			}
+			IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
 		}
 	}
 }
@@ -427,7 +369,7 @@ FVector APickupWeapon::GetLeftHandAimLocation() const
 }
 
 // Interfaces
-void APickupWeapon::SetPickupStatus_Implementation(EPickupState PickupState)
+void APickupWeapon::SetPickupStatus_Implementation(const EPickupState PickupState)
 {
 	switch(PickupState)
 	{
@@ -444,6 +386,11 @@ void APickupWeapon::SetPickupStatus_Implementation(EPickupState PickupState)
 		SkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
 		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
 		SetLifeSpan(0.0f);
+
+		// Ignore self and owner for line trace
+		IgnoredActorsByTrace.Empty();
+		IgnoredActorsByTrace.Add(this);
+		IgnoredActorsByTrace.Add(GetOwner());
 		
 		// Determine if owner is player or AI controlled
 		if (Cast<APlayerController>(Owner->GetInstigatorController()))
@@ -455,24 +402,26 @@ void APickupWeapon::SetPickupStatus_Implementation(EPickupState PickupState)
 			bOwnerIsAI = true;
 		}
 		
-		IgnoredActorsByTrace.Empty();
-		IgnoredActorsByTrace.Add(this);
-		IgnoredActorsByTrace.Add(GetOwner());
-		
+		// Detected if the interfaces is present on owner
 		if(Owner)
 		{
-			OwnerController = Cast<AController>(Owner->GetInstigatorController());
-			if(bOwnerIsAI)
+			bCharacterInterface = false;
+			bPlayerControllerInterface = false;
+			bAIControllerInterface = true;
+
+			if(Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 			{
-				AIControllerInterface = Cast<IAIControllerInterface>(OwnerController);
+				bCharacterInterface = true;
 			}
-			else
+
+			OwnerController = Cast<AController>(Owner->GetInstigatorController());
+			if(bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 			{
-				PlayerControllerInterface = Cast<IPlayerControllerInterface>(OwnerController);
-				if(PlayerControllerInterface)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("PlayerControllerInterface")));
-				}
+				bAIControllerInterface = true;
+			}
+			else if(OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+			{
+				bPlayerControllerInterface = true;
 			}
 		}
 		break;
@@ -488,26 +437,17 @@ void APickupWeapon::SetCanFire_Implementation(const bool bInCanFire)
 	bCanFire = bInCanFire;
 }
 
-void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
+void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState)
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
-	// For C++
-	/*if(bOwnerIsAI && AIControllerInterface)
+	
+	if(bAIControllerInterface)
 	{
-		AIControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
+		IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
-	else if(!bOwnerIsAI && PlayerControllerInterface)
+	else if(bPlayerControllerInterface)
 	{
-		PlayerControllerInterface->SetWeaponState(AmmoComponentInfo, WeaponState);
-	}*/
-	// For C++ and blueprint
-	if(bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
-	{
-		AIControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
-	}
-	else if(!bOwnerIsAI && OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
-	{
-		PlayerControllerInterface->Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
+		IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
 	
 	switch(WeaponState)
@@ -565,19 +505,12 @@ APickupWeapon* APickupWeapon::GetWeaponReference_Implementation()
 void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// C++ only
-	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-	if(Interface)
-	{
-		Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, this);
-	}*/
-	// C++ and blueprint
 	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
 	}
 	
-	// If OtherActor is the player then show the widget
+	// If Other Actor is the player then show the widget
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(true);
@@ -587,19 +520,12 @@ void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActo
 
 void APickupWeapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	// C++ only
-	/*ICharacterInterface* Interface = Cast<ICharacterInterface>(OtherActor);
-	if(Interface)
-	{
-		Interface->Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
-	}*/
-	// C++ and blueprint
 	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
 	}
 
-	// If OtherActor is the player then hide the widget
+	// If Other Actor is the player then hide the widget
 	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(false);
@@ -618,5 +544,3 @@ void APickupWeapon::ResetAnimationDelay() const
 {
 	SkeletalMesh->PlayAnimation(nullptr, false);
 }
-
-// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Overlap with %s"), *OtherActor->GetName()));

@@ -50,14 +50,13 @@ AProjectile::AProjectile()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	float SurfaceTypeIndex;
 	if(Hit.PhysMaterial.IsValid())
 	{
-		SurfaceTypeIndex =	StaticEnum<EPhysicalSurface>()->GetIndexByValue(UGameplayStatics::GetSurfaceType(Hit));
+		SwitchExpression = StaticEnum<EPhysicalSurface>()->GetIndexByValue(UGameplayStatics::GetSurfaceType(Hit));
 	}
 	else
 	{
-		SurfaceTypeIndex = 0.0f;
+		SwitchExpression = 0;
 	}
 
 	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
@@ -78,18 +77,18 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		if(ProjectileInfo)
 		{
 			// Apply point damage for nonexplosive projectiles based on surface type
-			UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo, SurfaceTypeIndex), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
+			UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No damage applied."));
 	}
-	HitEffect(SurfaceTypeIndex, Hit);
+	HitEffect(Hit);
 	Destroy();
 }
 
-void AProjectile::HitEffect(const float SurfaceTypeIndex, const FHitResult HitResult) const
+void AProjectile::HitEffect(const FHitResult HitResult) const
 {
 	UParticleSystem* Emitter;
 	USoundCue* Sound;
@@ -97,7 +96,7 @@ void AProjectile::HitEffect(const float SurfaceTypeIndex, const FHitResult HitRe
 	FVector DecalSize;
 	float DecalLifeSpan;
 	
-	CalculateProjectileHitInfo(SurfaceTypeIndex, Emitter, Sound, Decal, DecalSize, DecalLifeSpan);
+	CalculateProjectileHitInfo(Emitter, Sound, Decal, DecalSize, DecalLifeSpan);
 
 	const FRotator SpawnRotation = UKismetMathLibrary::MakeRotFromX(HitResult.ImpactNormal);
 	
@@ -119,9 +118,8 @@ void AProjectile::HitEffect(const float SurfaceTypeIndex, const FHitResult HitRe
 	}
 }
 
-float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, const float SurfaceTypeIndex)
+float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const
 {
-	const int32 SwitchExpression = FMath::FloorToInt(SurfaceTypeIndex);
 	// Switch on surface type to calculate the appropriate damage
 	switch (SwitchExpression)
 	{
@@ -156,10 +154,9 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo, c
 	}
 }
 
-void AProjectile::CalculateProjectileHitInfo(const float SurfaceTypeIndex, UParticleSystem*& Emitter,
+void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter,
 	USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
 {
-	const int32 SwitchExpression = FMath::FloorToInt(SurfaceTypeIndex);
 	// Switch on surface type to calculate the appropriate effect
 	switch (SwitchExpression)
 	{

@@ -70,6 +70,6 @@ private:
 	bool IsCompletelyEmpty() const;
 	
 	// Variables
-	ICommonInterface* CommonInterface;
+	uint8 bCommonInterface : 1;
 	int32 CurrentAmmo = 0;
 };

@@ -30,7 +30,7 @@ struct FWeaponDefaults
 	FVector MuzzleFlashScale = FVector::OneVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	FName MagazineBoneName;
+	FName MagazineBoneName = TEXT("None");
 
 	// Recoil
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more intensity"))

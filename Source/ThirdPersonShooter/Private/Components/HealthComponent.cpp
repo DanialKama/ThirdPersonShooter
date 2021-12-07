@@ -116,7 +116,7 @@ void UHealthComponent::StopHealthRecovery()
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStopped);
 	}
 
-	HealthRecoveryTimer.Invalidate();
+	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 }
 
 void UHealthComponent::RecoverHealth()
@@ -130,7 +130,7 @@ void UHealthComponent::RecoverHealth()
 
 	if(CurrentHealth >= MaxHealth)
 	{
-		HealthRecoveryTimer.Invalidate();
+		GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 
 		if(bCommonInterface)
 		{

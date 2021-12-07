@@ -61,7 +61,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 
 	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 	
-	if(bIsExplosive && ExplosiveProjectileDataTable)
+	if(ProjectileEffect.bIsExplosive && ExplosiveProjectileDataTable)
 	{
 		const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
 		if(ExplosiveProjectileInfo)
@@ -71,7 +71,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ExplosiveProjectileInfo->BaseDamage, ExplosiveProjectileInfo->MinimumDamage, Hit.ImpactPoint, ExplosiveProjectileInfo->DamageInnerRadius, ExplosiveProjectileInfo->DamageOuterRadius, 2.0f, DamageType, IgnoreActors, GetOwner(), GetInstigatorController(), ECollisionChannel::ECC_Visibility);
 		}
 	}
-	else if(!bIsExplosive && ProjectileDataTable)
+	else if(ProjectileDataTable)
 	{
 		const FProjectileInfo* ProjectileInfo = ProjectileDataTable->FindRow<FProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
 		if(ProjectileInfo)
@@ -112,9 +112,9 @@ void AProjectile::HitEffect(const FHitResult HitResult) const
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
 
 	// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
-	if(bIsExplosive)
+	if(ProjectileEffect.bIsExplosive)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosiveEmitter, HitResult.ImpactPoint, SpawnRotation);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileEffect.ExplosiveEmitter, HitResult.ImpactPoint, SpawnRotation);
 	}
 }
 
@@ -162,81 +162,81 @@ void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter,
 	{
 	case 0:
 		// Default
-		Emitter = StoneHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = StoneDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.StoneHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.StoneDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
 	case 1:
 		// Head Flesh
-		Emitter = FleshHitEmitter;
-		Sound = FleshHitSound;
-		Decal = FleshDecal;
-		DecalSize = FleshDecalSize;
-		DecalLifeSpan = FleshDecalLifeSpan;
+		Emitter			= ProjectileEffect.FleshHitEmitter;
+		Sound			= ProjectileEffect.FleshHitSound;
+		Decal			= ProjectileEffect.FleshDecal;
+		DecalSize		= ProjectileEffect.FleshDecalSize;
+		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
 		break;
 	case 2:
 		// Body Flesh
-		Emitter = FleshHitEmitter;
-		Sound = FleshHitSound;
-		Decal = FleshDecal;
-		DecalSize = FleshDecalSize;
-		DecalLifeSpan = FleshDecalLifeSpan;
+		Emitter			= ProjectileEffect.FleshHitEmitter;
+		Sound			= ProjectileEffect.FleshHitSound;
+		Decal			= ProjectileEffect.FleshDecal;
+		DecalSize		= ProjectileEffect.FleshDecalSize;
+		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
 		break;
 	case 3:
 		// Hand Flesh
-		Emitter = FleshHitEmitter;
-		Sound = FleshHitSound;
-		Decal = FleshDecal;
-		DecalSize = FleshDecalSize;
-		DecalLifeSpan = FleshDecalLifeSpan;
+		Emitter			= ProjectileEffect.FleshHitEmitter;
+		Sound			= ProjectileEffect.FleshHitSound;
+		Decal			= ProjectileEffect.FleshDecal;
+		DecalSize		= ProjectileEffect.FleshDecalSize;
+		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
 		break;
 	case 4:
 		// Leg Flesh
-		Emitter = FleshHitEmitter;
-		Sound = FleshHitSound;
-		Decal = FleshDecal;
-		DecalSize = FleshDecalSize;
-		DecalLifeSpan = FleshDecalLifeSpan;
+		Emitter			= ProjectileEffect.FleshHitEmitter;
+		Sound			= ProjectileEffect.FleshHitSound;
+		Decal			= ProjectileEffect.FleshDecal;
+		DecalSize		= ProjectileEffect.FleshDecalSize;
+		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
 		break;
 	case 5:
 		// Wood
-		Emitter = WoodHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = WoodDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.WoodHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.WoodDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
 	case 6:
 		// Metal
-		Emitter = MetalHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = MetalDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.MetalHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.MetalDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
 	case 7:
 		// Stone
-		Emitter = StoneHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = StoneDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.StoneHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.StoneDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
 	case 8:
 		// Dirt
-		Emitter = DirtHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = DirtDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.DirtHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.DirtDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
 	default:
-		Emitter = StoneHitEmitter;
-		Sound = ObjectHitSound;
-		Decal = StoneDecal;
-		DecalSize = ObjectDecalSize;
-		DecalLifeSpan = ObjectDecalLifeSpan;
+		Emitter			= ProjectileEffect.StoneHitEmitter;
+		Sound			= ProjectileEffect.ObjectHitSound;
+		Decal			= ProjectileEffect.StoneDecal;
+		DecalSize		= ProjectileEffect.ObjectDecalSize;
+		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 	}
 }

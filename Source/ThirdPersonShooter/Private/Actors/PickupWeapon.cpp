@@ -160,7 +160,7 @@ void APickupWeapon::FireWeapon()
 
 void APickupWeapon::StopFireWeapon()
 {
-	GetWorldTimerManager().ClearTimer(FireWeaponTimer);
+	GetWorld()->GetTimerManager().ClearTimer(FireWeaponTimer);
 	// Play an empty animation to reset bones position
 	SkeletalMesh->PlayAnimation(nullptr, false);
 }

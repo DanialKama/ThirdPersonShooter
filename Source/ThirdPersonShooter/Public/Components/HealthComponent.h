@@ -22,22 +22,22 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults")
 	uint8 bCanRecoverHealth : 1;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float MaxHealth = 100.0f;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float DefaultHealth = 100.0f;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0"))
 	float LowHealth = 25.0f;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float HealingAmount = 10.0f;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per Second"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0"))
 	float HealthRecoveryRate = 0.25f;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float StartHealthRecoveryDelay = 3.0f;
 
 private:
@@ -65,8 +65,7 @@ private:
 	void RecoverHealth();
 
 	// Variables
-	uint8 bCommonInterface : 1;
-	uint8 bCharacterInterface : 1;
+	uint8 bCommonInterface : 1, bCharacterInterface : 1;
 	float CurrentHealth = 0.0f;	// At begin play Current Health is equal to Default Health
 	FTimerHandle HealthRecoveryTimer;
 

@@ -12,59 +12,13 @@
 class USoundCue;
 class UProjectileMovementComponent;
 
-UCLASS()
-class THIRDPERSONSHOOTER_API AProjectile : public AActor
+USTRUCT(BlueprintType)
+struct FProjectileEffect
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	AProjectile();
-	
-	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	int32 NumberOfPellets = 1;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	float PelletSpread = 0.0f;
-
-private:
-	// Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> StaticMesh;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UParticleSystemComponent> TrailParticle;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
-
-	// Functions
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	void HitEffect(const FHitResult HitResult) const;
-
-	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
-	
-	void CalculateProjectileHitInfo(UParticleSystem*& Emitter,
-		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
-
-	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	uint8 bIsExplosive : 1;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	UDataTable* ProjectileDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	UDataTable* ExplosiveProjectileDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UDamageType> DamageType;
 
 	// Particle systems and particle spawn scale
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
@@ -119,6 +73,61 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	float ObjectDecalLifeSpan = 10.0f;
+};
+
+UCLASS()
+class THIRDPERSONSHOOTER_API AProjectile : public AActor
+{
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AProjectile();
+	
+	// Variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	int32 NumberOfPellets = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	float PelletSpread = 0.0f;
+
+private:
+	// Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UParticleSystemComponent> TrailParticle;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
+
+	// Functions
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	void HitEffect(const FHitResult HitResult) const;
+
+	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
+	
+	void CalculateProjectileHitInfo(UParticleSystem*& Emitter,
+		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+
+	// Variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ProjectileDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ExplosiveProjectileDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UDamageType> DamageType;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	FProjectileEffect ProjectileEffect;
 
 	int32 SwitchExpression = 0;
 };

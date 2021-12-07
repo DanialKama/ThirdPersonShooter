@@ -44,7 +44,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetHealthLevel(float Health);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Stamina Component call it when stamina is fully restored"))
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Stamina should be between 0 and 1"))
 	void SetStaminaLevel(float Stamina, bool bIsFull);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")

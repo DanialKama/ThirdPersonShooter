@@ -46,19 +46,19 @@ public:
 	void AddAmmo(int32 AmmoAmount);
 	
 	// Variables
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MaxAmmo = 0;
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
 	int32 DefaultAmmo = 0;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MagazineSize = 1;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults", meta = (ToolTip = "If value set to something greater than zero then in initial value dose not change"))
 	int32 CurrentMagazineAmmo = 0;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
 	int32 ReloadAmount = 1;
 	
 protected:

@@ -39,7 +39,7 @@ public:
 	
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void SetMovementState(EMovementState MovementState, bool bRelatedToCrouch, bool bRelatedToProne);
+	void SetMovementState(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetHealthLevel(float Health);

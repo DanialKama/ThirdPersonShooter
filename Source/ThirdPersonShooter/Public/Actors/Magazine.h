@@ -19,15 +19,15 @@ public:
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	// Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (ExposeOnSpawn = true))
 	uint8 bMagazineIsEmpty : 1;
 	
 private:
-	// Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> StaticMesh;
-	
 	// Functions
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

@@ -23,7 +23,7 @@ AMagazine::AMagazine()
 	StaticMesh->SetCollisionObjectType(ECC_WorldStatic);
 	StaticMesh->OnComponentHit.AddDynamic(this, &AMagazine::OnHit);
 
-	// Set variable defaults
+	// Initialize variables
 	bDoOnce = true;
 }
 

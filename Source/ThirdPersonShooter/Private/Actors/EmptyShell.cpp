@@ -29,7 +29,7 @@ AEmptyShell::AEmptyShell()
 	ProjectileMovement->ProjectileGravityScale = 2.0f;
 	ProjectileMovement->Velocity = FVector(-1.0f, 0.0f, 0.0f);
 
-	// Set variables defaults
+	// Initialize variables
 	bDoOnce = true;
 }
 

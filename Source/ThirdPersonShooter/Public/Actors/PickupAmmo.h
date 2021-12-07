@@ -19,6 +19,16 @@ class THIRDPERSONSHOOTER_API APickupAmmo : public APickup, public IPickupAmmoInt
 public:
 	// Sets default values for this actor's properties
 	APickupAmmo();
+	
+	//Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USphereComponent* SphereCollision;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UWidgetComponent* Widget;
 
 	// Interfaces
 	// Without Output
@@ -30,16 +40,6 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	//Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> StaticMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<USphereComponent> SphereCollision;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UWidgetComponent> Widget;
-	
 	// Overlaps
 	UFUNCTION()
 	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,

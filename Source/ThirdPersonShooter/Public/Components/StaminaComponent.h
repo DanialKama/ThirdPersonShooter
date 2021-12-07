@@ -63,7 +63,5 @@ private:
 	
 	// Variables
 	uint8 bCharacterInterface : 1, bDoOnce : 1;
-	FTimerHandle RestoreTimer;
-	FTimerHandle RunningTimer;
-	FTimerHandle SprintingTimer;
+	FTimerHandle RestoreTimer, RunningTimer, SprintingTimer;
 };

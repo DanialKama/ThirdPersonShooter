@@ -76,6 +76,25 @@ class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInter
 public:
 	// Sets default values for this actor's properties
 	APickupWeapon();
+	
+	//Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* SkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UBoxComponent* BoxCollision;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UParticleSystemComponent* MuzzleFlash;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAudioComponent* FireSound;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UWidgetComponent* Widget;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAmmoComponent* AmmoComponent;
 
 	// Functions
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
@@ -123,25 +142,6 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	//Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBoxComponent> BoxCollision;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UParticleSystemComponent> MuzzleFlash;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UAudioComponent> FireSound;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UWidgetComponent> Widget;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UAmmoComponent> AmmoComponent;
-
 	// Functions
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void FireWeapon();

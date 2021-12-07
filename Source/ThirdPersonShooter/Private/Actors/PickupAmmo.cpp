@@ -39,7 +39,7 @@ APickupAmmo::APickupAmmo()
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
 	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 
-	// Set value defaults
+	// Initialize variables
 	PickupType = EItemType::Ammo;
 }
 

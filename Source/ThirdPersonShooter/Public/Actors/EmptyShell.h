@@ -17,19 +17,19 @@ class THIRDPERSONSHOOTER_API AEmptyShell : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AEmptyShell();
+	
+	// Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UProjectileMovementComponent* ProjectileMovement;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
-	// Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UStaticMeshComponent> StaticMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
-	
 	// Functions
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

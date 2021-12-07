@@ -25,7 +25,7 @@ AProjectile::AProjectile()
 	SetRootComponent(StaticMesh);
 	TrailParticle->SetupAttachment(StaticMesh, TEXT("TrailSocket"));
 
-	// Set component defaults
+	// Initialize components
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->bReturnMaterialOnMove = true;

@@ -1,3 +1,4 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -15,9 +16,6 @@ class THIRDPERSONSHOOTER_API APickup : public AActor, public IPickupInterface
 public:	
 	// Sets default values for this actor's properties
 	APickup();
-
-	// Called every frame
-	// virtual void Tick(float DeltaTime) override;
 
 	// Interfaces
 	virtual APickup* GetPickupReference_Implementation() override;

@@ -65,7 +65,7 @@ APickupWeapon::APickupWeapon()
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 
-	// Set value defaults
+	// Initialize variables
 	PickupType = EItemType::Weapon;
 	bDoOnceFire = true;
 	bCanFire = true;
@@ -202,10 +202,13 @@ void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotat
 	FHitResult HitResult;
 	FVector Start;
 	FVector End;
-	FCollisionQueryParams CollisionQueryParams;
+	
 	CalculateLineTrace(Start, End);
+	
+	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.bTraceComplex = true;
 	CollisionQueryParams.AddIgnoredActors(IgnoredActorsByTrace);
+	
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 
 	// Draw debug line and box

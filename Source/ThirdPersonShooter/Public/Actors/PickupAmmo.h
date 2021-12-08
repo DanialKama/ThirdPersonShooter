@@ -35,6 +35,13 @@ public:
 	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
 	virtual APickupAmmo* GetPickupAmmoReference_Implementation() override;			// Pickup Ammo Interface, Call from character base
 
+	// Variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
+	int32 AmmoType = static_cast<int32>(EAmmoType::None);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	int32 Amount = 1;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,12 +57,6 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", Bitmask, BitmaskEnum = "EAmmoType"))
-	int32 AmmoType = static_cast<int32>(EAmmoType::None);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	int32 Amount = 1;
-
 	// Audio
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	USoundCue* PickupSound;

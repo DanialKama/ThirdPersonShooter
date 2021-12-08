@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "Interfaces/WeaponInterface.h"
+#include "Interfaces/PickupWeaponInterface.h"
 #include "Interfaces/CommonInterface.h"
 #include "Structs/WeaponInfoStruct.h"
 #include "PickupWeapon.generated.h"
@@ -69,7 +69,7 @@ struct FWeaponDefaults
 };
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface, public IWeaponInterface
+class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface, public IPickupWeaponInterface
 {
 	GENERATED_BODY()
 

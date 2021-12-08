@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "WeaponInterface.generated.h"
+#include "PickupWeaponInterface.generated.h"
 
 class APickupWeapon;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UWeaponInterface : public UInterface
+class UPickupWeaponInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class THIRDPERSONSHOOTER_API IWeaponInterface
+class THIRDPERSONSHOOTER_API IPickupWeaponInterface
 {
 	GENERATED_BODY()
 

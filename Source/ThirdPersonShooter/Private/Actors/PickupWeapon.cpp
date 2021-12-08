@@ -101,10 +101,10 @@ void APickupWeapon::StartFireWeapon()
 			
 			if(bOwnerIsAI || WeaponInfo.bIsAutomatic)
 			{
-				GetWorldTimerManager().SetTimer(FireWeaponTimer, this, &APickupWeapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
+				GetWorld()->GetTimerManager().SetTimer(FireWeaponTimer, this, &APickupWeapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
 			}
 			FTimerHandle ResetDoOnceTimer;
-			GetWorldTimerManager().SetTimer(ResetDoOnceTimer, this, &APickupWeapon::CoolDownDelay, WeaponInfo.CoolDownTime);
+			GetWorld()->GetTimerManager().SetTimer(ResetDoOnceTimer, this, &APickupWeapon::CoolDownDelay, WeaponInfo.CoolDownTime);
 		}
 	}
 	else
@@ -248,7 +248,6 @@ void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 		TraceStart = CameraComponent->GetComponentLocation();
 		RightVector = CameraComponent->GetRightVector();
 		UpVector = CameraComponent->GetUpVector();
-		// TODO replace random point in circle for weapon spread with add controller pitch
 		const FRotator Points = RandomPointInCircle(WeaponInfo.WeaponSpreadCurve->GetFloatValue(FMath::FRand()), false);
 		TraceEnd = Points.RotateVector(CameraComponent->GetForwardVector());
 	}

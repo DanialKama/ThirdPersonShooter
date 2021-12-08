@@ -48,10 +48,10 @@ public:
 	void SetStaminaLevel(float Stamina, bool bIsFull);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void SetInteractable(AActor* Interactable);
+	void SetInteractable(AActor* NewInteractable);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void SetPickup(EItemType PickupType, APickup* PickupReference);
+	void SetPickup(EItemType NewPickupType, APickup* NewPickup);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void AddRecoil(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch);

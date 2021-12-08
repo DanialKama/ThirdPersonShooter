@@ -14,14 +14,22 @@ class THIRDPERSONSHOOTER_API UHealthComponent : public UBaseComponent
 public:	
 	// Sets default values for this component's properties
 	UHealthComponent();
-	
-protected:
-	virtual void SetupComponent() override;
+
+	// Functions
+	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
+	void StartHealthRecovery();
+
+	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
+	void StopHealthRecovery();
 
 	// Variables
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults")
 	uint8 bCanRecoverHealth : 1;
 	
+protected:
+	virtual void SetupComponent() override;
+
+	// Variables
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float MaxHealth = 100.0f;
 
@@ -55,12 +63,6 @@ private:
 	void Healing(const float HealthDifference);
 
 	void UpdateHealthOnDamage(float Damage, FName BoneName, FVector ShotFromDirection);
-
-	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
-	void StartHealthRecovery();
-
-	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
-	void StopHealthRecovery();
 
 	void RecoverHealth();
 

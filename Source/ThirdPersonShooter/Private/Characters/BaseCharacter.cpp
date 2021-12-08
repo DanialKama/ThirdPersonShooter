@@ -8,8 +8,11 @@
 #include "Interfaces/CommonInterface.h"
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/CharacterAnimationInterface.h"
+#include "Interfaces/PickupWeaponInterface.h"
 #include "Actors/PickupWeapon.h"
 #include "Actors/PickupAmmo.h"
+#include "Components/AmmoComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -136,6 +139,7 @@ ABaseCharacter::ABaseCharacter()
 	bIsAlive = true;
 	bDoOnceMoving = true;
 	bDoOnceStopped = true;
+	bDoOnceReload = true;
 }
 
 // Called when the game starts or when spawned
@@ -211,6 +215,649 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void ABaseCharacter::PossessedBy(AController* NewController)
+{
+	bIsTryToUseVehicle = false;
+	ToggleUsingVehicle(false);
+	SetWeaponVisibility(true);
+}
+
+void ABaseCharacter::UnPossessed()
+{
+	SetWeaponVisibility(false);
+}
+
+void ABaseCharacter::CharacterIsOnMove()
+{
+	GetWorld()->GetTimerManager().ClearTimer(IdleTimer);
+	StopAnimMontage(AnimMontageToPlay);
+	UpdateMovementState();
+}
+
+void ABaseCharacter::SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne)
+{
+	if(bRelatedToCrouch || bRelatedToProne)
+	{
+		PreviousMovementState = CurrentMovementState;
+	}
+	
+	if(StaminaComponent->CurrentStamina > 0.0f)
+	{
+		MovementState = CurrentMovementState;
+	}
+	else
+	{
+		MovementState = PreviousMovementState;
+	}
+
+	UpdateMovementState();
+}
+
+void ABaseCharacter::UpdateMovementState()
+{
+	switch (MovementState)
+	{
+	case 0:
+		// Walk
+		StaminaComponent->StopStaminaDrain();
+		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
+		GetCharacterMovement()->JumpZVelocity = 300.0f;
+		break;
+	case 1:
+		// Run
+		UnCrouch();
+		StaminaComponent->StartRunning();
+		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
+		GetCharacterMovement()->JumpZVelocity = 360.0f;
+		break;
+	case 2:
+		// Sprint
+		UnCrouch();
+		StaminaComponent->StartSprinting();
+		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 600.0f;
+		GetCharacterMovement()->JumpZVelocity = 420.0f;
+		break;
+	case 3:
+		// Crouch
+		if(!GetCharacterMovement()->IsFalling())
+		{
+			Crouch();
+		}
+		StaminaComponent->StopStaminaDrain();
+		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
+		GetCharacterMovement()->JumpZVelocity = 0.0f;
+		break;
+	case 4:
+		// Prone
+		StaminaComponent->StopStaminaDrain();
+		GetCharacterMovement()->MaxWalkSpeed = 80.0f;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 80.0f;
+		GetCharacterMovement()->JumpZVelocity = 0.0f;
+		break;
+	}
+
+	if(bCharacterAnimationInterface)
+	{
+		ICharacterAnimationInterface::Execute_SetMovementState(AnimInstance, MovementState);
+	}
+}
+
+void ABaseCharacter::SetPickup_Implementation(const EItemType NewPickupType, APickup* NewPickup)
+{
+	PickupType = NewPickupType;
+	Pickup = NewPickup;
+}
+
+void ABaseCharacter::SetInteractable_Implementation(AActor* NewInteractable)
+{
+	Interactable = NewInteractable;
+	// If there is no actor to interact
+	if(Interactable)
+	{
+		bIsTryToUseVehicle = false;
+	}
+}
+
+void ABaseCharacter::Interact_Implementation()
+{
+	if(Pickup)
+	{
+		switch(PickupType)
+		{
+		case 0:
+			// Weapon
+			PickupWeapon(Pickup);
+			break;
+		case 1:
+			// Ammo
+			PickupAmmo(Pickup);
+			break;
+		case 2:
+			// Health
+			break;
+		}
+	}
+	else if(Interactable)
+	{
+		if(Interactable->ActorHasTag(TEXT("Vehicle")))
+		{
+			bIsTryToUseVehicle = true;
+			HolsterWeapon();
+		}
+	}
+}
+
+void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
+{
+	if(NewWeapon && NewWeapon->GetClass()->ImplementsInterface(UPickupWeaponInterface::StaticClass()))
+	{
+		APickupWeapon* Weapon = IPickupWeaponInterface::Execute_GetWeaponReference(NewWeapon);
+		if(Weapon)
+		{
+			switch(Weapon->WeaponInfo.WeaponType)
+			{
+			case 0: case 1:
+				// Pistol and SMG
+				if(SidearmWeapon)
+				{
+					DropWeapon(EWeaponToDo::SidearmWeapon);
+				}
+				AddWeapon(Weapon, EWeaponToDo::SidearmWeapon);
+				break;
+			case 2: case 3: case 4: case 5: case 6:
+				// Rifle, LMG, Shotgun, Sniper, and Launcher
+				if(PrimaryWeapon)
+				{
+					if(SecondaryWeapon)
+					{
+						switch (CurrentHoldingWeapon)
+						{
+						case 0: case 1:
+							// No Weapon and Primary Weapon - if character currently holding the primary weapon or no weapon then add the new weapon to the primary slot
+							DropWeapon(EWeaponToDo::PrimaryWeapon);
+							AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
+							break;
+						case 2:
+							// Secondary Weapon - if character currently holding the secondary weapon then add the new weapon to the secondary slot
+							DropWeapon(EWeaponToDo::SecondaryWeapon);
+							AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
+							break;
+						case 3:
+							// Sidearm Weapon - pistol and SMG handles in cases 0 and 1
+							break;
+						}
+					}
+					// If the secondary weapon slot is empty then add it there
+					else
+					{
+						AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
+					}
+				}
+				// If the primary weapon slot is empty then add it there
+				else
+				{
+					AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
+				}
+				break;
+			}
+		}
+	}
+}
+
+void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAsWeapon)
+{
+	
+}
+
+void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDo)
+{
+	
+}
+
+void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo NewCurrentHoldingWeapon)
+{
+	
+}
+
+void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
+{
+	if(NewAmmo && NewAmmo->GetClass()->ImplementsInterface(UPickupAmmoInterface::StaticClass()))
+	{
+		APickupAmmo* Ammo = IPickupAmmoInterface::Execute_GetPickupAmmoReference(NewAmmo);
+		if(Ammo)
+		{
+			switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
+			{
+			case 0:
+				// No Weapon = no ammo
+				break;
+			case 1:
+				// Primary Weapon
+				PrimaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+				break;
+			case 2:
+				// Secondary Weapon
+				SecondaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+				break;
+			case 3:
+				// Sidearm Weapon
+				SidearmWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+				break;
+			}
+
+			IPickupInterface::Execute_SetPickupStatus(Ammo, EPickupState::Remove);
+		}
+	}
+}
+
+EWeaponToDo ABaseCharacter::CanPickupAmmo_Implementation(int32 AmmoType)
+{
+	if(CurrentWeapon)
+	{
+		bool bIsSameAmmo = false;
+		switch (CurrentHoldingWeapon)
+		{
+		case 0:
+			// No weapon = no ammo
+			break;
+		case 1:
+			// Primary Weapon
+			bIsSameAmmo = AmmoType & PrimaryWeaponSupportedAmmo;
+			break;
+		case 2:
+			// Secondary Weapon
+			bIsSameAmmo = AmmoType & SecondaryWeaponSupportedAmmo;
+			break;
+		case 3:
+			// Sidearm Weapon
+			bIsSameAmmo = AmmoType & SidearmWeaponSupportedAmmo;
+			break;
+		}
+
+		if(CurrentWeapon->CanPickupAmmo() && bIsSameAmmo)
+		{
+			return CurrentHoldingWeapon;
+		}
+	}
+	if(PrimaryWeapon && PrimaryWeapon->CanPickupAmmo() && AmmoType & PrimaryWeaponSupportedAmmo)
+	{
+		return EWeaponToDo::PrimaryWeapon;
+	}
+	if(SecondaryWeapon && SecondaryWeapon->CanPickupAmmo() && AmmoType & SecondaryWeaponSupportedAmmo)
+	{
+		return EWeaponToDo::SecondaryWeapon;
+	}
+	if(SidearmWeapon && SidearmWeapon->CanPickupAmmo() && AmmoType & SidearmWeaponSupportedAmmo)
+	{
+		return EWeaponToDo::SidearmWeapon;
+	}
+	
+	return EWeaponToDo::NoWeapon;
+}
+
+void ABaseCharacter::StartFireWeapon()
+{
+	if(CurrentWeapon && bIsAimed)
+	{
+		CurrentWeapon->StartFireWeapon();
+	}
+}
+
+void ABaseCharacter::StopFireWeapon()
+{
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->StopFireWeapon();
+	}
+}
+
+// Reload Weapon based on movement state and weapon type
+void ABaseCharacter::ReloadWeapon()
+{
+	if(bDoOnceReload && CurrentWeapon && CurrentWeapon->AmmoComponent->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
+	{
+		switch (MovementState)
+		{
+		case 0: case 1: case 2:
+			// Walk, Run, and Sprint
+			switch (WeaponType)
+			{
+		case 0:
+			// Pistol
+			AnimMontageToPlay = StandUpReloadAnimations[0];
+				break;
+		case 1:
+			// SMG
+			AnimMontageToPlay = StandUpReloadAnimations[1];
+				break;
+		case 2:
+			// Rifle
+			AnimMontageToPlay = StandUpReloadAnimations[2];
+				break;
+		case 3:
+			// LMG
+			AnimMontageToPlay = StandUpReloadAnimations[3];
+				break;
+		case 4:
+			// Shotgun
+			AnimMontageToPlay = StandUpReloadAnimations[4];
+				break;
+		case 5:
+			// Sniper
+			AnimMontageToPlay = StandUpReloadAnimations[5];
+				break;
+		case 6:
+			// Launcher
+			AnimMontageToPlay = StandUpReloadAnimations[6];
+				break;
+			}
+			break;
+		case 3:
+			// Crouch
+			switch (WeaponType)
+			{
+		case 0:
+			// Pistol
+			AnimMontageToPlay = CrouchReloadAnimations[0];
+				break;
+		case 1:
+			// SMG
+			AnimMontageToPlay = CrouchReloadAnimations[1];
+				break;
+		case 2:
+			// Rifle
+			AnimMontageToPlay = CrouchReloadAnimations[2];
+				break;
+		case 3:
+			// LMG
+			AnimMontageToPlay = CrouchReloadAnimations[3];
+				break;
+		case 4:
+			// Shotgun
+			AnimMontageToPlay = CrouchReloadAnimations[4];
+				break;
+		case 5:
+			// Sniper
+			AnimMontageToPlay = CrouchReloadAnimations[5];
+				break;
+		case 6:
+			// Launcher
+			AnimMontageToPlay = CrouchReloadAnimations[6];
+				break;
+			}
+			break;
+		case 4:
+			// Prone
+			switch (WeaponType)
+			{
+		case 0:
+			// Pistol
+			AnimMontageToPlay = ProneReloadAnimations[0];
+				break;
+		case 1:
+			// SMG
+			AnimMontageToPlay = ProneReloadAnimations[1];
+				break;
+		case 2:
+			// Rifle
+			AnimMontageToPlay = ProneReloadAnimations[2];
+				break;
+		case 3:
+			// LMG
+			AnimMontageToPlay = ProneReloadAnimations[3];
+				break;
+		case 4:
+			// Shotgun
+			AnimMontageToPlay = ProneReloadAnimations[4];
+				break;
+		case 5:
+			// Sniper
+			AnimMontageToPlay = ProneReloadAnimations[5];
+				break;
+		case 6:
+			// Launcher
+			AnimMontageToPlay = ProneReloadAnimations[6];
+				break;
+			}
+			break;
+		}
+		AnimInstance->Montage_Play(AnimMontageToPlay, 2.0f);
+		FOnMontageEnded CompleteDelegate;
+		CompleteDelegate.BindUObject(this, &ABaseCharacter::ReloadHandler);
+		CompleteDelegate.BindUFunction(this, TEXT("Reload"));
+		AnimInstance->Montage_SetEndDelegate(CompleteDelegate, AnimMontageToPlay);
+		/*void UPlayMontageCallbackProxy::PlayMontage(class USkeletalMeshComponent* InSkeletalMeshComponent, 
+			class UAnimMontage* MontageToPlay, 
+			float PlayRate, 
+			float StartingPosition, 
+			FName StartingSection)
+		{
+			bool bPlayedSuccessfully = false;
+			if (InSkeletalMeshComponent)
+			{
+				if (UAnimInstance* AnimInstance = InSkeletalMeshComponent->GetAnimInstance())
+				{
+					const float MontageLength = AnimInstance->Montage_Play(MontageToPlay, PlayRate, EMontagePlayReturnType::MontageLength, StartingPosition);
+					bPlayedSuccessfully = (MontageLength > 0.f);
+ 
+					if (bPlayedSuccessfully)
+					{
+						AnimInstancePtr = AnimInstance;
+						if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(MontageToPlay))
+						{
+							MontageInstanceID = MontageInstance->GetInstanceID();
+						}
+ 
+						if (StartingSection != NAME_None)
+						{
+							AnimInstance->Montage_JumpToSection(StartingSection, MontageToPlay);
+						}
+ 
+						BlendingOutDelegate.BindUObject(this, &UPlayMontageCallbackProxy::OnMontageBlendingOut);
+						AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
+ 
+						MontageEndedDelegate.BindUObject(this, &UPlayMontageCallbackProxy::OnMontageEnded);
+						AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
+ 
+						AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UPlayMontageCallbackProxy::OnNotifyBeginReceived);
+						AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UPlayMontageCallbackProxy::OnNotifyEndReceived);
+					}
+				}
+			}
+ 
+			if (!bPlayedSuccessfully)
+			{
+				OnInterrupted.Broadcast(NAME_None);
+			}
+		}*/
+	}
+	else
+	{
+		ResetReload();
+	}
+}
+
+void ABaseCharacter::ReloadHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	
+}
+
+void ABaseCharacter::SetReloadState(EReloadState ReloadState)
+{
+	
+}
+
+// Override in childs
+void ABaseCharacter::ResetReload()
+{
+	bDoOnceReload = true;
+}
+
+void ABaseCharacter::HolsterWeapon()
+{
+	
+}
+
+void ABaseCharacter::SwitchToPrimary()
+{
+	
+}
+
+void ABaseCharacter::SwitchToSecondary()
+{
+	
+}
+
+void ABaseCharacter::SwitchToSidearm()
+{
+	
+}
+
+// Override by AI character
+void ABaseCharacter::SwitchIsEnded()
+{
+	
+}
+
+// Set weapons visibility on event Possessed and UnPossessed, to hide weapons when character is in vehicle
+void ABaseCharacter::SetWeaponVisibility(bool bNewVisibility)
+{
+	
+}
+
+void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)
+{
+	if(bCharacterAnimationInterface)
+	{
+		ICharacterAnimationInterface::Execute_AddRecoil(AnimInstance, RotationIntensity, ControlTime);
+	}
+}
+
+void ABaseCharacter::SetArmedState(bool bArmedState)
+{
+	
+}
+
+// Call from Set Current Weapon and use in player character to exit aim mode
+void ABaseCharacter::ResetAim()
+{
+	
+}
+
+void ABaseCharacter::DropItem()
+{
+	
+}
+
+void ABaseCharacter::ToggleUsingVehicle(bool bIsVehicle)
+{
+	
+}
+
+// Health Recovery based on Stamina level
+void ABaseCharacter::SetStaminaLevel_Implementation(float Stamina, const bool bIsFull)
+{
+	if(HealthComponent)
+	{
+		HealthComponent->bCanRecoverHealth = bIsFull;
+
+		if(bIsFull)
+		{
+			HealthComponent->StartHealthRecovery();
+		}
+		else
+		{
+			HealthComponent->StopHealthRecovery();
+		}
+	}
+}
+
+void ABaseCharacter::PlayIdleAnimation()
+{
+	if(!bIsAimed && bIsArmed)
+	{
+		switch (WeaponType)
+		{
+		case 0:
+			// Pistol
+			AnimMontageToPlay = ArmedIdleAnimations[0];
+			break;
+		case 1:
+			// SMG
+			AnimMontageToPlay = ArmedIdleAnimations[1];
+			break;
+		case 2:
+			// Rifle
+			AnimMontageToPlay = ArmedIdleAnimations[2];
+			break;
+		case 3:
+			// LMG
+			AnimMontageToPlay = ArmedIdleAnimations[3];
+			break;
+		case 4:
+			// Shotgun
+			AnimMontageToPlay = ArmedIdleAnimations[4];
+			break;
+		case 5:
+			// Sniper
+			AnimMontageToPlay = ArmedIdleAnimations[5];
+			break;
+		case 6:
+			// Launcher
+			AnimMontageToPlay = ArmedIdleAnimations[6];
+			break;
+		}
+	}
+	else if(!bIsAimed && !bIsArmed)
+	{
+		const int32 Lenght = IdleAnimations.Max();
+		AnimMontageToPlay = IdleAnimations[FMath::RandRange(0, Lenght)];
+	}
+
+	PlayAnimMontage(AnimMontageToPlay);
+}
+
+void ABaseCharacter::StartJump()
+{
+	
+}
+
+void ABaseCharacter::StopJump()
+{
+	
+}
+
+void ABaseCharacter::Landed(const FHitResult& Hit)
+{
+	
+}
+
+void ABaseCharacter::ToggleCrouch()
+{
+	
+}
+
+// Apply fall damage / Toggle ragdoll / Stand up the character
+void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	
+}
+
+void ABaseCharacter::CheckForFalling()
+{
+	
+}
+
+void ABaseCharacter::CachePose()
+{
+	
+}
+
 void ABaseCharacter::CalculateCapsuleLocation()
 {
 	FVector CapsuleLocation;
@@ -232,61 +879,4 @@ void ABaseCharacter::CalculateCapsuleLocation()
 	}
 	
 	MeshLocation = FMath::VInterpTo(MeshLocation, CapsuleLocation,  GetWorld()->GetDeltaSeconds(), 2.5f);
-}
-
-void ABaseCharacter::PlayIdleAnimation()
-{
-	
-}
-
-void ABaseCharacter::CharacterIsOnMove()
-{
-	
-}
-
-void ABaseCharacter::SetMovementState_Implementation(EMovementState InMovementState, bool bRelatedToCrouch, bool bRelatedToProne)
-{
-	
-}
-
-void ABaseCharacter::Interact_Implementation()
-{
-	if(Pickup)
-	{
-		switch(ItemType)
-		{
-		case 0:
-			// Weapon
-			APickupWeapon* Weapon;
-			Weapon = Cast<APickupWeapon>(Pickup);
-			PickupWeapon(Weapon);
-			break;
-		case 1:
-			// Ammo
-			APickupAmmo* Ammo;
-			Ammo = Cast<APickupAmmo>(Pickup);
-			PickupAmmo(Ammo);
-			break;
-		case 2:
-			// Health
-			break;
-		}
-	}
-}
-
-void ABaseCharacter::PickupWeapon(APickupWeapon* NewWeapon)
-{
-	
-}
-
-void ABaseCharacter::PickupAmmo(APickupAmmo* NewAmmo)
-{
-	
-}
-
-// Overlaps
-void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	
 }

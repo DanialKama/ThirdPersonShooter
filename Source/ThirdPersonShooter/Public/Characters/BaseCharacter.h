@@ -16,6 +16,23 @@ class APickup;
 class APickupWeapon;
 class APickupAmmo;
 
+enum class EReloadHandler : uint8
+{
+	Initiate,
+	Interrupt,
+	End
+};
+
+enum class EReloadState : uint8
+{
+	StartReload,
+	RemoveMag,
+	DropMag,
+	PickMag,
+	InsertMag,
+	EndReload
+};
+
 UCLASS()
 class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
 {
@@ -30,6 +47,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
+	virtual void Landed(const FHitResult& Hit) override;
 	
 	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -69,37 +90,79 @@ public:
 	UStaminaComponent* StaminaComponent;
 
 	//Functions
+	void SetArmedState(bool bArmedState);
+	void ResetAim();
+	void StartFireWeapon();
+	void StopFireWeapon();
+	void ReloadWeapon();
+	void HolsterWeapon();
+	void SwitchToPrimary();
+	void SwitchToSecondary();
+	void SwitchToSidearm();
+	void DropItem();
+	void SetReloadState(EReloadState ReloadState);
+
 	// Interfaces
-	virtual void SetMovementState_Implementation(EMovementState InMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
+	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
 	virtual void Interact_Implementation() override;
+	virtual void SetPickup_Implementation(EItemType NewPickupType, APickup* NewPickup) override;
+	virtual void SetInteractable_Implementation(AActor* NewInteractable) override;
+	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
+	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
+	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
+	
 	// Variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defaults")
-	uint8 bIsAlive : 1;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defaults")
+	uint8 bIsAlive : 1, bIsAimed : 1;
 	FGameplayTag TeamTag;
+	UPROPERTY()
+	APickupWeapon* PrimaryWeapon;
+	UPROPERTY()
+	APickupWeapon* SecondaryWeapon;
+	UPROPERTY()
+	APickupWeapon* SidearmWeapon;
+	EWeaponToDo CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Functions
+	void StartJump();
+	void StopJump();
+	void ToggleCrouch();
+	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo NewCurrentHoldingWeapon);
+
 	// Variables
+	uint8 bIsTryToUseVehicle : 1;
 	EMovementState MovementState = EMovementState::Walk;
 	EMovementState PreviousMovementState = EMovementState::Walk;
+	UPROPERTY()
+	APickupWeapon* CurrentWeapon;
 
 private:
 	// Functions
+	void UpdateMovementState();
+	void PickupWeapon(APickup* NewWeapon);
+	void AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAsWeapon);
+	void DropWeapon(EWeaponToDo WeaponToDo);
+	void PickupAmmo(APickup* NewAmmo);
+	void ResetReload();
+	void SwitchIsEnded();
+	void SetWeaponVisibility(bool bNewVisibility);
+	void ToggleUsingVehicle(bool bIsVehicle);
 	void PlayIdleAnimation();
 	void CharacterIsOnMove();
+	void CheckForFalling();
+	void CachePose();
 	void CalculateCapsuleLocation();
-	void PickupWeapon(APickupWeapon* NewWeapon);
-	void PickupAmmo(APickupAmmo* NewAmmo);
+	void ReloadHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 	// Overlaps
 	UFUNCTION()
 	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bCharacterAnimationInterface : 1, bRagdollState : 1;
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bCharacterAnimationInterface : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1;
 	
 	UPROPERTY()
 	UAnimInstance* AnimInstance;
@@ -107,9 +170,27 @@ private:
 	TArray<UMaterialInstanceDynamic*> MaterialInstance;
 	UPROPERTY()
 	APickup* Pickup;
+	UPROPERTY()
+	AActor* Interactable;
+	UPROPERTY()
+	UAnimMontage* AnimMontageToPlay;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> ArmedIdleAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> IdleAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> StandUpReloadAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> CrouchReloadAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> ProneReloadAnimations;
 
-	EItemType ItemType = EItemType::Weapon;
+	EItemType PickupType = EItemType::Weapon;
+	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
 	FGameplayTagContainer CharacterTagContainer;
 	FVector MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f), MeshLocation;
 	FTimerHandle IdleTimer;
+	int32 PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	int32 SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	int32 SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
 };

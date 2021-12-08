@@ -23,6 +23,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StaminaComponent")
 	void StartSprinting();
+
+	// Variables
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "At begin play Current Stamina is equal to Default Stamina"))
+	float CurrentStamina = 0.0f;
 	
 protected:
 	virtual void SetupComponent() override;
@@ -33,9 +37,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float DefaultStamina = 100.0f;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (ToolTip = "At begin play Current Stamina is equal to Default Stamina"))
-	float CurrentStamina = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float RestoreStaminaAmount = 25.0f;

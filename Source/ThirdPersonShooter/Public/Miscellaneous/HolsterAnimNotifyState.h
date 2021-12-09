@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ReloadAnimNotifyState.generated.h"
+#include "HolsterAnimNotifyState.generated.h"
 
 UCLASS()
-class THIRDPERSONSHOOTER_API UReloadAnimNotifyState : public UAnimNotifyState
+class THIRDPERSONSHOOTER_API UHolsterAnimNotifyState : public UAnimNotifyState
 {
 	GENERATED_BODY()
 

@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Characters/BaseCharacter.h"
+
+#include "Actors/Magazine.h"
 #include "Components/CapsuleComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Components/HealthComponent.h"
@@ -13,6 +15,7 @@
 #include "Actors/PickupAmmo.h"
 #include "Components/AmmoComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -131,6 +134,23 @@ ABaseCharacter::ABaseCharacter()
 	PhysicsConstraint3->SetAngularSwing1Limit(ACM_Limited, 10.0f);
 	PhysicsConstraint3->SetAngularSwing2Limit(ACM_Limited, 5.0f);
 	PhysicsConstraint3->SetAngularTwistLimit(ACM_Limited, 10.0f);
+
+	GetCharacterMovement()->BrakingFriction = 0.1f;
+	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
+	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
+	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
+	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+	GetCharacterMovement()->JumpZVelocity = 300.0f;
+	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->PushForceFactor = 1000.0f;
+	GetCharacterMovement()->NavAgentProps.AgentRadius = 42.0f;
+	GetCharacterMovement()->NavAgentProps.AgentHeight = 192.0f;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	
+	bUseControllerRotationYaw = false;
+	// AIControllerClass = AIC_Main; TODO
 	
 	// Overlap functions
 	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
@@ -230,7 +250,7 @@ void ABaseCharacter::UnPossessed()
 void ABaseCharacter::CharacterIsOnMove()
 {
 	GetWorld()->GetTimerManager().ClearTimer(IdleTimer);
-	StopAnimMontage(AnimMontageToPlay);
+	StopAnimMontage();
 	UpdateMovementState();
 }
 
@@ -499,7 +519,7 @@ EWeaponToDo ABaseCharacter::CanPickupAmmo_Implementation(int32 AmmoType)
 	return EWeaponToDo::NoWeapon;
 }
 
-void ABaseCharacter::StartFireWeapon()
+void ABaseCharacter::StartFireWeapon() const
 {
 	if(CurrentWeapon && bIsAimed)
 	{
@@ -507,7 +527,7 @@ void ABaseCharacter::StartFireWeapon()
 	}
 }
 
-void ABaseCharacter::StopFireWeapon()
+void ABaseCharacter::StopFireWeapon() const
 {
 	if(CurrentWeapon)
 	{
@@ -520,6 +540,7 @@ void ABaseCharacter::ReloadWeapon()
 {
 	if(bDoOnceReload && CurrentWeapon && CurrentWeapon->AmmoComponent->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
 	{
+		UAnimMontage* MontageToPlay = nullptr;
 		switch (MovementState)
 		{
 		case 0: case 1: case 2:
@@ -528,31 +549,31 @@ void ABaseCharacter::ReloadWeapon()
 			{
 		case 0:
 			// Pistol
-			AnimMontageToPlay = StandUpReloadAnimations[0];
+			MontageToPlay = StandUpReloadAnimations[0];
 				break;
 		case 1:
 			// SMG
-			AnimMontageToPlay = StandUpReloadAnimations[1];
+			MontageToPlay = StandUpReloadAnimations[1];
 				break;
 		case 2:
 			// Rifle
-			AnimMontageToPlay = StandUpReloadAnimations[2];
+			MontageToPlay = StandUpReloadAnimations[2];
 				break;
 		case 3:
 			// LMG
-			AnimMontageToPlay = StandUpReloadAnimations[3];
+			MontageToPlay = StandUpReloadAnimations[3];
 				break;
 		case 4:
 			// Shotgun
-			AnimMontageToPlay = StandUpReloadAnimations[4];
+			MontageToPlay = StandUpReloadAnimations[4];
 				break;
 		case 5:
 			// Sniper
-			AnimMontageToPlay = StandUpReloadAnimations[5];
+			MontageToPlay = StandUpReloadAnimations[5];
 				break;
 		case 6:
 			// Launcher
-			AnimMontageToPlay = StandUpReloadAnimations[6];
+			MontageToPlay = StandUpReloadAnimations[6];
 				break;
 			}
 			break;
@@ -562,118 +583,84 @@ void ABaseCharacter::ReloadWeapon()
 			{
 		case 0:
 			// Pistol
-			AnimMontageToPlay = CrouchReloadAnimations[0];
+			MontageToPlay = CrouchReloadAnimations[0];
 				break;
 		case 1:
 			// SMG
-			AnimMontageToPlay = CrouchReloadAnimations[1];
+			MontageToPlay = CrouchReloadAnimations[1];
 				break;
 		case 2:
 			// Rifle
-			AnimMontageToPlay = CrouchReloadAnimations[2];
+			MontageToPlay = CrouchReloadAnimations[2];
 				break;
 		case 3:
 			// LMG
-			AnimMontageToPlay = CrouchReloadAnimations[3];
+			MontageToPlay = CrouchReloadAnimations[3];
 				break;
 		case 4:
 			// Shotgun
-			AnimMontageToPlay = CrouchReloadAnimations[4];
+			MontageToPlay = CrouchReloadAnimations[4];
 				break;
 		case 5:
 			// Sniper
-			AnimMontageToPlay = CrouchReloadAnimations[5];
+			MontageToPlay = CrouchReloadAnimations[5];
 				break;
 		case 6:
 			// Launcher
-			AnimMontageToPlay = CrouchReloadAnimations[6];
+			MontageToPlay = CrouchReloadAnimations[6];
 				break;
 			}
 			break;
 		case 4:
 			// Prone
+			DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			switch (WeaponType)
 			{
 		case 0:
 			// Pistol
-			AnimMontageToPlay = ProneReloadAnimations[0];
+			MontageToPlay = ProneReloadAnimations[0];
 				break;
 		case 1:
 			// SMG
-			AnimMontageToPlay = ProneReloadAnimations[1];
+			MontageToPlay = ProneReloadAnimations[1];
 				break;
 		case 2:
 			// Rifle
-			AnimMontageToPlay = ProneReloadAnimations[2];
+			MontageToPlay = ProneReloadAnimations[2];
 				break;
 		case 3:
 			// LMG
-			AnimMontageToPlay = ProneReloadAnimations[3];
+			MontageToPlay = ProneReloadAnimations[3];
 				break;
 		case 4:
 			// Shotgun
-			AnimMontageToPlay = ProneReloadAnimations[4];
+			MontageToPlay = ProneReloadAnimations[4];
 				break;
 		case 5:
 			// Sniper
-			AnimMontageToPlay = ProneReloadAnimations[5];
+			MontageToPlay = ProneReloadAnimations[5];
 				break;
 		case 6:
 			// Launcher
-			AnimMontageToPlay = ProneReloadAnimations[6];
+			MontageToPlay = ProneReloadAnimations[6];
 				break;
 			}
 			break;
 		}
-		AnimInstance->Montage_Play(AnimMontageToPlay, 2.0f);
-		FOnMontageEnded CompleteDelegate;
-		CompleteDelegate.BindUObject(this, &ABaseCharacter::ReloadHandler);
-		CompleteDelegate.BindUFunction(this, TEXT("Reload"));
-		AnimInstance->Montage_SetEndDelegate(CompleteDelegate, AnimMontageToPlay);
-		/*void UPlayMontageCallbackProxy::PlayMontage(class USkeletalMeshComponent* InSkeletalMeshComponent, 
-			class UAnimMontage* MontageToPlay, 
-			float PlayRate, 
-			float StartingPosition, 
-			FName StartingSection)
+		const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f);
+		if(MontageLenght > 0.0f)
 		{
-			bool bPlayedSuccessfully = false;
-			if (InSkeletalMeshComponent)
+			AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
+			
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::WeaponReloadMontageHandler);
+			AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
+
+			if(CurrentWeapon->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 			{
-				if (UAnimInstance* AnimInstance = InSkeletalMeshComponent->GetAnimInstance())
-				{
-					const float MontageLength = AnimInstance->Montage_Play(MontageToPlay, PlayRate, EMontagePlayReturnType::MontageLength, StartingPosition);
-					bPlayedSuccessfully = (MontageLength > 0.f);
- 
-					if (bPlayedSuccessfully)
-					{
-						AnimInstancePtr = AnimInstance;
-						if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(MontageToPlay))
-						{
-							MontageInstanceID = MontageInstance->GetInstanceID();
-						}
- 
-						if (StartingSection != NAME_None)
-						{
-							AnimInstance->Montage_JumpToSection(StartingSection, MontageToPlay);
-						}
- 
-						BlendingOutDelegate.BindUObject(this, &UPlayMontageCallbackProxy::OnMontageBlendingOut);
-						AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
- 
-						MontageEndedDelegate.BindUObject(this, &UPlayMontageCallbackProxy::OnMontageEnded);
-						AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
- 
-						AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UPlayMontageCallbackProxy::OnNotifyBeginReceived);
-						AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UPlayMontageCallbackProxy::OnNotifyEndReceived);
-					}
-				}
+				Execute_SetWeaponState(CurrentWeapon, EWeaponState::Idle);
 			}
- 
-			if (!bPlayedSuccessfully)
-			{
-				OnInterrupted.Broadcast(NAME_None);
-			}
-		}*/
+		}
 	}
 	else
 	{
@@ -681,17 +668,77 @@ void ABaseCharacter::ReloadWeapon()
 	}
 }
 
-void ABaseCharacter::ReloadHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+void ABaseCharacter::WeaponReloadMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	if(bInterrupted)
+	{
+		if(CurrentWeapon)
+		{
+			CurrentWeapon->SetMagazineVisibility(true);
+			if(CurrentWeapon->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+			{
+				Execute_SetWeaponState(CurrentWeapon, EWeaponState::Idle);
+			}
+		}
+		Magazine->Destroy();
+		ResetReload();
+	}
+	else
+	{
+		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		StopAnimMontage();
+		if(CurrentWeapon)
+		{
+			CurrentWeapon->ReloadWeapon();
+			ResetReload();
+		}
+	}
+}
+
+void ABaseCharacter::SetReloadState(const EReloadState ReloadState)
+{
+	if(CurrentWeapon)
+	{
+		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+		switch (ReloadState)
+		{
+		case 0:
+			// Start Reload
+			break;
+		case 1:
+			// Remove Mag
+			SpawnMagazine(CurrentWeapon);
+			CurrentWeapon->SetMagazineVisibility(false);
+			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
+			break;
+		case 2:
+			// Drop Mag
+			Magazine->StaticMesh->SetSimulatePhysics(true);
+			break;
+		case 3:
+			// Pick Mag
+			SpawnMagazine(CurrentWeapon);
+			CurrentWeapon->SetMagazineVisibility(false);
+			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
+			break;
+		case 4:
+			// Insert Mag
+			Magazine->Destroy();
+			CurrentWeapon->SetMagazineVisibility(true);
+			break;
+		case 5:
+			// End Reload
+			break;
+		}
+	}
+}
+
+void ABaseCharacter::SpawnMagazine(APickupWeapon* Weapon)
 {
 	
 }
 
-void ABaseCharacter::SetReloadState(EReloadState ReloadState)
-{
-	
-}
-
-// Override in childs
+// Override in child
 void ABaseCharacter::ResetReload()
 {
 	bDoOnceReload = true;
@@ -699,12 +746,165 @@ void ABaseCharacter::ResetReload()
 
 void ABaseCharacter::HolsterWeapon()
 {
-	
+	if(CurrentWeapon)
+	{
+		UAnimMontage* MontageToPlay = nullptr;
+		switch (WeaponType)
+		{
+		case 0:
+			// Pistol
+			MontageToPlay = HolsterWeaponAnimations[0];
+			break;
+		case 1:
+			// SMG
+			MontageToPlay = HolsterWeaponAnimations[1];
+			break;
+		case 2:
+			// Rifle
+			MontageToPlay = HolsterWeaponAnimations[2];
+			break;
+		case 3:
+			// LMG
+			MontageToPlay = HolsterWeaponAnimations[3];
+			break;
+		case 4:
+			// Shotgun
+			MontageToPlay = HolsterWeaponAnimations[4];
+			break;
+		case 5:
+			// Sniper
+			MontageToPlay = HolsterWeaponAnimations[5];
+			break;
+		case 6:
+			// Launcher
+			MontageToPlay = HolsterWeaponAnimations[6];
+			break;
+		}
+		
+		FName StartSection = NAME_None;
+		SetArmedState(false);
+		switch (CurrentHoldingWeapon)
+		{
+		case 0:
+			// No Weapon = no switch
+			SwitchIsEnded();
+			break;
+		case 1: case 2:
+			// Primary Weapon, Secondary Weapon
+			StartSection = FName("Start");
+			break;
+		case 3:
+			// Sidearm Weapon
+			StartSection = FName("PutBack");
+			break;
+		}
+		
+		CurrentWeapon->LowerWeapon();
+		const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f);
+		if(MontageLenght > 0.0f && StartSection != NAME_None)
+		{
+			AnimInstance->Montage_JumpToSection(StartSection, MontageToPlay);
+			
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::WeaponHolsterMontageHandler);
+			AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
+		}
+	}
+	else
+	{
+		SwitchIsEnded();
+	}
+}
+
+void ABaseCharacter::WeaponHolsterMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	if(bInterrupted)
+	{
+		SetArmedState(true);
+		SwitchIsEnded();
+	}
+}
+
+void ABaseCharacter::SetHolsterState(EMontageState HolsterState)
+{
+	switch (HolsterState)
+	{
+	case 0:
+		// Start
+		AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
+		SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+		SetArmedState(false);
+		SwitchIsEnded();
+		break;
+	case 1:
+		// End
+		break;
+	}
 }
 
 void ABaseCharacter::SwitchToPrimary()
 {
-	
+	if(PrimaryWeapon)
+	{
+		UAnimMontage* MontageToPlay = nullptr;
+		switch (WeaponType)
+		{
+		case 0:
+			// Pistol
+			MontageToPlay = GrabWeaponAnimations[0];
+			break;
+		case 1:
+			// SMG
+			MontageToPlay = GrabWeaponAnimations[1];
+			break;
+		case 2:
+			// Rifle
+			MontageToPlay = GrabWeaponAnimations[2];
+			break;
+		case 3:
+			// LMG
+			MontageToPlay = GrabWeaponAnimations[3];
+			break;
+		case 4:
+			// Shotgun
+			MontageToPlay = GrabWeaponAnimations[4];
+			break;
+		case 5:
+			// Sniper
+			MontageToPlay = GrabWeaponAnimations[5];
+			break;
+		case 6:
+			// Launcher
+			MontageToPlay = GrabWeaponAnimations[6];
+			break;
+		}
+		
+		SetArmedState(false);
+		switch (CurrentHoldingWeapon)
+		{
+		case 0:
+			// No Weapon - if currently holding no weapon then grab primary weapon from back
+			float MontageLenght;
+			MontageLenght = AnimInstance->Montage_Play(MontageToPlay, 2.0f, EMontagePlayReturnType::MontageLength, 0.0f);
+			if(MontageLenght > 0.0f)
+			{
+				AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
+			}
+			break;
+		case 1:
+			// Primary Weapon - if currently holding primary weapon then holster it
+			HolsterWeapon();
+			break;
+		case 2:
+			// Secondary Weapon - if currently holding secondary weapon then holster it and grab primary weapon
+			
+			break;
+		case 3:
+			// Sidearm Weapon - if currently holding sidearm weapon then holster it and grab primary weapon
+			
+			break;
+		}
+	}
 }
 
 void ABaseCharacter::SwitchToSecondary()
@@ -717,8 +917,32 @@ void ABaseCharacter::SwitchToSidearm()
 	
 }
 
+void ABaseCharacter::StartGrabWeapon(EMontageState GrabState)
+{
+	switch (GrabState)
+	{
+	case 0:
+		// Start
+		if(GrabbedWeapon)
+		{
+			GrabbedWeapon->RaiseWeapon();
+			
+		}
+		break;
+	case 1:
+		// End
+		
+		break;
+	}
+}
+
 // Override by AI character
 void ABaseCharacter::SwitchIsEnded()
+{
+	
+}
+
+void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon)
 {
 	
 }
@@ -778,47 +1002,48 @@ void ABaseCharacter::SetStaminaLevel_Implementation(float Stamina, const bool bI
 
 void ABaseCharacter::PlayIdleAnimation()
 {
+	UAnimMontage* MontageToPlay = nullptr;
 	if(!bIsAimed && bIsArmed)
 	{
 		switch (WeaponType)
 		{
 		case 0:
 			// Pistol
-			AnimMontageToPlay = ArmedIdleAnimations[0];
+			MontageToPlay = ArmedIdleAnimations[0];
 			break;
 		case 1:
 			// SMG
-			AnimMontageToPlay = ArmedIdleAnimations[1];
+			MontageToPlay = ArmedIdleAnimations[1];
 			break;
 		case 2:
 			// Rifle
-			AnimMontageToPlay = ArmedIdleAnimations[2];
+			MontageToPlay = ArmedIdleAnimations[2];
 			break;
 		case 3:
 			// LMG
-			AnimMontageToPlay = ArmedIdleAnimations[3];
+			MontageToPlay = ArmedIdleAnimations[3];
 			break;
 		case 4:
 			// Shotgun
-			AnimMontageToPlay = ArmedIdleAnimations[4];
+			MontageToPlay = ArmedIdleAnimations[4];
 			break;
 		case 5:
 			// Sniper
-			AnimMontageToPlay = ArmedIdleAnimations[5];
+			MontageToPlay = ArmedIdleAnimations[5];
 			break;
 		case 6:
 			// Launcher
-			AnimMontageToPlay = ArmedIdleAnimations[6];
+			MontageToPlay = ArmedIdleAnimations[6];
 			break;
 		}
 	}
 	else if(!bIsAimed && !bIsArmed)
 	{
 		const int32 Lenght = IdleAnimations.Max();
-		AnimMontageToPlay = IdleAnimations[FMath::RandRange(0, Lenght)];
+		MontageToPlay = IdleAnimations[FMath::RandRange(0, Lenght)];
 	}
-
-	PlayAnimMontage(AnimMontageToPlay);
+	
+	PlayAnimMontage(MontageToPlay);
 }
 
 void ABaseCharacter::StartJump()

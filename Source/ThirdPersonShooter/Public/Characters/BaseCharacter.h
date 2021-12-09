@@ -15,13 +15,7 @@ class UStaminaComponent;
 class APickup;
 class APickupWeapon;
 class APickupAmmo;
-
-enum class EReloadHandler : uint8
-{
-	Initiate,
-	Interrupt,
-	End
-};
+class AMagazine;
 
 enum class EReloadState : uint8
 {
@@ -31,6 +25,12 @@ enum class EReloadState : uint8
 	PickMag,
 	InsertMag,
 	EndReload
+};
+
+enum class EMontageState : uint8
+{
+	Start,
+	End
 };
 
 UCLASS()
@@ -92,15 +92,17 @@ public:
 	//Functions
 	void SetArmedState(bool bArmedState);
 	void ResetAim();
-	void StartFireWeapon();
-	void StopFireWeapon();
+	void StartFireWeapon() const;
+	void StopFireWeapon() const;
 	void ReloadWeapon();
 	void HolsterWeapon();
 	void SwitchToPrimary();
 	void SwitchToSecondary();
 	void SwitchToSidearm();
 	void DropItem();
-	void SetReloadState(EReloadState ReloadState);
+	void SetReloadState(EReloadState ReloadState);		// Call from anim notify
+	void SetHolsterState(EMontageState HolsterState);	// Call from anim notify
+	void StartGrabWeapon(EMontageState GrabState);	// Call from anim notify
 
 	// Interfaces
 	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
@@ -143,11 +145,14 @@ private:
 	// Functions
 	void UpdateMovementState();
 	void PickupWeapon(APickup* NewWeapon);
-	void AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAsWeapon);
+	void AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo TargetSlot);
+	void GrabWeapon(APickupWeapon* WeaponToGrab, EWeaponToDo TargetSlot);
 	void DropWeapon(EWeaponToDo WeaponToDo);
 	void PickupAmmo(APickup* NewAmmo);
+	void SpawnMagazine(APickupWeapon* Weapon);
 	void ResetReload();
 	void SwitchIsEnded();
+	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon);
 	void SetWeaponVisibility(bool bNewVisibility);
 	void ToggleUsingVehicle(bool bIsVehicle);
 	void PlayIdleAnimation();
@@ -155,7 +160,9 @@ private:
 	void CheckForFalling();
 	void CachePose();
 	void CalculateCapsuleLocation();
-	void ReloadHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	void WeaponReloadMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	void WeaponHolsterMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+
 	// Overlaps
 	UFUNCTION()
 	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -172,8 +179,6 @@ private:
 	APickup* Pickup;
 	UPROPERTY()
 	AActor* Interactable;
-	UPROPERTY()
-	UAnimMontage* AnimMontageToPlay;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> ArmedIdleAnimations;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
@@ -184,6 +189,10 @@ private:
 	TArray<UAnimMontage*> CrouchReloadAnimations;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> ProneReloadAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> HolsterWeaponAnimations;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> GrabWeaponAnimations;
 
 	EItemType PickupType = EItemType::Weapon;
 	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
@@ -193,4 +202,8 @@ private:
 	int32 PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
 	int32 SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
 	int32 SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	UPROPERTY()
+	AMagazine* Magazine;
+	UPROPERTY()
+	APickupWeapon* GrabbedWeapon;
 };

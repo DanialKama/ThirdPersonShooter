@@ -7,7 +7,6 @@ You can also access the project launcher and pictures of the project [here](http
 
 ## Concepts covered
 - Pickup system for weapons and ammo
-- Controllable Pawns (helicopter, jet, and chaos vehicle)
 - AI enemy and friend (based on Gameplay Tags) with damage, hearing, prediction, and sight senses and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigate to important places, search, retreat (on low health), and healing.
 - Chaos Destruction and Field Systems (plugin is in beta and not stable)
 - Health system, including reducing health based on damage type like point damage (rife bullet), radial damage (explosion), or fall damage, and health recovery based on stamina level.
@@ -32,7 +31,5 @@ The assets included are listed below, and some of them were made by myself.
 - [FPS Weapon Bundle](https://www.unrealengine.com/marketplace/en-US/product/fps-weapon-bundle)
 - [Military Weapons Dark](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-dark)
 - [Military Weapons Silver](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-silver)
-- [AH-64D Apache Longbow (West)](https://www.unrealengine.com/marketplace/en-US/product/ah-64d-apache-longbow-us)
-- [Fighter F/A-18C Hornet (West)](https://www.unrealengine.com/marketplace/en-US/product/fighter-f-a-18c-hornet)
 - Some free 3D models from [cgtrader](https://www.cgtrader.com/)
 - Most animations are from [Mixamo](https://www.mixamo.com/) and sounds from [Freesound](https://freesound.org/)

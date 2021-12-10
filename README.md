@@ -1,6 +1,6 @@
 # Third Person Shooter
 ## Introduction
-This project is a TPS Sample Project for Unreal Engine 5.
+This project is a TPS sample project developed in Unreal Engine 5.
 This is not production-ready code but a starting point for learning TPS concepts.
 If you have any questions or suggestions about this project, talk to me on [LinkedIn](https://www.linkedin.com/in/danialkamali/).
 You can also access the project launcher and pictures of the project [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).

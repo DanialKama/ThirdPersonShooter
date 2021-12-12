@@ -1,4 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// All Rights Reserved.
 
 #pragma once
 
@@ -45,10 +45,6 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	UCurveFloat* WeaponSpreadCurve = nullptr;
-
-	// Operators
-	// bool operator==(const FWeaponInfo& V) const;
-	// bool operator!=(const FWeaponInfo& V) const;
 };
 
 FORCEINLINE FWeaponInfo::FWeaponInfo()
@@ -59,20 +55,3 @@ FORCEINLINE FWeaponInfo::FWeaponInfo(const EWeaponType InWeaponType, const FStri
 : WeaponType(InWeaponType), Name(InName), Range(InRange), bIsAutomatic(InbIsAutomatic), TimeBetweenShots(InTimeBetweenShots), CoolDownTime(InCoolDownTime), AmmoType(InAmmoType), MinFireOffset(InMinFireOffset), MaxFireOffset(InMaxFireOffset), WeaponSpreadCurve(InWeaponSpreadCurve)
 {
 }
-
-// Operators
-// FORCEINLINE bool FWeaponInfo::operator==(const FWeaponInfo& V) const
-// {
-// 	// TODO
-// }
-//
-// FORCEINLINE bool FWeaponInfo::operator!=(const FWeaponInfo& V) const
-// {
-// 	// TODO
-// }
-
-// To use struct as key for maps
-// FORCEINLINE uint32 GetTypeHash(const FWeaponInfo& b)
-// {
-// 	return FCrc::MemCrc_DEPRECATED(&b, sizeof(FWeaponInfo));
-// }

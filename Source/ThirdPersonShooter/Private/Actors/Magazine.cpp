@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #include "Actors/Magazine.h"
 #include "Kismet/GameplayStatics.h"

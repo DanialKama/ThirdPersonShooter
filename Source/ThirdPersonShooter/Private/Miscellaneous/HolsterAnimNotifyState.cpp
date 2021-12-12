@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #include "Miscellaneous/HolsterAnimNotifyState.h"
 #include "Characters/BaseCharacter.h"
@@ -10,7 +10,7 @@ void UHolsterAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetHolsterState(EMontageState::Start);
+			Character->UpdateHolsterWeaponNotifyState(ENotifyState::Begin);
 		}
 	}
 }
@@ -21,7 +21,7 @@ void UHolsterAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetHolsterState(EMontageState::End);
+			Character->UpdateHolsterWeaponNotifyState(ENotifyState::End);
 		}
 	}
 }

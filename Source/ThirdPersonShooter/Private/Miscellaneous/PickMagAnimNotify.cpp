@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #include "Miscellaneous/PickMagAnimNotify.h"
 #include "Characters/BaseCharacter.h"

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #pragma once
 
@@ -27,9 +27,9 @@ enum class EReloadState : uint8
 	EndReload
 };
 
-enum class EMontageState : uint8
+enum class ENotifyState : uint8
 {
-	Start,
+	Begin,
 	End
 };
 
@@ -100,9 +100,9 @@ public:
 	void SwitchToSecondary();
 	void SwitchToSidearm();
 	void DropItem();
-	void SetReloadState(EReloadState ReloadState);		// Call from anim notify
-	void SetHolsterState(EMontageState HolsterState);	// Call from anim notify
-	void StartGrabWeapon(EMontageState GrabState);	// Call from anim notify
+	void SetReloadState(EReloadState ReloadState);					// Call from anim notify
+	void UpdateHolsterWeaponNotifyState(ENotifyState NotifyState);	// Call from anim notify
+	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);		// Call from anim notify
 
 	// Interfaces
 	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
@@ -151,6 +151,7 @@ private:
 	void PickupAmmo(APickup* NewAmmo);
 	void SpawnMagazine(APickupWeapon* Weapon);
 	void ResetReload();
+	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon);
 	void SwitchIsEnded();
 	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon);
 	void SetWeaponVisibility(bool bNewVisibility);
@@ -160,8 +161,8 @@ private:
 	void CheckForFalling();
 	void CachePose();
 	void CalculateCapsuleLocation();
-	void WeaponReloadMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
-	void WeaponHolsterMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	void ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	void HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
 	// Overlaps
 	UFUNCTION()
@@ -206,4 +207,6 @@ private:
 	AMagazine* Magazine;
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
+	EWeaponToDo WeaponToGrab = EWeaponToDo::PrimaryWeapon;
+	EWeaponType WeaponToHolster;
 };

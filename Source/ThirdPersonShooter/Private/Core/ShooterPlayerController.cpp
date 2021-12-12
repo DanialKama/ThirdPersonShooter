@@ -1,3 +1,4 @@
+// All Rights Reserved.
 
 #include "Core/ShooterPlayerController.h"
 

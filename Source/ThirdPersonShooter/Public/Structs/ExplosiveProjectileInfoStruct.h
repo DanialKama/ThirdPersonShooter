@@ -1,3 +1,4 @@
+// All Rights Reserved.
 
 #pragma once
 
@@ -34,10 +35,6 @@ struct FExplosiveProjectileInfo : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
 	float TorqueMagnitude = 500.0f;
-	
-	// Operators
-	// bool operator==(const FProjectileInfo& V) const;
-	// bool operator!=(const FProjectileInfo& V) const;
 };
 
 FORCEINLINE FExplosiveProjectileInfo::FExplosiveProjectileInfo()
@@ -48,18 +45,3 @@ FORCEINLINE FExplosiveProjectileInfo::FExplosiveProjectileInfo(const float InBas
 : BaseDamage(InBaseDamage), MinimumDamage(InMinimumDamage), DamageInnerRadius(InDamageInnerRadius), DamageOuterRadius(InDamageOuterRadius), StrainMagnitude(InStrainMagnitude), ForceMagnitude(InForceMagnitude), TorqueMagnitude(InTorqueMagnitude)
 {
 }
-
-// Operators
-// FORCEINLINE bool FProjectileInfo::operator==(const FAmmoComponentInfo& V) const
-// {
-// }
-//
-// FORCEINLINE bool FProjectileInfo::operator!=(const FAmmoComponentInfo& V) const
-// {
-// }
-
-// To use struct as key for maps
-// FORCEINLINE uint32 GetTypeHash(const FProjectileInfo& b)
-// {
-// 	return FCrc::MemCrc_DEPRECATED(&b, sizeof(FProjectileInfo));
-// }

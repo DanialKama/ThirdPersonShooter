@@ -1,10 +1,11 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Structs/AmmoComponentInfoStruct.h"
+#include "Enums/PickupEnums.h"
 #include "PlayerControllerInterface.generated.h"
 
 class AShooterPlayerController;

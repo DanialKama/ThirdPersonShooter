@@ -1,3 +1,4 @@
+// All Rights Reserved.
 
 #pragma once
 

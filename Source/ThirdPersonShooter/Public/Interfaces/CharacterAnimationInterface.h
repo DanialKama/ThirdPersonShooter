@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #pragma once
 
@@ -35,9 +35,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterAnimationInterface", meta = (ToolTip = "True when character is dead and mesh is not moving anymore"))
 	void SetCompletelyStopMoving(bool bCompletelyStop);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterAnimationInterface")
-	void SetInVehicleState(bool bInVehicle, EInVehicleState InVehicleState);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterAnimationInterface")
 	void AddRecoil(FRotator RotationIntensity, float ControlTime);

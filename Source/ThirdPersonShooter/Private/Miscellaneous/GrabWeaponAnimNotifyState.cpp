@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #include "Miscellaneous/GrabWeaponAnimNotifyState.h"
 #include "Characters/BaseCharacter.h"
@@ -10,7 +10,7 @@ void UGrabWeaponAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->StartGrabWeapon(EMontageState::Start);
+			Character->UpdateGrabWeaponNotifyState(ENotifyState::Begin);
 		}
 	}
 }
@@ -21,7 +21,7 @@ void UGrabWeaponAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->StartGrabWeapon(EMontageState::End);
+			Character->UpdateGrabWeaponNotifyState(ENotifyState::End);
 		}
 	}
 }

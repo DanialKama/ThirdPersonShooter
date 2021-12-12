@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #include "Components/AmmoComponent.h"
 #include "Interfaces/CommonInterface.h"

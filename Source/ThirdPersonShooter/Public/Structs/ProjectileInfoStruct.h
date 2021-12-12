@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// All Rights Reserved.
 
 #pragma once
 
@@ -52,10 +52,6 @@ struct FProjectileInfo : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
 	float TorqueMagnitude = 100.0f;
-	
-	// Operators
-	// bool operator==(const FProjectileInfo& V) const;
-	// bool operator!=(const FProjectileInfo& V) const;
 };
 
 FORCEINLINE FProjectileInfo::FProjectileInfo()
@@ -71,18 +67,3 @@ FORCEINLINE FProjectileInfo::FProjectileInfo(const float InDefaultDamage, const 
 	TorqueMagnitude(InTorqueMagnitude)
 {
 }
-
-// Operators
-// FORCEINLINE bool FProjectileInfo::operator==(const FAmmoComponentInfo& V) const
-// {
-// }
-//
-// FORCEINLINE bool FProjectileInfo::operator!=(const FAmmoComponentInfo& V) const
-// {
-// }
-
-// To use struct as key for maps
-// FORCEINLINE uint32 GetTypeHash(const FProjectileInfo& b)
-// {
-// 	return FCrc::MemCrc_DEPRECATED(&b, sizeof(FProjectileInfo));
-// }

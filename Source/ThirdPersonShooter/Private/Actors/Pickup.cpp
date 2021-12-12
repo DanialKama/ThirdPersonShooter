@@ -21,6 +21,7 @@ APickup* APickup::GetPickupReference_Implementation()
 	return this;
 }
 
-void APickup::SetPickupStatus_Implementation(EPickupState PickupState)
+/** Override in child classes */
+void APickup::SetPickupStatus(EPickupState PickupState)
 {
 }

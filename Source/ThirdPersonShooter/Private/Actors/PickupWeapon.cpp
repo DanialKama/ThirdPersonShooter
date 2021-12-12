@@ -181,9 +181,10 @@ void APickupWeapon::SpawnProjectile()
 		{
 			FVector Location;
 			FRotator Rotation;
-			FActorSpawnParameters ActorSpawnParameters;
 
 			ProjectileLineTrace(Location, Rotation);
+			
+			FActorSpawnParameters ActorSpawnParameters;
 			ActorSpawnParameters.Owner = this;
 			ActorSpawnParameters.Instigator = GetInstigator();
 			ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -348,9 +349,7 @@ void APickupWeapon::ReloadWeapon() const
 
 bool APickupWeapon::CanPickupAmmo() const
 {
-	int32 CurrentAmmo, MagazineSize, CurrentMagazineAmmo;
-	AmmoComponent->GetAmmoInfo(CurrentAmmo, MagazineSize, CurrentMagazineAmmo);
-
+	const int32 CurrentAmmo = AmmoComponent->CurrentAmmo;
 	if(CurrentAmmo < AmmoComponent->MaxAmmo)
 	{
 		return true;
@@ -371,7 +370,7 @@ FVector APickupWeapon::GetLeftHandAimLocation() const
 }
 
 // Interfaces
-void APickupWeapon::SetPickupStatus_Implementation(const EPickupState PickupState)
+void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 {
 	switch(PickupState)
 	{

@@ -46,9 +46,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Stamina should be between 0 and 1"))
 	void SetStaminaLevel(float Stamina, bool bIsFull);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	void SetInteractable(AActor* NewInteractable);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetPickup(EItemType NewPickupType, APickup* NewPickup);

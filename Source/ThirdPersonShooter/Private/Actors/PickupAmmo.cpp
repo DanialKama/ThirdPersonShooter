@@ -54,7 +54,7 @@ void APickupAmmo::BeginPlay()
 }
 
 // Interfaces
-void APickupAmmo::SetPickupStatus_Implementation(EPickupState PickupState)
+void APickupAmmo::SetPickupStatus(EPickupState PickupState)
 {
 	switch(PickupState)
 	{

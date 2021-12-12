@@ -16,6 +16,7 @@ class APickup;
 class APickupWeapon;
 class APickupAmmo;
 class AMagazine;
+class UCameraComponent;
 
 enum class EReloadState : uint8
 {
@@ -47,9 +48,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void UnPossessed() override;
+	
 	virtual void Landed(const FHitResult& Hit) override;
 	
 	// Components
@@ -75,15 +74,6 @@ public:
 	UPhysicsConstraintComponent* PhysicsConstraint2;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Root3;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Hinge3;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UPhysicsConstraintComponent* PhysicsConstraint3;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -91,24 +81,30 @@ public:
 
 	//Functions
 	void SetArmedState(bool bArmedState);
+	/** Call from Set Current Weapon and use in player character to exit aim mode */
 	void ResetAim();
 	void StartFireWeapon() const;
 	void StopFireWeapon() const;
+	/** Reload Weapon based on movement state and weapon type */
 	void ReloadWeapon();
 	void HolsterWeapon();
 	void SwitchToPrimary();
 	void SwitchToSecondary();
 	void SwitchToSidearm();
 	void DropItem();
-	void SetReloadState(EReloadState ReloadState);					// Call from anim notify
-	void UpdateHolsterWeaponNotifyState(ENotifyState NotifyState);	// Call from anim notify
-	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);		// Call from anim notify
+
+	/** Call from anim notify */
+	void SetReloadState(EReloadState ReloadState);
+	/** Call from anim notify */
+	void UpdateHolsterWeaponNotifyState(ENotifyState NotifyState);
+	/** Call from anim notify */
+	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
 
 	// Interfaces
 	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
 	virtual void Interact_Implementation() override;
 	virtual void SetPickup_Implementation(EItemType NewPickupType, APickup* NewPickup) override;
-	virtual void SetInteractable_Implementation(AActor* NewInteractable) override;
+	/** Health Recovery based on Stamina level */
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
@@ -130,32 +126,43 @@ protected:
 
 	//Functions
 	void StartJump();
-	void StopJump();
 	void ToggleCrouch();
-	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo NewCurrentHoldingWeapon);
+	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
+	bool StartAiming();
+	void StopAiming();
 
 	// Variables
-	uint8 bIsTryToUseVehicle : 1;
 	EMovementState MovementState = EMovementState::Walk;
 	EMovementState PreviousMovementState = EMovementState::Walk;
 	UPROPERTY()
 	APickupWeapon* CurrentWeapon;
+	UPROPERTY()
+	UCameraComponent* ChildCameraComponent;
 
 private:
 	// Functions
 	void UpdateMovementState();
 	void PickupWeapon(APickup* NewWeapon);
 	void AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo TargetSlot);
-	void GrabWeapon(APickupWeapon* WeaponToGrab, EWeaponToDo TargetSlot);
-	void DropWeapon(EWeaponToDo WeaponToDo);
+	
+	/** Replace the input weapon with a similar weapon
+	to be persistence between level streaming.
+	(all-important information will be transferred to the new weapon)
+	Because when the player picks up a weapon from a streamed level
+	and then that level unloads the weapon will be destroyed,
+	so instead of just attaching the current weapon from the streamed level
+	we spawn a new weapon that includes in persistent level and does not destroy on level unloads.*/
+	APickupWeapon* SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn);
+	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
-	void SpawnMagazine(APickupWeapon* Weapon);
+	void SpawnMagazine(const APickupWeapon* Weapon);
+	/** Override in child class */
 	void ResetReload();
-	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon);
-	void SwitchIsEnded();
-	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon);
-	void SetWeaponVisibility(bool bNewVisibility);
-	void ToggleUsingVehicle(bool bIsVehicle);
+	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
+	/** Override by AI character */
+	virtual void SwitchIsEnded();
+	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
+
 	void PlayIdleAnimation();
 	void CharacterIsOnMove();
 	void CheckForFalling();
@@ -208,5 +215,5 @@ private:
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
 	EWeaponToDo WeaponToGrab = EWeaponToDo::PrimaryWeapon;
-	EWeaponType WeaponToHolster;
+	EWeaponType HolsterWeaponType;
 };

@@ -30,10 +30,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UWidgetComponent* Widget;
 
+	// Functions
+	virtual void SetPickupStatus(EPickupState PickupState) override;
+
 	// Interfaces
-	// Without Output
-	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;	// Pickup Interface, Call from character base
-	virtual APickupAmmo* GetPickupAmmoReference_Implementation() override;			// Pickup Ammo Interface, Call from character base
+	virtual APickupAmmo* GetPickupAmmoReference_Implementation() override;
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))

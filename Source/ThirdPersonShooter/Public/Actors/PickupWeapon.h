@@ -124,15 +124,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	FVector GetLeftHandAimLocation() const;
 	
+	virtual void SetPickupStatus(const EPickupState PickupState) override;
+	
 	// Interfaces
-	virtual void SetPickupStatus_Implementation(const EPickupState PickupState) override;	// Pickup Interface, Call from character base
-	virtual APickupWeapon* GetWeaponReference_Implementation() override;					// Weapon Interface, Call from character base
-	virtual void SetCanFire_Implementation(const bool bInCanFire) override;					// Common Interface, Call from ammo component
-	virtual void SetWeaponState_Implementation(const EWeaponState WeaponState) override;	// Common Interface, Call from ammo component
+	virtual APickupWeapon* GetWeaponReference_Implementation() override;
+	virtual void SetCanFire_Implementation(const bool bInCanFire) override;
+	virtual void SetWeaponState_Implementation(const EWeaponState WeaponState) override;
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	FWeaponDefaults WeaponDefaults;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
 	UCameraComponent* CameraComponent;
@@ -175,9 +179,6 @@ private:
 
 	// Variables
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	FWeaponDefaults WeaponDefaults;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	uint8 bDrawDebugLineTrace : 1;

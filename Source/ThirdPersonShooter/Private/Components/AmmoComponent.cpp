@@ -120,13 +120,6 @@ void UAmmoComponent::SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmm
 	
 }
 
-void UAmmoComponent::GetAmmoInfo(int32& OutCurrentAmmo, int32& OutMagazineSize, int32& OutCurrentMagazineAmmo) const
-{
-	OutCurrentAmmo = CurrentAmmo;
-	OutMagazineSize = MagazineSize;
-	OutCurrentMagazineAmmo = CurrentMagazineAmmo;
-}
-
 bool UAmmoComponent::BetterToReload() const
 {
 	if(CurrentMagazineAmmo <= MagazineSize / 3)

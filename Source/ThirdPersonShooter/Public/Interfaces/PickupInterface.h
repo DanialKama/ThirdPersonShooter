@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/PickupEnums.h"
 #include "PickupInterface.generated.h"
 
 class APickup;
@@ -25,8 +24,4 @@ public:
 	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PickupInterface")
 	APickup* GetPickupReference();
-	
-	// Without Output
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PickupInterface", meta = (ToolTip = "Update pickup status"))
-	void SetPickupStatus(EPickupState PickupState);
 };

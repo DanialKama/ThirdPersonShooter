@@ -26,9 +26,6 @@ public:
 	void SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo);
 
 	UFUNCTION(BlueprintCallable, Category = "AmmoComponent")
-	void GetAmmoInfo(int32& OutCurrentAmmo, int32& OutMagazineSize, int32& OutCurrentMagazineAmmo) const;
-
-	UFUNCTION(BlueprintCallable, Category = "AmmoComponent")
 	bool BetterToReload() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AmmoComponent")
@@ -61,6 +58,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
 	int32 ReloadAmount = 1;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	int32 CurrentAmmo = 0;
 	
 protected:
 	virtual void SetupComponent() override;
@@ -72,5 +72,4 @@ private:
 	
 	// Variables
 	uint8 bCommonInterface : 1;
-	int32 CurrentAmmo = 0;
 };

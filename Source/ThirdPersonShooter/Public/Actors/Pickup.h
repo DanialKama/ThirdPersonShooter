@@ -17,10 +17,12 @@ public:
 	// Sets default values for this actor's properties
 	APickup();
 
+	UFUNCTION(BlueprintCallable, Category = "Pickup")
+	virtual void SetPickupStatus(EPickupState PickupState);
+
 	// Interfaces
 	virtual APickup* GetPickupReference_Implementation() override;
-	virtual void SetPickupStatus_Implementation(EPickupState PickupState) override;
-	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

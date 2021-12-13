@@ -45,9 +45,6 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	virtual void Landed(const FHitResult& Hit) override;
 	
@@ -83,14 +80,15 @@ public:
 	void SetArmedState(bool bArmedState);
 	/** Call from Set Current Weapon and use in player character to exit aim mode */
 	void ResetAim();
-	void StartFireWeapon() const;
-	void StopFireWeapon() const;
+	void StartFireWeapon();
+	void StopFireWeapon();
 	/** Reload Weapon based on movement state and weapon type */
 	void ReloadWeapon();
 	void HolsterWeapon();
 	void SwitchToPrimary();
 	void SwitchToSecondary();
 	void SwitchToSidearm();
+	void StartJump();
 	void DropItem();
 
 	/** Call from anim notify */
@@ -127,7 +125,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Functions
-	void StartJump();
 	void ToggleCrouch();
 	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
 	bool StartAiming();

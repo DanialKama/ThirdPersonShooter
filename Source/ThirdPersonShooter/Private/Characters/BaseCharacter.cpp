@@ -194,12 +194,6 @@ void ABaseCharacter::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 void ABaseCharacter::CharacterIsOnMove()
 {
 	GetWorld()->GetTimerManager().ClearTimer(IdleTimer);
@@ -607,7 +601,7 @@ EWeaponToDo ABaseCharacter::CanPickupAmmo_Implementation(int32 AmmoType)
 	return EWeaponToDo::NoWeapon;
 }
 
-void ABaseCharacter::StartFireWeapon() const
+void ABaseCharacter::StartFireWeapon()
 {
 	if(CurrentWeapon && bIsAimed)
 	{
@@ -615,7 +609,7 @@ void ABaseCharacter::StartFireWeapon() const
 	}
 }
 
-void ABaseCharacter::StopFireWeapon() const
+void ABaseCharacter::StopFireWeapon()
 {
 	if(CurrentWeapon)
 	{

@@ -26,16 +26,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Defaults")
 	uint8 bCanRecoverHealth : 1;
 	
-protected:
-	virtual void SetupComponent() override;
-
-	// Variables
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float MaxHealth = 100.0f;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float DefaultHealth = 100.0f;
+	
+protected:
+	virtual void SetupComponent() override;
 
+	// Variables
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0"))
 	float LowHealth = 25.0f;
 

@@ -1,6 +1,6 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/HolsterAnimNotifyState.h"
+#include "Animations/HolsterAnimNotifyState.h"
 #include "Characters/BaseCharacter.h"
 
 void UHolsterAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)

@@ -1,6 +1,6 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/ReloadAnimNotifyState.h"
+#include "Animations/ReloadAnimNotifyState.h"
 #include "Characters/BaseCharacter.h"
 
 void UReloadAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
@@ -10,7 +10,7 @@ void UReloadAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnim
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetReloadState(EReloadState::StartReload);
+			Character->SetReloadNotify(EReloadState::StartReload);
 		}
 	}
 }
@@ -22,7 +22,7 @@ void UReloadAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSe
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetReloadState(EReloadState::EndReload);
+			Character->SetReloadNotify(EReloadState::EndReload);
 		}
 	}
 }

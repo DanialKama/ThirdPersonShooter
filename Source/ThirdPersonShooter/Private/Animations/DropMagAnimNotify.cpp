@@ -1,6 +1,6 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/DropMagAnimNotify.h"
+#include "Animations/DropMagAnimNotify.h"
 #include "Characters/BaseCharacter.h"
 
 void UDropMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -10,7 +10,7 @@ void UDropMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetReloadState(EReloadState::DropMag);
+			Character->SetReloadNotify(EReloadState::DropMag);
 		}
 	}
 }

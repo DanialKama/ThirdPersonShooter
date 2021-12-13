@@ -94,11 +94,13 @@ public:
 	void DropItem();
 
 	/** Call from anim notify */
-	void SetReloadState(EReloadState ReloadState);
+	void SetReloadNotify(EReloadState ReloadState);
 	/** Call from anim notify */
 	void UpdateHolsterWeaponNotifyState(ENotifyState NotifyState);
 	/** Call from anim notify */
 	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
+	/** Call from anim notify and montage end delegate*/
+	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
 	// Interfaces
 	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
@@ -163,11 +165,20 @@ private:
 	virtual void SwitchIsEnded();
 	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
 
+	void ToggleRagdoll(bool bStart);
 	void PlayIdleAnimation();
 	void CharacterIsOnMove();
+	/** After ragdoll, if the character is on the ground then it stands up */
 	void CheckForFalling();
+	/** Set getup orientation / Set anim montage to play on getup / Save pose snapshot to use in animation blueprint */
 	void CachePose();
+	void SetGetupOrientation();
+	/** If return is true character is facing up */
+	bool CalculateFacingDirection() const;
+	void StandUp();
 	void CalculateCapsuleLocation();
+	/** Use to perform two frame delay to cache the pose */
+	void OneFrameDelay();
 	void ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 	void HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
@@ -188,25 +199,33 @@ private:
 	UPROPERTY()
 	AActor* Interactable;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> ArmedIdleAnimations;
+	TArray<UAnimMontage*> ArmedIdleMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> IdleAnimations;
+	TArray<UAnimMontage*> IdleMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> StandUpReloadAnimations;
+	TArray<UAnimMontage*> StandUpReloadMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> CrouchReloadAnimations;
+	TArray<UAnimMontage*> CrouchReloadMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> ProneReloadAnimations;
+	TArray<UAnimMontage*> ProneReloadMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> HolsterWeaponAnimations;
+	TArray<UAnimMontage*> HolsterWeaponMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> GrabWeaponAnimations;
+	TArray<UAnimMontage*> GrabWeaponMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> StandUpFromFrontMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> StandUpFromBackMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	float FallDamageMultiplier = 0.025;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	float StandingDelay = 2.5;
 
 	EItemType PickupType = EItemType::Weapon;
 	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
 	FGameplayTagContainer CharacterTagContainer;
 	FVector MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f), MeshLocation;
-	FTimerHandle IdleTimer;
+	FTimerHandle IdleTimer, CheckForFallingTimer;
 	int32 PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
 	int32 SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
 	int32 SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
@@ -216,4 +235,7 @@ private:
 	APickupWeapon* GrabbedWeapon;
 	EWeaponToDo WeaponToGrab = EWeaponToDo::PrimaryWeapon;
 	EWeaponType HolsterWeaponType;
+	UPROPERTY()
+	UAnimMontage* StandUpMontage;
+	uint8 DelayedFrames = 0;
 };

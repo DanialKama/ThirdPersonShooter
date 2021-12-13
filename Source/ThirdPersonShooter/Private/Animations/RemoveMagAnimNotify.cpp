@@ -1,6 +1,6 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/RemoveMagAnimNotify.h"
+#include "Animations/RemoveMagAnimNotify.h"
 #include "Characters/BaseCharacter.h"
 
 void URemoveMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -10,7 +10,7 @@ void URemoveMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenc
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetReloadState(EReloadState::RemoveMag);
+			Character->SetReloadNotify(EReloadState::RemoveMag);
 		}
 	}
 }

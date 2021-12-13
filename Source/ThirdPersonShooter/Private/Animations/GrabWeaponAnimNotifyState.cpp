@@ -1,6 +1,6 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/GrabWeaponAnimNotifyState.h"
+#include "Animations/GrabWeaponAnimNotifyState.h"
 #include "Characters/BaseCharacter.h"
 
 void UGrabWeaponAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)

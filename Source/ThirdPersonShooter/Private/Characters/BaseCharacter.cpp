@@ -16,6 +16,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "AIModule/Classes/AIController.h"
+#include "Kismet/KismetMathLibrary.h"
 
 class AAIController;
 
@@ -632,16 +633,16 @@ void ABaseCharacter::ReloadWeapon()
 		{
 		case 0: case 1: case 2:
 			// Walk, Run, and Sprint
-			MontageToPlay = StandUpReloadAnimations[Index];
+			MontageToPlay = StandUpReloadMontages[Index];
 			break;
 		case 3:
 			// Crouch
-			MontageToPlay = CrouchReloadAnimations[Index];
+			MontageToPlay = CrouchReloadMontages[Index];
 			break;
 		case 4:
 			// Prone
 			DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			MontageToPlay = ProneReloadAnimations[Index];
+			MontageToPlay = ProneReloadMontages[Index];
 			break;
 		}
 		
@@ -693,7 +694,7 @@ void ABaseCharacter::ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool 
 	}
 }
 
-void ABaseCharacter::SetReloadState(const EReloadState ReloadState)
+void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 {
 	if(CurrentWeapon)
 	{
@@ -753,8 +754,8 @@ void ABaseCharacter::HolsterWeapon()
 {
 	if(CurrentWeapon)
 	{
-		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
-		UAnimMontage* MontageToPlay = HolsterWeaponAnimations[CurrentWeaponIndex];
+		const int32 Index = static_cast<int32>(WeaponType);
+		UAnimMontage* MontageToPlay = HolsterWeaponMontages[Index];
 		
 		SetArmedState(false);
 		if(CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
@@ -846,8 +847,8 @@ void ABaseCharacter::SwitchToPrimary()
 
 		const int32 CurrentWeaponType = static_cast<int32>(WeaponType);
 		const int32 PrimaryWeaponType = static_cast<int32>(PrimaryWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponAnimations[PrimaryWeaponType];
-		UAnimMontage* HolsterMontage = HolsterWeaponAnimations[CurrentWeaponType];
+		UAnimMontage* GrabMontage = GrabWeaponMontages[PrimaryWeaponType];
+		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponType];
 		
 		switch (CurrentHoldingWeapon)
 		{
@@ -890,10 +891,10 @@ void ABaseCharacter::SwitchToSecondary()
 	{
 		SetArmedState(false);
 
-		const int32 CurrentWeaponType = static_cast<int32>(WeaponType);
-		const int32 SecondaryWeaponType = static_cast<int32>(SecondaryWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponAnimations[SecondaryWeaponType];
-		UAnimMontage* HolsterMontage = HolsterWeaponAnimations[CurrentWeaponType];
+		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
+		const int32 SecondaryWeaponIndex = static_cast<int32>(SecondaryWeapon->WeaponInfo.WeaponType);
+		UAnimMontage* GrabMontage = GrabWeaponMontages[SecondaryWeaponIndex];
+		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponIndex];
 		
 		switch (CurrentHoldingWeapon)
 		{
@@ -936,10 +937,10 @@ void ABaseCharacter::SwitchToSidearm()
 	{
 		SetArmedState(false);
 
-		const int32 CurrentWeaponType = static_cast<int32>(WeaponType);
-		const int32 SidearmWeaponType = static_cast<int32>(SidearmWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponAnimations[SidearmWeaponType];
-		UAnimMontage* HolsterMontage = HolsterWeaponAnimations[CurrentWeaponType];
+		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
+		const int32 SidearmWeaponIndex = static_cast<int32>(SidearmWeapon->WeaponInfo.WeaponType);
+		UAnimMontage* GrabMontage = GrabWeaponMontages[SidearmWeaponIndex];
+		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponIndex];
 		
 		switch (CurrentHoldingWeapon)
 		{
@@ -1028,7 +1029,7 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 			GrabbedWeapon->RaiseWeapon();
 			
 			const int32 GrabbedWeaponIndex = static_cast<int32>(WeaponType);
-			UAnimMontage* MontageToPlay = GrabWeaponAnimations[GrabbedWeaponIndex];
+			UAnimMontage* MontageToPlay = GrabWeaponMontages[GrabbedWeaponIndex];
 			
 			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay, 1.0f, EMontagePlayReturnType::MontageLength);
 			if(MontageLenght > 0.0f)
@@ -1162,6 +1163,36 @@ void ABaseCharacter::SetStaminaLevel_Implementation(float Stamina, const bool bI
 	}
 }
 
+void ABaseCharacter::ToggleRagdoll(bool bStart)
+{
+	if(bStart)
+	{
+		GetCharacterMovement()->DisableMovement();
+		GetMesh()->SetConstraintProfileForAll(FName("Ragdoll"), true);
+		GetMesh()->SetSimulatePhysics(true);
+		MeshLocation = GetMesh()->GetComponentLocation();
+		bRagdollState = true;
+		if(bCharacterAnimationInterface)
+		{
+			ICharacterAnimationInterface::Execute_SetCompletelyStopMoving(AnimInstance, true);
+		}
+	}
+	else
+	{
+		GetMesh()->SetSimulatePhysics(false);
+		// Set back all changes to default
+		GetMesh()->SetCollisionProfileName(FName("CharacterMesh"));
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetMesh()->SetConstraintProfileForAll(FName("None"), true);
+		bRagdollState = false;
+		if(bCharacterAnimationInterface)
+		{
+			ICharacterAnimationInterface::Execute_SetCompletelyStopMoving(AnimInstance, false);
+		}
+	}
+}
+
 void ABaseCharacter::PlayIdleAnimation()
 {
 	UAnimMontage* MontageToPlay = nullptr;
@@ -1169,13 +1200,13 @@ void ABaseCharacter::PlayIdleAnimation()
 	// If the character is holding a weapon but not aiming play idle montage based on weapon type
 	if(!bIsAimed && bIsArmed)
 	{
-		MontageToPlay = ArmedIdleAnimations[Index];
+		MontageToPlay = ArmedIdleMontages[Index];
 	}
 	// If the character is not holding a weapon play a random idle animation
 	else if(!bIsAimed && !bIsArmed)
 	{
-		const int32 Lenght = IdleAnimations.Max();
-		MontageToPlay = IdleAnimations[FMath::RandRange(0, Lenght)];
+		const int32 Lenght = IdleMontages.Max();
+		MontageToPlay = IdleMontages[FMath::RandRange(0, Lenght)];
 	}
 	
 	PlayAnimMontage(MontageToPlay);
@@ -1214,17 +1245,84 @@ void ABaseCharacter::ToggleCrouch()
 void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+	if(bIsAlive)
+	{
+		// Apply fall damage if velocity between character and other component is higher than 1250
+		const float Velocity = (OtherComp->GetPhysicsLinearVelocity() - GetVelocity()).Size();
+		if(Velocity > 1250.0f)
+		{
+			const TSubclassOf<UDamageType> DamageType;
+			UGameplayStatics::ApplyDamage(this, Velocity * FallDamageMultiplier, GetInstigatorController(), this, DamageType);
+			ToggleRagdoll(true);
+			GetWorld()->GetTimerManager().SetTimer(CheckForFallingTimer, this, &ABaseCharacter::CheckForFalling, StandingDelay, true);
+		}
+	}
 }
 
 void ABaseCharacter::CheckForFalling()
 {
-	
+	FHitResult OutHit;
+	const FVector Start = GetMesh()->GetSocketLocation(FName("pelvis"));
+	const FVector End = Start + FVector(0.0f, 0.0f, -1.0f) * 100.0f;
+	FCollisionQueryParams CollisionQueryParams;
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility);
+
+	// If Character is on the ground and not moving
+	if(bHit && GetVelocity().Size() < 10.0f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(CheckForFallingTimer);
+		CachePose();
+		
+		// Wait for pose to be cached	
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StandUp, 0.2f);
+	}
 }
 
 void ABaseCharacter::CachePose()
 {
-	
+	SetGetupOrientation();
+	if(CalculateFacingDirection())
+	{
+		// Character is facing up
+		const int32 Lenght = StandUpFromFrontMontages.Max();
+		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, Lenght)];
+	}
+	else
+	{
+		// Character is facing down
+		const int32 Lenght = StandUpFromBackMontages.Max();
+		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, Lenght)];
+	}
+
+	// Two frame delay for caching the pose
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &ABaseCharacter::OneFrameDelay);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+}
+
+void ABaseCharacter::SetGetupOrientation()
+{
+	FTransform NewTransform;
+	NewTransform.SetLocation(MeshLocation);
+	const FVector Z = FVector(0.0f, 0.0f, 1.0f);
+	const FVector NeckLocation = GetMesh()->GetSocketLocation(FName("neck_01"));
+	const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
+	const FVector X = CalculateFacingDirection() ? PelvisLocation - NeckLocation : NeckLocation - PelvisLocation;
+	NewTransform.SetRotation(UKismetMathLibrary::MakeRotFromZX(Z, X).Quaternion());
+	SetActorTransform(NewTransform);
+}
+
+void ABaseCharacter::StandUp()
+{
+	ToggleRagdoll(false);
+	const float MontageLenght = AnimInstance->Montage_Play(StandUpMontage);
+	if(MontageLenght > 0.0f)
+	{
+		FOnMontageEnded EndedDelegate;
+		EndedDelegate.BindUObject(this, &ABaseCharacter::StanUpMontageHandler);
+		AnimInstance->Montage_SetEndDelegate(EndedDelegate, StandUpMontage);
+	}
 }
 
 void ABaseCharacter::CalculateCapsuleLocation()
@@ -1237,7 +1335,6 @@ void ABaseCharacter::CalculateCapsuleLocation()
 	CollisionQueryParams.AddIgnoredActor(this);
 	
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
-
 	if(bHit)
 	{
 		CapsuleLocation = HitResult.Location + MeshLocationOffset;
@@ -1248,6 +1345,42 @@ void ABaseCharacter::CalculateCapsuleLocation()
 	}
 	
 	MeshLocation = FMath::VInterpTo(MeshLocation, CapsuleLocation,  GetWorld()->GetDeltaSeconds(), 2.5f);
+}
+
+bool ABaseCharacter::CalculateFacingDirection() const
+{
+	const FVector RightVector = UKismetMathLibrary::GetRightVector(GetMesh()->GetSocketRotation(FName("pelvis")));
+	const float DotProduct = UKismetMathLibrary::Dot_VectorVector(RightVector, FVector(0.0f, 0.0f, 1.0f));
+	if(DotProduct >= 0.0f)
+	{
+		return true;
+	}
+	return false;
+}
+
+void ABaseCharacter::OneFrameDelay()
+{
+	DelayedFrames++;
+	if(DelayedFrames == 1)
+	{
+		// Recall this function to perform a two-frame delay
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindUObject(this, &ABaseCharacter::OneFrameDelay);
+		GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+	}
+	else if(DelayedFrames > 1)
+	{
+		AnimInstance->SavePoseSnapshot(FName("FinalPose"));
+		DelayedFrames = 0;
+	}
+}
+
+void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	if(bInterrupted)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
 }
 
 void ABaseCharacter::ResetAim()

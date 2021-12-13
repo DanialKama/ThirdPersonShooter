@@ -1,16 +1,16 @@
 // All Rights Reserved.
 
-#include "Miscellaneous/PickMagAnimNotify.h"
+#include "Animations/InsertMagAnimNotify.h"
 #include "Characters/BaseCharacter.h"
 
-void UPickMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UInsertMagAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if(MeshComp && MeshComp->GetOwner())
 	{
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
 		if(Character)
 		{
-			Character->SetReloadState(EReloadState::PickMag);
+			Character->SetReloadNotify(EReloadState::InsertMag);
 		}
 	}
 }

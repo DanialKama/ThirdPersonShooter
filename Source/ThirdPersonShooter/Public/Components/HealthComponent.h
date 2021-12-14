@@ -32,6 +32,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float DefaultHealth = 100.0f;
 	
+	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
+	FName HitBoneName = TEXT("None");
+
+	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
+	FVector ShotOrigin = FVector::ZeroVector;	// direction of the shot
+	
 protected:
 	virtual void SetupComponent() override;
 
@@ -70,10 +76,4 @@ private:
 	uint8 bCommonInterface : 1, bCharacterInterface : 1;
 	float CurrentHealth = 0.0f;	// At begin play Current Health is equal to Default Health
 	FTimerHandle HealthRecoveryTimer;
-
-	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent", meta = (AllowPrivateAccess = "true"))
-	FName HitBoneName = TEXT("None");
-
-	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent", meta = (AllowPrivateAccess = "true"))
-	FVector ShotOrigin = FVector::ZeroVector;	// direction of the shot
 };

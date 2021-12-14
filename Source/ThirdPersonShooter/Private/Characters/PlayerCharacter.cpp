@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "UI/ShooterHUD.h"
 
 // Sets default values
@@ -60,8 +61,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Input Axis
 		InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
 		InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
-		InputComponent->BindAxis("Turn", this, &APlayerCharacter::MouseAddToYaw);
-		InputComponent->BindAxis("LookUp", this, &APlayerCharacter::MouseAddToPitch);
+		InputComponent->BindAxis("Turn", this, &APlayerCharacter::AddControllerYawInput);
+		InputComponent->BindAxis("LookUp", this, &APlayerCharacter::AddControllerPitchInput);
 		InputComponent->BindAxis("TurnRate", this, &APlayerCharacter::GamepadAddToYaw);
 		InputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::GamepadAddToPitch);
 	}
@@ -72,14 +73,14 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
-	if(GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	if (GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 	{
 		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReferenceCPP(GetController());
 		PlayerController->PlayerTransform = GetActorTransform();
-		if(PlayerController->GetHUD()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+		if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 		{
 			HUD = IHUDInterface::Execute_GetHUDReference(PlayerController->GetHUD());
-			if(HUD)
+			if (HUD)
 			{
 				HUD->SetHealth_Implementation(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
 				HUD->SetUIVisibility_Implementation(ESlateVisibility::Visible);
@@ -109,7 +110,7 @@ void APlayerCharacter::StopSprinting()
 void APlayerCharacter::DoubleTabGate()
 {
 	// If gate is open
-	if(bDoubleTabGate)
+	if (bDoubleTabGate)
 	{
 		TabNumber = 0;
 		PreviousTapNumber = 0;
@@ -128,12 +129,12 @@ void APlayerCharacter::DoubleTabHandler()
 	case 1:
 		// Single Tap
 		TabNumber = 0;
-		if(bTapHeld)
+		if (bTapHeld)
 		{
 			// While aiming player can only walk 
 			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Run;
 			// Only set movement state to run if the player is moving
-			if(GetVelocity().Size() > 0.0f)
+			if (GetVelocity().Size() > 0.0f)
 			{
 				SetMovementState_Implementation(NewMovement, false, false);
 			}
@@ -146,12 +147,12 @@ void APlayerCharacter::DoubleTabHandler()
 	case 2:
 		// Double Tap
 		TabNumber = 0;
-		if(bTapHeld)
+		if (bTapHeld)
 		{
 			// While aiming player can only walk 
 			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Sprint;
 			// Only set movement state to sprint if the player is moving
-			if(GetVelocity().Size() > 0.0f)
+			if (GetVelocity().Size() > 0.0f)
 			{
 				SetMovementState_Implementation(NewMovement, false, false);
 			}
@@ -166,7 +167,7 @@ void APlayerCharacter::DoubleTabHandler()
 
 void APlayerCharacter::TryToToggleCrouch()
 {
-	if(bDoOnceCrouch)
+	if (bDoOnceCrouch)
 	{
 		bDoOnceCrouch = false;
 		ToggleCrouch();
@@ -207,18 +208,18 @@ void APlayerCharacter::ResetCrouch()
 void APlayerCharacter::TryToStartAiming()
 {
 	const bool bAim = SetAimState(true);
-	if(bAim)
+	if (bAim)
 	{
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -30.0f;
 
-		if(AimFloatCurve)
+		if (AimFloatCurve)
 		{
-			FOnTimelineEvent TimelineEvent;
-			TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
 			FOnTimelineFloat TimeLineProgress;
 			TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
 			AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
+			FOnTimelineEvent TimelineEvent;
+			TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
 			AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
 			AimTimeline->Play();
 			Direction = ETimelineDirection::Forward;
@@ -229,12 +230,12 @@ void APlayerCharacter::TryToStartAiming()
 void APlayerCharacter::ResetAim()
 {
 	SetAimState(false);
-	if(HUD)
+	if (HUD)
 	{
 		HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Hidden);
 	}
 
-	if(AimFloatCurve)
+	if (AimFloatCurve)
 	{
 		FOnTimelineEvent TimelineEvent;
 		TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
@@ -249,7 +250,7 @@ void APlayerCharacter::ResetAim()
 
 void APlayerCharacter::AimTimeLineUpdate(float Value)
 {
-	if(Direction == ETimelineDirection::Forward)
+	if (Direction == ETimelineDirection::Forward)
 	{
 		TPP->SetFieldOfView(FMath::Lerp(TPP->FieldOfView, 50.0f, Value));
 		SpringArm->SocketOffset.Y = FMath::Lerp(SpringArm->SocketOffset.Y, 50.0f, Value);
@@ -265,9 +266,9 @@ void APlayerCharacter::AimTimeLineUpdate(float Value)
 
 void APlayerCharacter::AimTimeLineFinished()
 {
-	if(Direction == ETimelineDirection::Forward)
+	if (Direction == ETimelineDirection::Forward)
 	{
-		if(HUD)
+		if (HUD)
 		{
 			HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Visible);
 		}
@@ -285,15 +286,15 @@ void APlayerCharacter::SwitchToNextWeapon()
 	{
 	case 0:
 		// No Weapon
-		if(PrimaryWeapon)
+		if (PrimaryWeapon)
 		{
 			SwitchToPrimary();
 		}
-		else if(SecondaryWeapon)
+		else if (SecondaryWeapon)
 		{
 			SwitchToSecondary();
 		}
-		else if(SidearmWeapon)
+		else if (SidearmWeapon)
 		{
 			SwitchToSidearm();
 		}
@@ -304,11 +305,11 @@ void APlayerCharacter::SwitchToNextWeapon()
 		break;
 	case 1:
 		// Primary Weapon
-		if(SecondaryWeapon)
+		if (SecondaryWeapon)
 		{
 			SwitchToSecondary();
 		}
-		else if(SidearmWeapon)
+		else if (SidearmWeapon)
 		{
 			SwitchToSidearm();
 		}
@@ -319,7 +320,7 @@ void APlayerCharacter::SwitchToNextWeapon()
 		break;
 	case 2:
 		// Secondary Weapon
-		if(SidearmWeapon)
+		if (SidearmWeapon)
 		{
 			SwitchToSidearm();
 		}
@@ -341,7 +342,7 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 	{
 	case 0:
 		// No Weapon
-		if(SidearmWeapon)
+		if (SidearmWeapon)
 		{
 			SwitchToSidearm();
 		}
@@ -356,15 +357,15 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 		break;
 	case 2:
 		// Secondary Weapon
-		if(SecondaryWeapon)
+		if (SecondaryWeapon)
 		{
 			SwitchToPrimary();
 		}
-		else if(PrimaryWeapon)
+		else if (PrimaryWeapon)
 		{
 			SwitchToSecondary();
 		}
-		else if(SidearmWeapon)
+		else if (SidearmWeapon)
 		{
 			
 		}
@@ -375,32 +376,28 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 	}
 }
 
-void APlayerCharacter::AddToForwardMovement(float Value)
+void APlayerCharacter::AddToForwardMovement(float AxisValue)
 {
-	
+	// Zero out pitch and roll, only move on plane
+	const FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+	AddMovementInput(UKismetMathLibrary::GetForwardVector(NewRotation), AxisValue);
 }
 
-void APlayerCharacter::AddToRightMovement(float Value)
+void APlayerCharacter::AddToRightMovement(float AxisValue)
 {
-	
+	// Zero out pitch and roll, only move on plane
+	const FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+	AddMovementInput(UKismetMathLibrary::GetRightVector(NewRotation), AxisValue);
 }
 
-void APlayerCharacter::MouseAddToYaw(float Value)
+void APlayerCharacter::GamepadAddToYaw(float AxisValue)
 {
-	
+	const float InputValue = AxisValue * BaseTurnRate * GetWorld()->GetDeltaSeconds();
+	AddControllerYawInput(InputValue);
 }
 
-void APlayerCharacter::MouseAddToPitch(float Value)
+void APlayerCharacter::GamepadAddToPitch(float AxisValue)
 {
-	
-}
-
-void APlayerCharacter::GamepadAddToYaw(float Value)
-{
-	
-}
-
-void APlayerCharacter::GamepadAddToPitch(float Value)
-{
-	
+	const float InputValue = AxisValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds();
+	AddControllerPitchInput(InputValue);
 }

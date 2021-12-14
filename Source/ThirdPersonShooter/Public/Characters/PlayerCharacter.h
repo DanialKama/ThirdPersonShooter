@@ -39,12 +39,10 @@ protected:
 	
 private:
 	// Functions
-	void GamepadAddToYaw(float Value);
-	void GamepadAddToPitch(float Value);
-	void MouseAddToYaw(float Value);
-	void MouseAddToPitch(float Value);
-	void AddToForwardMovement(float Value);
-	void AddToRightMovement(float Value);
+	void GamepadAddToYaw(float AxisValue);
+	void GamepadAddToPitch(float AxisValue);
+	void AddToForwardMovement(float AxisValue);
+	void AddToRightMovement(float AxisValue);
 	void StartSprinting();
 	void StopSprinting();
 	void TryToToggleCrouch();

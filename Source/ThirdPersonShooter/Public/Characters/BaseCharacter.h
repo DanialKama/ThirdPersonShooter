@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/CommonInterface.h"
@@ -33,6 +34,65 @@ enum class ENotifyState : uint8
 	Begin,
 	End
 };
+
+USTRUCT(BlueprintType)
+struct FBodyParts
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* Head;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LegLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LegRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ThighAndCalfLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ThighAndCalfRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ThighLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ThighRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* FootAndCalfLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* FootAndCalfRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* CalfLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* CalfRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* FootLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* FootRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ArmLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* ArmRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* UpperArmAndLowerArmLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* UpperArmAndLowerArmRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* UpperArmLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* UpperArmRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LowerArmAndHandLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LowerArmAndHandRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LowerArmLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* LowerArmRight;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* HandLeft;
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMesh* HandRight;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
 
 UCLASS()
 class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
@@ -97,20 +157,25 @@ public:
 	void UpdateHolsterWeaponNotifyState(ENotifyState NotifyState);
 	/** Call from anim notify */
 	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
-	/** Call from anim notify and montage end delegate*/
+	/** Call from anim notify and montage delegate*/
 	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	/** Call from anim notify, Death function, and montage delegate */
+	void DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
 	// Interfaces
 	virtual void SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne) override;
 	virtual void Interact_Implementation() override;
 	virtual void SetPickup_Implementation(EItemType NewPickupType, APickup* NewPickup) override;
 	/** Health Recovery based on Stamina level */
+	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
 	
 	// Variables
 	uint8 bIsAlive : 1, bIsAimed : 1;
+	UPROPERTY(BlueprintAssignable, Category = "Defaults")
+	FDeathDelegate DeathDispatcher; 
 	FGameplayTag TeamTag;
 	UPROPERTY()
 	APickupWeapon* PrimaryWeapon;
@@ -160,8 +225,17 @@ private:
 	/** Override by AI character */
 	virtual void SwitchIsEnded();
 	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
-
 	void ToggleRagdoll(bool bStart);
+	void Death();
+	void DismembermentInitiate(FVector ShotOrigin, FName HitBone);
+	USkeletalMeshComponent* DismembermentLeftLeg(FName HitBone);
+	USkeletalMeshComponent* DismembermentRightLeg(FName HitBone);
+	USkeletalMeshComponent* DismembermentLeftHand(FName HitBone);
+	USkeletalMeshComponent* DismembermentRightHand(FName HitBone);
+	USkeletalMeshComponent* AddSkeletalMeshComponent(FName Name, USkeletalMesh* SkeletalMesh);
+	void StartDeathLifeSpan();
+	UFUNCTION()
+	void DeathTimeLineUpdate(float Value);
 	void PlayIdleAnimation();
 	void CharacterIsOnMove();
 	/** After ragdoll, if the character is on the ground then it stands up */
@@ -184,7 +258,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bCharacterAnimationInterface : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1;
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bCharacterAnimationInterface : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1;
 	
 	UPROPERTY()
 	UAnimInstance* AnimInstance;
@@ -212,10 +286,22 @@ private:
 	TArray<UAnimMontage*> StandUpFromFrontMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> StandUpFromBackMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> StandUpDeathMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> CrouchDeathMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> ProneDeathMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
 	float FallDamageMultiplier = 0.025;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
 	float StandingDelay = 2.5;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	float DeathLifeSpan = 5.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* FadeFloatCurve;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	FBodyParts BodyParts;
 
 	EItemType PickupType = EItemType::Weapon;
 	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
@@ -234,4 +320,6 @@ private:
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;
 	uint8 DelayedFrames = 0;
+	UPROPERTY()
+	UTimelineComponent* DeathTimeline;
 };

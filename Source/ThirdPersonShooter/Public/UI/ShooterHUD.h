@@ -28,6 +28,10 @@ public:
 	void AddRecoil(float Recoil, float ControlTime);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterHUD")
 	void SetAmmoInfoVisibility(ESlateVisibility NewVisibility);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterHUD")
+	void UpdateWeaponAmmo(int32 RemainAmmo, int32 MagSize, int32 MagAmmo);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterHUD")
+	void UpdateInMagAmmo(int32 MagAmmo);
 	// Interfaces
 	virtual AShooterHUD* GetHUDReference_Implementation() override;
 };

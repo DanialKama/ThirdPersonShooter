@@ -47,7 +47,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::TryToToggleCrouch);
 		InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
 		InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
-		InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::TryToStopAiming);
+		InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
 		InputComponent->BindAction("Fire", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
 		InputComponent->BindAction("Fire", IE_Released, this, &ABaseCharacter::StopFireWeapon);
 		InputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
@@ -196,32 +196,183 @@ void APlayerCharacter::TryToToggleCrouch()
 void APlayerCharacter::ResetCrouchByDelay()
 {
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::StopCrouching, 0.3f);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::ResetCrouch, 0.3f);
 }
 
-void APlayerCharacter::StopCrouching()
+void APlayerCharacter::ResetCrouch()
 {
 	bDoOnceCrouch = true;
 }
 
 void APlayerCharacter::TryToStartAiming()
 {
-	
+	const bool bAim = SetAimState(true);
+	if(bAim)
+	{
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -30.0f;
+
+		if(AimFloatCurve)
+		{
+			FOnTimelineEvent TimelineEvent;
+			TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+			FOnTimelineFloat TimeLineProgress;
+			TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
+			AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
+			AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
+			AimTimeline->Play();
+			Direction = ETimelineDirection::Forward;
+		}
+	}
 }
 
-void APlayerCharacter::TryToStopAiming()
+void APlayerCharacter::ResetAim()
 {
-	
+	SetAimState(false);
+	if(HUD)
+	{
+		HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Hidden);
+	}
+
+	if(AimFloatCurve)
+	{
+		FOnTimelineEvent TimelineEvent;
+		TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+		FOnTimelineFloat TimeLineProgress;
+		TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
+		AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
+		AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
+		AimTimeline->Reverse();
+		Direction = ETimelineDirection::Backward;
+	}
+}
+
+void APlayerCharacter::AimTimeLineUpdate(float Value)
+{
+	if(Direction == ETimelineDirection::Forward)
+	{
+		TPP->SetFieldOfView(FMath::Lerp(TPP->FieldOfView, 50.0f, Value));
+		SpringArm->SocketOffset.Y = FMath::Lerp(SpringArm->SocketOffset.Y, 50.0f, Value);
+		SpringArm->TargetArmLength = FMath::Lerp(SpringArm->TargetArmLength, 150.0f, Value);
+	}
+	else
+	{
+		TPP->SetFieldOfView(FMath::Lerp(90.0f, TPP->FieldOfView, Value));
+		SpringArm->SocketOffset.Y = FMath::Lerp(0.0f, SpringArm->SocketOffset.Y, Value);
+		SpringArm->TargetArmLength = FMath::Lerp(300.0f, SpringArm->TargetArmLength, Value);
+	}
+}
+
+void APlayerCharacter::AimTimeLineFinished()
+{
+	if(Direction == ETimelineDirection::Forward)
+	{
+		if(HUD)
+		{
+			HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Visible);
+		}
+	}
+	else
+	{
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
+	}
 }
 
 void APlayerCharacter::SwitchToNextWeapon()
 {
-	
+	switch (CurrentHoldingWeapon)
+	{
+	case 0:
+		// No Weapon
+		if(PrimaryWeapon)
+		{
+			SwitchToPrimary();
+		}
+		else if(SecondaryWeapon)
+		{
+			SwitchToSecondary();
+		}
+		else if(SidearmWeapon)
+		{
+			SwitchToSidearm();
+		}
+		else
+		{
+			HolsterWeapon();
+		}
+		break;
+	case 1:
+		// Primary Weapon
+		if(SecondaryWeapon)
+		{
+			SwitchToSecondary();
+		}
+		else if(SidearmWeapon)
+		{
+			SwitchToSidearm();
+		}
+		else
+		{
+			HolsterWeapon();
+		}
+		break;
+	case 2:
+		// Secondary Weapon
+		if(SidearmWeapon)
+		{
+			SwitchToSidearm();
+		}
+		else
+		{
+			HolsterWeapon();
+		}
+		break;
+	case 3:
+		// Sidearm Weapon
+		HolsterWeapon();
+		break;
+	}
 }
 
 void APlayerCharacter::SwitchToPreviousWeapon()
 {
-	
+	switch (CurrentHoldingWeapon)
+	{
+	case 0:
+		// No Weapon
+		if(SidearmWeapon)
+		{
+			SwitchToSidearm();
+		}
+		else
+		{
+			HolsterWeapon();
+		}
+		break;
+	case 1:
+		// Primary Weapon
+		HolsterWeapon();
+		break;
+	case 2:
+		// Secondary Weapon
+		if(SecondaryWeapon)
+		{
+			SwitchToPrimary();
+		}
+		else if(PrimaryWeapon)
+		{
+			SwitchToSecondary();
+		}
+		else if(SidearmWeapon)
+		{
+			
+		}
+		break;
+	case 3:
+		// Sidearm Weapon
+		break;
+	}
 }
 
 void APlayerCharacter::AddToForwardMovement(float Value)

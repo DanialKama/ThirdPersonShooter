@@ -514,7 +514,7 @@ void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponTo
 	CurrentHoldingWeapon = WeaponSlot;
 	if(!NewCurrentWeapon)
 	{
-		StopAiming();
+		SetAimState(false);
 		ResetAim();
 	}
 
@@ -1082,13 +1082,13 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 	StopAnimMontage();
 	if(!bArmedState)
 	{
-		StopAiming();
+		SetAimState(false);
 	}
 }
 
-bool ABaseCharacter::StartAiming()
+bool ABaseCharacter::SetAimState(bool bIsAiming)
 {
-	if(bIsArmed && CurrentWeapon)
+	if(bIsAiming && bIsArmed && CurrentWeapon)
 	{
 		bIsAimed = true;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
@@ -1116,22 +1116,15 @@ bool ABaseCharacter::StartAiming()
 		StopAnimMontage();
 		return true;
 	}
-	
-	StopAiming();
-	return false;
-}
-
-void ABaseCharacter::StopAiming()
-{
 	bIsAimed = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	StopFireWeapon();
-
 	if(bCharacterAnimationInterface)
 	{
 		ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, false, CurrentWeapon);
 	}
+	return false;
 }
 
 void ABaseCharacter::DropItem()

@@ -33,3 +33,11 @@ void AShooterHUD::AddRecoil_Implementation(float Recoil, float ControlTime)
 void AShooterHUD::SetAmmoInfoVisibility_Implementation(ESlateVisibility NewVisibility)
 {
 }
+
+void AShooterHUD::UpdateWeaponAmmo_Implementation(int32 RemainAmmo, int32 MagSize, int32 MagAmmo)
+{
+}
+
+void AShooterHUD::UpdateInMagAmmo_Implementation(int32 MagAmmo)
+{
+}

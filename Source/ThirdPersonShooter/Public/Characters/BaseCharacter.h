@@ -79,7 +79,7 @@ public:
 	//Functions
 	void SetArmedState(bool bArmedState);
 	/** Call from Set Current Weapon and use in player character to exit aim mode */
-	void ResetAim();
+	virtual void ResetAim();
 	void StartFireWeapon();
 	void StopFireWeapon();
 	/** Reload Weapon based on movement state and weapon type */
@@ -127,8 +127,7 @@ protected:
 	//Functions
 	void ToggleCrouch();
 	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
-	bool StartAiming();
-	void StopAiming();
+	bool SetAimState(bool bIsAiming);
 
 	// Variables
 	EMovementState MovementState = EMovementState::Walk;

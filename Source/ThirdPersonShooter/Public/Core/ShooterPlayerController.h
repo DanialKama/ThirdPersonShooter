@@ -14,10 +14,10 @@ class THIRDPERSONSHOOTER_API AShooterPlayerController : public APlayerController
 
 public:
 	// Interfaces
-	// virtual AShooterPlayerController* GetPlayerControllerReference_Implementation() override;								// Player Controller Interface
-	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState) override;	// Player Controller Interface, Call from pickup weapon
-	virtual void PlayCameraShake_Implementation(TSubclassOf<UCameraShakeBase> CameraShake) override;									// Player Controller Interface, Call from pickup weapon
-	// virtual void RespawnPlayer_Implementation() override;																	// Player Controller Interface, Call from pickup weapon
+	virtual AShooterPlayerController* GetPlayerControllerReference_Implementation() override;
+	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState) override;
+	virtual void PlayCameraShake_Implementation(TSubclassOf<UCameraShakeBase> CameraShake) override;
+	virtual void RespawnPlayer_Implementation() override;
 
 	// Variables
 	UPROPERTY(BlueprintReadWrite, Category = "Variables")

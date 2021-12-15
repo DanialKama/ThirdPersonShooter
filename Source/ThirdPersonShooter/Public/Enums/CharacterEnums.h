@@ -29,5 +29,5 @@ enum class EHealthState : uint8
 	Low				UMETA(DisplayName = "Health is low"),
 	RecoveryStarted	UMETA(DisplayName = "Health recovery started"),
 	RecoveryStopped	UMETA(DisplayName = "Health recovery stopped"),
-	Death			UMETA(DisplayName = "Death, health is zero")
+	Death			UMETA(DisplayName = "Death")
 };

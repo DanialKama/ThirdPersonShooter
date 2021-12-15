@@ -25,7 +25,7 @@ class THIRDPERSONSHOOTER_API IPlayerControllerInterface
 public:
 	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
-	AShooterPlayerController* GetPlayerControllerReferenceCPP();
+	AShooterPlayerController* GetPlayerControllerReference();
 	
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
@@ -34,6 +34,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShake);
 	
-	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
-	// void RespawnPlayer();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
+	void RespawnPlayer();
 };

@@ -55,9 +55,9 @@ struct FBodyParts
 	UPROPERTY(EditDefaultsOnly)
 	USkeletalMesh* ThighRight;
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootAndCalfLeft;
+	USkeletalMesh* CalfAndFootLeft;
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootAndCalfRight;
+	USkeletalMesh* CalfAndFootRight;
 	UPROPERTY(EditDefaultsOnly)
 	USkeletalMesh* CalfLeft;
 	UPROPERTY(EditDefaultsOnly)

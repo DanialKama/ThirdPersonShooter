@@ -12,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UI/ShooterHUD.h"
+#include "Components/TimelineComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -73,17 +74,20 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
-	if (GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	if (GetController() && GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 	{
-		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReferenceCPP(GetController());
-		PlayerController->PlayerTransform = GetActorTransform();
-		if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReference(GetController());
+		if(PlayerController)
 		{
-			HUD = IHUDInterface::Execute_GetHUDReference(PlayerController->GetHUD());
-			if (HUD)
+			PlayerController->PlayerTransform = GetActorTransform();
+			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 			{
-				HUD->SetHealth_Implementation(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
-				HUD->SetUIVisibility_Implementation(ESlateVisibility::Visible);
+				HUD = IHUDInterface::Execute_GetHUDReference(PlayerController->GetHUD());
+				if (HUD)
+				{
+					HUD->SetHealth_Implementation(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
+					HUD->SetUIVisibility_Implementation(ESlateVisibility::Visible);
+				}
 			}
 		}
 	}
@@ -216,12 +220,13 @@ void APlayerCharacter::TryToStartAiming()
 		if (AimFloatCurve)
 		{
 			FOnTimelineFloat TimeLineProgress;
-			TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-			AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
-			FOnTimelineEvent TimelineEvent;
-			TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
-			AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
+			TimeLineProgress.BindUFunction(this, FName(TEXT("AimTimeLineUpdate")));
+			AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName(TEXT("LerpAlpha")));
+			AimTimeline->SetTimelineLength(0.5);
 			AimTimeline->Play();
+			// FOnTimelineEvent TimelineFinishEvent;
+			// TimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+			// AimTimeline->SetTimelineFinishedFunc(TimelineFinishEvent);
 			Direction = ETimelineDirection::Forward;
 		}
 	}
@@ -241,9 +246,9 @@ void APlayerCharacter::ResetAim()
 		TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
 		FOnTimelineFloat TimeLineProgress;
 		TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-		AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
-		AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
-		AimTimeline->Reverse();
+		// AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
+		// AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
+		// AimTimeline->Reverse();
 		Direction = ETimelineDirection::Backward;
 	}
 }
@@ -400,4 +405,22 @@ void APlayerCharacter::GamepadAddToPitch(float AxisValue)
 {
 	const float InputValue = AxisValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(InputValue);
+}
+
+void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
+{
+	switch (HealthState)
+	{
+	case 0: case 1: case 2: case 3:
+		// Full, Low, Recovery started, Recovery stopped
+		break;
+	case 4:
+		// Death
+		if(HUD)
+		{
+			HUD->SetUIVisibility(ESlateVisibility::Hidden);
+		}
+		break;
+	}
+	Super::SetHealthState_Implementation(HealthState);
 }

@@ -988,7 +988,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		WeaponToSwitch->SkeletalMesh->SetSimulatePhysics(false);
 		WeaponToSwitch->SkeletalMesh->SetCollisionProfileName(FName("NoCollision"), false);
 
-		// If character try to switch attach the current weapon to physics container and set target weapon as current weapon
+		// If character try to switch attach the current weapon to physics constraint and set target weapon as current weapon
 		if (bSwitchWeapon)
 		{
 			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
@@ -1155,7 +1155,7 @@ void ABaseCharacter::SetHealthState_Implementation(EHealthState HealthState)
 		// Health recovery stopped
 		break;
 	case 4:
-		// Death, health is zero
+		// Death
 		Death();
 		break;
 	}
@@ -1322,7 +1322,7 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentLeftLeg(FName HitBone)
 		}
 		else
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Calf and Foot", BodyParts.FootAndCalfLeft);
+			NewBodyPart = AddSkeletalMeshComponent("Left Calf and Foot", BodyParts.CalfAndFootLeft);
 		}
 		GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
 	}
@@ -1362,7 +1362,7 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentRightLeg(FName HitBone)
 		}
 		else
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Calf and Foot", BodyParts.FootAndCalfRight);
+			NewBodyPart = AddSkeletalMeshComponent("Right Calf and Foot", BodyParts.CalfAndFootRight);
 		}
 		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
 	}
@@ -1481,6 +1481,12 @@ void ABaseCharacter::DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterr
 	// Timer to start fade effect
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StartDeathLifeSpan, DeathLifeSpan);
+	// If character is AI, detach it from controller
+	AAIController* AIController = Cast<AAIController>(GetController());
+	if (AIController)
+	{
+		DetachFromControllerPendingDestroy();
+	}
 }
 
 void ABaseCharacter::StartDeathLifeSpan()
@@ -1547,9 +1553,11 @@ void ABaseCharacter::ToggleCrouch()
 	switch (MovementState)
 	{
 	case 0: case 1: case 2: case 4:
+		Crouch();
 		SetMovementState_Implementation(EMovementState::Crouch, true, false);
 		break;
 	case 3:
+		UnCrouch();
 		SetMovementState_Implementation(EMovementState::Walk, true, false);
 		break;
 	}

@@ -12,20 +12,22 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UI/ShooterHUD.h"
-#include "Components/TimelineComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// Create Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	TPP = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Timeline"));
 
 	// Setup components attachment
 	SpringArm->SetupAttachment(GetRootComponent());
 	TPP->SetupAttachment(SpringArm);
 
-	// Set component defaults
+	// Initialize components
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 75.0f));
 	SpringArm->ProbeSize = 10.0;
 	SpringArm->bUsePawnControlRotation = true;
@@ -38,7 +40,6 @@ APlayerCharacter::APlayerCharacter()
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Super::SetupPlayerInputComponent(PlayerInputComponent);
 	if (InputComponent)
 	{
 		// Input Actions
@@ -72,24 +73,37 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	ChildCameraComponent = TPP;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
+	
 	if (GetController() && GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 	{
 		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReference(GetController());
 		if(PlayerController)
 		{
 			PlayerController->PlayerTransform = GetActorTransform();
-			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UHUDInterface::StaticClass()))
 			{
 				HUD = IHUDInterface::Execute_GetHUDReference(PlayerController->GetHUD());
 				if (HUD)
 				{
-					HUD->SetHealth_Implementation(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
-					HUD->SetUIVisibility_Implementation(ESlateVisibility::Visible);
+					HUD->SetHealth(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
+					HUD->SetUIVisibility(ESlateVisibility::Visible);
 				}
 			}
 		}
+	}
+	
+	if (AimFloatCurve)
+	{
+		FOnTimelineFloat TimeLineProgress{};
+		TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
+		AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("Alpha"));
+		FOnTimelineEvent TimelineFinishEvent{};
+		TimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+		AimTimeline->SetTimelineFinishedFunc(TimelineFinishEvent);
 	}
 }
 
@@ -217,18 +231,8 @@ void APlayerCharacter::TryToStartAiming()
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -30.0f;
 
-		if (AimFloatCurve)
-		{
-			FOnTimelineFloat TimeLineProgress;
-			TimeLineProgress.BindUFunction(this, FName(TEXT("AimTimeLineUpdate")));
-			AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName(TEXT("LerpAlpha")));
-			AimTimeline->SetTimelineLength(0.5);
-			AimTimeline->Play();
-			// FOnTimelineEvent TimelineFinishEvent;
-			// TimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
-			// AimTimeline->SetTimelineFinishedFunc(TimelineFinishEvent);
-			Direction = ETimelineDirection::Forward;
-		}
+		AimTimeline->Play();
+		Direction = ETimelineDirection::Forward;
 	}
 }
 
@@ -237,18 +241,12 @@ void APlayerCharacter::ResetAim()
 	SetAimState(false);
 	if (HUD)
 	{
-		HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Hidden);
+		HUD->SetCrosshairVisibility(ESlateVisibility::Hidden);
 	}
 
 	if (AimFloatCurve)
 	{
-		FOnTimelineEvent TimelineEvent;
-		TimelineEvent.BindUFunction(this, FName("AimTimeLineFinished"));
-		FOnTimelineFloat TimeLineProgress;
-		TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-		// AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("LerpAlpha"));
-		// AimTimeline->SetTimelineFinishedFunc(TimelineEvent);
-		// AimTimeline->Reverse();
+		AimTimeline->Reverse();
 		Direction = ETimelineDirection::Backward;
 	}
 }
@@ -275,7 +273,7 @@ void APlayerCharacter::AimTimeLineFinished()
 	{
 		if (HUD)
 		{
-			HUD->SetCrosshairVisibility_Implementation(ESlateVisibility::Visible);
+			HUD->SetCrosshairVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else
@@ -423,4 +421,30 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 		break;
 	}
 	Super::SetHealthState_Implementation(HealthState);
+}
+
+void APlayerCharacter::SetHealthLevel_Implementation(float Health)
+{
+	if (HUD)
+	{
+		HUD->SetHealth(Health);
+	}	
+}
+
+void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFull)
+{
+	Super::SetStaminaLevel_Implementation(Stamina, bIsFull);
+
+	if (HUD)
+	{
+		HUD->SetStamina(Stamina);
+	}
+}
+
+void APlayerCharacter::Destroyed()
+{
+	if (PlayerController)
+	{
+		PlayerController->RespawnPlayer();
+	}	
 }

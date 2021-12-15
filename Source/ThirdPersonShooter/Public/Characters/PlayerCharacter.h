@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Characters/BaseCharacter.h"
+#include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
 class AShooterPlayerController;
 class AShooterHUD;
 class USpringArmComponent;
-class UTimelineComponent;
+class UCurveFloat;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter
@@ -23,6 +24,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Destroyed() override;
+
 	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArm;
@@ -34,18 +37,18 @@ public:
 	virtual void ResetAim() override;
 	// Interfaces
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
-
-	// Variables
-	UPROPERTY()
-	UTimelineComponent* AimTimeline;
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	UCurveFloat* AimFloatCurve;
+	virtual void SetHealthLevel_Implementation(float Health) override;
+	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
+	// Components
+	UPROPERTY()
+	UTimelineComponent* AimTimeline;
+	
 	// Functions
 	void GamepadAddToYaw(float AxisValue);
 	void GamepadAddToPitch(float AxisValue);
@@ -75,6 +78,8 @@ private:
 	float BaseLookUpRate = 45.0f;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = "true"))
 	float TapThreshold = 0.2f;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* AimFloatCurve;
 	UPROPERTY()
 	AShooterPlayerController* PlayerController;
 	UPROPERTY()

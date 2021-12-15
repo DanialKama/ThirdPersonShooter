@@ -17,6 +17,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "AIModule/Classes/AIController.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/TimelineComponent.h"
 
 class AAIController;
 

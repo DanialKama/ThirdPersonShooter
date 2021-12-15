@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/CommonInterface.h"
@@ -18,6 +17,7 @@ class APickupWeapon;
 class APickupAmmo;
 class AMagazine;
 class UCameraComponent;
+class UTimelineComponent;
 
 enum class EReloadState : uint8
 {

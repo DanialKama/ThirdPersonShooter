@@ -33,7 +33,4 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShake);
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerControllerInterface")
-	void RespawnPlayer();
 };

@@ -379,6 +379,21 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 	}
 }
 
+void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot)
+{
+	Super::SetCurrentWeapon(NewCurrentWeapon, WeaponSlot);
+	// Hide ammo info on player UI widget when the player holding no weapon
+	if (CurrentHoldingWeapon == EWeaponToDo::NoWeapon && HUD)
+	{
+		HUD->SetAmmoInfoVisibility(ESlateVisibility::Hidden);
+		HUD->ToggleCommandMessage(FText::FromString(""), ESlateVisibility::Hidden, false);
+	}
+	else if (HUD)
+	{
+		HUD->SetAmmoInfoVisibility(ESlateVisibility::Visible);
+	}
+}
+
 void APlayerCharacter::AddToForwardMovement(float AxisValue)
 {
 	// Zero out pitch and roll, only move on plane

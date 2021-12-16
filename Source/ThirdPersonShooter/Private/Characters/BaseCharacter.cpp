@@ -687,11 +687,7 @@ void ABaseCharacter::ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool 
 	{
 		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		StopAnimMontage();
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->ReloadWeapon();
-			ResetReload();
-		}
+		ResetReload();
 	}
 }
 
@@ -728,6 +724,14 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			break;
 		case 5:
 			// End Reload
+			if (CurrentWeapon)
+			{
+				CurrentWeapon->ReloadWeapon();
+				if (CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == CurrentWeapon->AmmoComponent->MagazineSize)
+				{
+					StopAnimMontage();
+				}
+			}
 			break;
 		}
 	}

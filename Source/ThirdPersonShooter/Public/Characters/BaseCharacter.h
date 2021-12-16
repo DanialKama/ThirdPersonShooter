@@ -191,7 +191,7 @@ protected:
 
 	//Functions
 	void ToggleCrouch();
-	void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
+	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
 	bool SetAimState(bool bIsAiming);
 
 	// Variables

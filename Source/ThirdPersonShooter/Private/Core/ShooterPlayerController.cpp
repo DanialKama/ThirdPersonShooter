@@ -8,7 +8,7 @@ AShooterPlayerController* AShooterPlayerController::GetPlayerControllerReference
 	return this;
 }
 
-void AShooterPlayerController::RespawnPlayer_Implementation()
+void AShooterPlayerController::RespawnPlayer()
 {
 	const FVector Location = PlayerTransform.GetLocation();
 	const FRotator Rotation(PlayerTransform.GetRotation());

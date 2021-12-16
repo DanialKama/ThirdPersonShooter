@@ -70,7 +70,6 @@ void UStaminaComponent::StartSprinting()
 		bDoOnce = true;
 		
 		GetWorld()->GetTimerManager().SetTimer(SprintingTimer, this, &UStaminaComponent::SprintingDrainStamina, 0.1f, true);
-		
 		if(bCharacterInterface)
 		{
 			ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
@@ -119,7 +118,6 @@ void UStaminaComponent::SprintingDrainStamina()
 	if(bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
-
 		// If stamina is zero set owner movement to walk
 		if(CurrentStamina <= 0.0f)
 		{

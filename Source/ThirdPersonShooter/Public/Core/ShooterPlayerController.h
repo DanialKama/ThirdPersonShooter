@@ -14,7 +14,7 @@ class THIRDPERSONSHOOTER_API AShooterPlayerController : public APlayerController
 
 public:
 	// Functions
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterPlayerController")
+	UFUNCTION(BlueprintCallable, Category = "ShooterPlayerController")
 	void RespawnPlayer() ;
 	// Interfaces
 	virtual AShooterPlayerController* GetPlayerControllerReference_Implementation() override;

@@ -39,6 +39,7 @@ public:
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
+	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -87,4 +88,5 @@ private:
 	uint8 TabNumber, PreviousTapNumber;
 	/** Enum data indicating the direction the Timeline is playing */
 	TEnumAsByte<ETimelineDirection::Type> Direction;
+	FTimerHandle StartSprintingTimer;
 };

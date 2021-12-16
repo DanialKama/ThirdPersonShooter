@@ -173,6 +173,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (bDoOnceStopped)
 		{
 			GetWorld()->GetTimerManager().SetTimer(IdleTimer, this, &ABaseCharacter::PlayIdleAnimation, FMath::FRandRange(60.0f, 90.0f), true);
+			bDoOnceStopped = false;
 			bDoOnceMoving = true;
 		}
 	}
@@ -181,6 +182,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (bDoOnceMoving)
 		{
 			CharacterIsOnMove();
+			bDoOnceMoving = false;
 			bDoOnceStopped = true;
 		}
 	}
@@ -263,7 +265,6 @@ void ABaseCharacter::UpdateMovementState()
 		{
 			Crouch();
 		}
-		
 		StaminaComponent->StopStaminaDrain();
 		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
@@ -1233,17 +1234,17 @@ void ABaseCharacter::Death()
 				int32 ArrayLenght;
 			case 0: case 1: case 2:
 				// Walk, Run, Sprint
-				ArrayLenght = StandUpDeathMontages.Max();
+				ArrayLenght = StandUpDeathMontages.Num();
 				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, ArrayLenght)];
 				break;
 			case 3:
 				// Crouch
-				ArrayLenght = CrouchDeathMontages.Max();
+				ArrayLenght = CrouchDeathMontages.Num();
 				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, ArrayLenght)];
 				break;
 			case 4:
 				// Prone
-				ArrayLenght = ProneDeathMontages.Max();
+				ArrayLenght = ProneDeathMontages.Num();
 				MontageToPlay = ProneDeathMontages[FMath::RandRange(0, ArrayLenght)];
 				break;
 			}
@@ -1526,7 +1527,7 @@ void ABaseCharacter::PlayIdleAnimation()
 	// If the character is not holding a weapon play a random idle animation
 	else if (!bIsAimed && !bIsArmed)
 	{
-		const int32 Lenght = IdleMontages.Max();
+		const int32 Lenght = IdleMontages.Num();
 		MontageToPlay = IdleMontages[FMath::RandRange(0, Lenght)];
 	}
 	
@@ -1608,13 +1609,13 @@ void ABaseCharacter::CachePose()
 	if (CalculateFacingDirection())
 	{
 		// Character is facing up
-		const int32 Lenght = StandUpFromFrontMontages.Max();
+		const int32 Lenght = StandUpFromFrontMontages.Num();
 		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, Lenght)];
 	}
 	else
 	{
 		// Character is facing down
-		const int32 Lenght = StandUpFromBackMontages.Max();
+		const int32 Lenght = StandUpFromBackMontages.Num();
 		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, Lenght)];
 	}
 

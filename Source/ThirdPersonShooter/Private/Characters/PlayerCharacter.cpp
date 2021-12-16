@@ -112,8 +112,8 @@ void APlayerCharacter::StartSprinting()
 	bTapHeld = true;
 	TabNumber = FMath::Clamp(TabNumber + 1, 1, 2);
 	PreviousTapNumber = TabNumber;
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::DoubleTabHandler, TapThreshold);
+	GetWorld()->GetTimerManager().ClearTimer(StartSprintingTimer);
+	GetWorld()->GetTimerManager().SetTimer(StartSprintingTimer, this, &APlayerCharacter::DoubleTabHandler, TapThreshold);
 	bDoubleTabGate = false;
 }
 
@@ -130,8 +130,8 @@ void APlayerCharacter::DoubleTabGate()
 	// If gate is open
 	if (bDoubleTabGate)
 	{
-		TabNumber = 0;
-		PreviousTapNumber = 0;
+		PreviousTapNumber = TabNumber = 0;
+		DoubleTabHandler();
 	}
 }
 
@@ -447,4 +447,14 @@ void APlayerCharacter::Destroyed()
 	{
 		PlayerController->RespawnPlayer();
 	}	
+}
+
+void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)
+{
+	Super::AddRecoil_Implementation(RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
+	AddControllerPitchInput(ControllerPitch);
+	if (HUD)
+	{
+		HUD->AddRecoil(CrosshairRecoil, ControlTime);
+	}
 }

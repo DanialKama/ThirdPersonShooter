@@ -169,8 +169,8 @@ public:
 	/** Health Recovery based on Stamina level */
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
-	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
+	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	
 	// Variables
 	uint8 bIsAlive : 1, bIsAimed : 1;
@@ -195,8 +195,11 @@ protected:
 	bool SetAimState(bool bIsAiming);
 
 	// Variables
+	uint8 bCharacterAnimationInterface : 1;
 	EMovementState MovementState = EMovementState::Walk;
 	EMovementState PreviousMovementState = EMovementState::Walk;
+	UPROPERTY()
+	UAnimInstance* AnimInstance;
 	UPROPERTY()
 	APickupWeapon* CurrentWeapon;
 	UPROPERTY()
@@ -258,10 +261,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bCharacterAnimationInterface : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1;
-	
-	UPROPERTY()
-	UAnimInstance* AnimInstance;
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1;
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> MaterialInstance;
 	UPROPERTY()
@@ -302,7 +302,6 @@ private:
 	UCurveFloat* FadeFloatCurve;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FBodyParts BodyParts;
-
 	EItemType PickupType = EItemType::Weapon;
 	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
 	FGameplayTagContainer CharacterTagContainer;

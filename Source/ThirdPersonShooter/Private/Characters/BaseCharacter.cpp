@@ -74,8 +74,8 @@ ABaseCharacter::ABaseCharacter()
 	Hinge1->SetHiddenInGame(true);
 
 	PhysicsConstraint1->bUseAttachParentBound = true;
-	PhysicsConstraint1->ComponentName1.ComponentName = TEXT("Hinge1");
-	PhysicsConstraint1->ComponentName2.ComponentName = TEXT("Root1");
+	PhysicsConstraint1->ComponentName1.ComponentName = TEXT("Hinge 1");
+	PhysicsConstraint1->ComponentName2.ComponentName = TEXT("Root 1");
 	PhysicsConstraint1->SetDisableCollision(true);
 	PhysicsConstraint1->SetAngularSwing1Limit(ACM_Limited, 10.0f);
 	PhysicsConstraint1->SetAngularSwing2Limit(ACM_Limited, 5.0f);
@@ -100,8 +100,8 @@ ABaseCharacter::ABaseCharacter()
 	Hinge2->SetHiddenInGame(true);
 
 	PhysicsConstraint2->bUseAttachParentBound = true;
-	PhysicsConstraint2->ComponentName1.ComponentName = TEXT("Hinge1");
-	PhysicsConstraint2->ComponentName2.ComponentName = TEXT("Root1");
+	PhysicsConstraint2->ComponentName1.ComponentName = TEXT("Hinge 2");
+	PhysicsConstraint2->ComponentName2.ComponentName = TEXT("Root 2");
 	PhysicsConstraint2->SetDisableCollision(true);
 	PhysicsConstraint2->SetAngularSwing1Limit(ACM_Limited, 10.0f);
 	PhysicsConstraint2->SetAngularSwing2Limit(ACM_Limited, 5.0f);
@@ -1054,7 +1054,6 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const
 {
 	const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-	WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
 	switch (TargetWeapon)
 	{
 	case 0:
@@ -1062,10 +1061,12 @@ void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EW
 		break;
 	case 1:
 		// Attach the primary weapon to hinge 1
+		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
 		WeaponToAttach->AttachToComponent(Hinge1, AttachmentTransformRules);
 		break;
 	case 2:
 		// Attach the secondary weapon to hinge 2
+		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
 		WeaponToAttach->AttachToComponent(Hinge2, AttachmentTransformRules);
 		break;
 	case 3:
@@ -1088,7 +1089,14 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 	bIsArmed = bArmedState;
 	if (bCharacterAnimationInterface)
 	{
-		ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, bArmedState, CurrentWeapon);
+		if (CurrentWeapon)
+		{
+			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, bArmedState, CurrentWeapon);
+		}
+		else
+		{
+			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
+		}
 	}
 	StopAnimMontage();
 	if (!bArmedState)

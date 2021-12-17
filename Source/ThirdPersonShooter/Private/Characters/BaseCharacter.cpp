@@ -770,7 +770,6 @@ void ABaseCharacter::HolsterWeapon()
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
-			
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
 				AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
@@ -789,6 +788,10 @@ void ABaseCharacter::HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool
 	{
 		SetArmedState(true);
 		SwitchIsEnded();
+	}
+	else
+	{
+		
 	}
 }
 
@@ -822,10 +825,12 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
 			SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
 			SetArmedState(false);
+			UE_LOG(LogTemp, Error, TEXT(__FUNCTION__));
+
 			switch (WeaponToGrab)
 			{
 			case 0:
-				// No Weapon = no switch
+				// No Weapon = nothing to switch
 				break;
 			case 1:
 				// Primary Weapon
@@ -841,6 +846,7 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 				break;
 			}
 		}
+		WeaponToGrab = EWeaponToDo::NoWeapon;
 	}
 }
 
@@ -854,7 +860,8 @@ void ABaseCharacter::SwitchToPrimary()
 		const int32 PrimaryWeaponType = static_cast<int32>(PrimaryWeapon->WeaponInfo.WeaponType);
 		UAnimMontage* GrabMontage = GrabWeaponMontages[PrimaryWeaponType];
 		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponType];
-		
+		UE_LOG(LogTemp, Error, TEXT(__FUNCTION__));
+
 		switch (CurrentHoldingWeapon)
 		{
 			float MontageLenght;
@@ -866,6 +873,7 @@ void ABaseCharacter::SwitchToPrimary()
 				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
 				GrabbedWeapon = PrimaryWeapon;
 				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
+				UE_LOG(LogTemp, Error, TEXT("CASE 0"));
 			}
 			break;
 		case 1:
@@ -873,13 +881,14 @@ void ABaseCharacter::SwitchToPrimary()
 			HolsterWeapon();
 			break;
 		case 2: case 3:
+			UE_LOG(LogTemp, Error, TEXT("CASE 2, 3"));
 			// If currently holding the secondary or sidearm weapon then holster it and grab the primary weapon
 			CurrentWeapon->LowerWeapon();
 			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-
+				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
 				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
@@ -925,7 +934,7 @@ void ABaseCharacter::SwitchToSecondary()
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-				
+				WeaponToGrab = EWeaponToDo::SecondaryWeapon;
 				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
@@ -971,7 +980,7 @@ void ABaseCharacter::SwitchToSidearm()
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-				
+				WeaponToGrab = EWeaponToDo::SidearmWeapon;
 				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
@@ -980,11 +989,6 @@ void ABaseCharacter::SwitchToSidearm()
 			break;
 		}
 	}
-}
-
-void ABaseCharacter::SwitchIsEnded()
-{
-	
 }
 
 void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon)
@@ -1020,6 +1024,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		WeaponToSwitch->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
 		SetArmedState(true);
 	}
+	WeaponToGrab = EWeaponToDo::NoWeapon;
 }
 
 void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
@@ -1041,6 +1046,7 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Grab"), MontageToPlay);
 			}
+			GrabbedWeapon = nullptr;
 		}
 		break;
 	case 1:
@@ -1061,13 +1067,15 @@ void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EW
 		break;
 	case 1:
 		// Attach the primary weapon to hinge 1
+		Hinge1->SetRelativeLocation(FVector::ZeroVector);
 		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
 		WeaponToAttach->AttachToComponent(Hinge1, AttachmentTransformRules);
 		break;
 	case 2:
 		// Attach the secondary weapon to hinge 2
-		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
+		Hinge2->SetRelativeLocation(FVector::ZeroVector);
 		WeaponToAttach->AttachToComponent(Hinge2, AttachmentTransformRules);
+		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
 		break;
 	case 3:
 		// Attach the sidearm weapon to mesh socket
@@ -1711,7 +1719,7 @@ void ABaseCharacter::OneFrameDelay()
 	}
 }
 
-void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
 	if (bInterrupted)
 	{
@@ -1720,5 +1728,9 @@ void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInter
 }
 
 void ABaseCharacter::ResetAim()
+{
+}
+
+void ABaseCharacter::SwitchIsEnded()
 {
 }

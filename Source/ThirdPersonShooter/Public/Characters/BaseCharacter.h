@@ -158,7 +158,7 @@ public:
 	/** Call from anim notify */
 	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
 	/** Call from anim notify and montage delegate*/
-	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const;
 	/** Call from anim notify, Death function, and montage delegate */
 	void DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
@@ -314,7 +314,7 @@ private:
 	AMagazine* Magazine;
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
-	EWeaponToDo WeaponToGrab = EWeaponToDo::PrimaryWeapon;
+	EWeaponToDo WeaponToGrab;
 	EWeaponType HolsterWeaponType;
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;

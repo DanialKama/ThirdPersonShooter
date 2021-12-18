@@ -132,6 +132,7 @@ ABaseCharacter::ABaseCharacter()
 	bDoOnceStopped = true;
 	bDoOnceReload = true;
 	bDoOnceDeath = true;
+	bCanReload = true;
 }
 
 // Called when the game starts or when spawned
@@ -680,7 +681,10 @@ void ABaseCharacter::ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool 
 				Execute_SetWeaponState(CurrentWeapon, EWeaponState::Idle);
 			}
 		}
-		Magazine->Destroy();
+		if (Magazine)
+		{
+			Magazine->Destroy();
+		}
 		ResetReload();
 	}
 	else
@@ -703,7 +707,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			break;
 		case 1:
 			// Remove Mag
-			SpawnMagazine(CurrentWeapon);
+			SpawnMagazine(CurrentWeapon, false);
 			CurrentWeapon->SetMagazineVisibility(false);
 			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
 			break;
@@ -713,7 +717,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			break;
 		case 3:
 			// Pick Mag
-			SpawnMagazine(CurrentWeapon);
+			SpawnMagazine(CurrentWeapon, true);
 			CurrentWeapon->SetMagazineVisibility(false);
 			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
 			break;
@@ -724,7 +728,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			break;
 		case 5:
 			// End Reload
-			if (CurrentWeapon)
+			if (CurrentWeapon && bCanReload)
 			{
 				CurrentWeapon->ReloadWeapon();
 				if (CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == CurrentWeapon->AmmoComponent->MagazineSize)
@@ -737,16 +741,19 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 	}
 }
 
-void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon)
+void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew)
 {
 	if (IsValid(Weapon->WeaponDefaults.Magazine))
 	{
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = this;
-		SpawnParameters.Instigator = GetInstigator();
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		Magazine = GetWorld()->SpawnActor<AMagazine>(Weapon->WeaponDefaults.Magazine, GetMesh()->GetSocketLocation(FName("LeftHandHoldSocket")), FRotator::ZeroRotator, SpawnParameters);
-		CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > 0 ? Magazine->bMagazineIsEmpty = false : Magazine->bMagazineIsEmpty = true;
+		FTransform Transform;
+		Transform.SetLocation(GetMesh()->GetSocketLocation(FName("LeftHandHoldSocket")));
+		Magazine = GetWorld()->SpawnActorDeferred<AMagazine>(Weapon->WeaponDefaults.Magazine, Transform, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		// If spawned mag is the used mag then change mesh based on current magazine ammo
+		if (!bIsNew && CurrentWeapon->AmmoComponent->CurrentMagazineAmmo <= 0)
+		{
+			Magazine->bMagazineIsEmpty = true;
+		}
+		UGameplayStatics::FinishSpawningActor(Magazine, Transform);
 	}
 }
 
@@ -765,6 +772,7 @@ void ABaseCharacter::HolsterWeapon()
 		SetArmedState(false);
 		if (CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
 		{
+			bCanReload = false;
 			CurrentWeapon->LowerWeapon();
 			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
 			if (MontageLenght > 0.0f)
@@ -789,17 +797,19 @@ void ABaseCharacter::HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool
 		SetArmedState(true);
 		SwitchIsEnded();
 	}
-	else
-	{
-		
-	}
 }
 
 void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 {
-	if (NotifyState == ENotifyState::End)
+	switch (NotifyState)
 	{
-		if (HolsterWeaponType != EWeaponType::Pistol && HolsterWeaponType != EWeaponType::SMG)
+	case 0:
+		// Begin
+		bCanReload = false;
+		break;
+	case 1:
+		// End
+		if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
 		{
 			switch (WeaponToGrab)
 			{
@@ -825,8 +835,6 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
 			SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
 			SetArmedState(false);
-			UE_LOG(LogTemp, Error, TEXT(__FUNCTION__));
-
 			switch (WeaponToGrab)
 			{
 			case 0:
@@ -846,7 +854,8 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 				break;
 			}
 		}
-		WeaponToGrab = EWeaponToDo::NoWeapon;
+		bCanReload = true;
+		break;
 	}
 }
 
@@ -854,13 +863,13 @@ void ABaseCharacter::SwitchToPrimary()
 {
 	if (PrimaryWeapon)
 	{
+		bCanReload = false;
 		SetArmedState(false);
-
+		
 		const int32 CurrentWeaponType = static_cast<int32>(WeaponType);
 		const int32 PrimaryWeaponType = static_cast<int32>(PrimaryWeapon->WeaponInfo.WeaponType);
 		UAnimMontage* GrabMontage = GrabWeaponMontages[PrimaryWeaponType];
 		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponType];
-		UE_LOG(LogTemp, Error, TEXT(__FUNCTION__));
 
 		switch (CurrentHoldingWeapon)
 		{
@@ -873,7 +882,6 @@ void ABaseCharacter::SwitchToPrimary()
 				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
 				GrabbedWeapon = PrimaryWeapon;
 				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
-				UE_LOG(LogTemp, Error, TEXT("CASE 0"));
 			}
 			break;
 		case 1:
@@ -881,15 +889,16 @@ void ABaseCharacter::SwitchToPrimary()
 			HolsterWeapon();
 			break;
 		case 2: case 3:
-			UE_LOG(LogTemp, Error, TEXT("CASE 2, 3"));
 			// If currently holding the secondary or sidearm weapon then holster it and grab the primary weapon
 			CurrentWeapon->LowerWeapon();
+			GrabbedWeapon = PrimaryWeapon;
 			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
-				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToSwitchType = PrimaryWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
 				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
@@ -903,8 +912,9 @@ void ABaseCharacter::SwitchToSecondary()
 {
 	if (SecondaryWeapon)
 	{
+		bCanReload = false;
 		SetArmedState(false);
-
+		
 		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
 		const int32 SecondaryWeaponIndex = static_cast<int32>(SecondaryWeapon->WeaponInfo.WeaponType);
 		UAnimMontage* GrabMontage = GrabWeaponMontages[SecondaryWeaponIndex];
@@ -930,12 +940,14 @@ void ABaseCharacter::SwitchToSecondary()
 		case 1: case 3:
 			// If currently holding the primary or sidearm weapon then holster it and grab the secondary weapon
 			CurrentWeapon->LowerWeapon();
+			GrabbedWeapon = SecondaryWeapon;
 			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::SecondaryWeapon;
-				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToSwitchType = SecondaryWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
 				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
@@ -949,6 +961,7 @@ void ABaseCharacter::SwitchToSidearm()
 {
 	if (SidearmWeapon)
 	{
+		bCanReload = false;
 		SetArmedState(false);
 
 		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
@@ -981,7 +994,8 @@ void ABaseCharacter::SwitchToSidearm()
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::SidearmWeapon;
-				HolsterWeaponType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+				WeaponToSwitchType = SidearmWeapon->WeaponInfo.WeaponType;
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
 				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
@@ -1003,7 +1017,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		{
 			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
 		}
-		
+
 		switch (TargetWeapon)
 		{
 		case 0:
@@ -1041,18 +1055,20 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 			const int32 GrabbedWeaponIndex = static_cast<int32>(WeaponType);
 			UAnimMontage* MontageToPlay = GrabWeaponMontages[GrabbedWeaponIndex];
 			
-			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay, 1.0f, EMontagePlayReturnType::MontageLength);
+			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
 			if (MontageLenght > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Grab"), MontageToPlay);
 			}
 			GrabbedWeapon = nullptr;
 		}
+		bCanReload = false;
 		break;
 	case 1:
 		// End
 		StopAnimMontage();
 		SwitchIsEnded();
+		bCanReload = true;
 		break;
 	}
 }
@@ -1074,8 +1090,8 @@ void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EW
 	case 2:
 		// Attach the secondary weapon to hinge 2
 		Hinge2->SetRelativeLocation(FVector::ZeroVector);
-		WeaponToAttach->AttachToComponent(Hinge2, AttachmentTransformRules);
 		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
+		WeaponToAttach->AttachToComponent(Hinge2, AttachmentTransformRules);
 		break;
 	case 3:
 		// Attach the sidearm weapon to mesh socket
@@ -1106,7 +1122,7 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
 		}
 	}
-	StopAnimMontage();
+	// StopAnimMontage();
 	if (!bArmedState)
 	{
 		SetAimState(false);
@@ -1733,4 +1749,5 @@ void ABaseCharacter::ResetAim()
 
 void ABaseCharacter::SwitchIsEnded()
 {
+	bCanReload = true;
 }

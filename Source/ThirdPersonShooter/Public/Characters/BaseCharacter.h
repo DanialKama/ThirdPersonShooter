@@ -221,7 +221,7 @@ private:
 	APickupWeapon* SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn);
 	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
-	void SpawnMagazine(const APickupWeapon* Weapon);
+	void SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew);
 	/** Override in child class */
 	void ResetReload();
 	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
@@ -261,7 +261,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1;
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1;
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> MaterialInstance;
 	UPROPERTY()
@@ -303,7 +303,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FBodyParts BodyParts;
 	EItemType PickupType = EItemType::Weapon;
-	EWeaponType WeaponType = EWeaponType::Pistol;	// Set when equip weapon and when change current weapon
+	EWeaponType WeaponType;	// Set when equip weapon and when change current weapon
 	FGameplayTagContainer CharacterTagContainer;
 	FVector MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f), MeshLocation;
 	FTimerHandle IdleTimer, CheckForFallingTimer;
@@ -315,7 +315,8 @@ private:
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
 	EWeaponToDo WeaponToGrab;
-	EWeaponType HolsterWeaponType;
+	EWeaponType WeaponToHolsterType;
+	EWeaponType WeaponToSwitchType;
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;
 	uint8 DelayedFrames = 0;

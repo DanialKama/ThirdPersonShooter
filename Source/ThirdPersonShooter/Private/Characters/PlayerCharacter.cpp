@@ -16,12 +16,10 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	
 	// Create Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	TPP = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Timeline"));
+	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AimTimeline"));
 
 	// Setup components attachment
 	SpringArm->SetupAttachment(GetRootComponent());
@@ -95,15 +93,15 @@ void APlayerCharacter::BeginPlay()
 			}
 		}
 	}
-	
+
 	if (AimFloatCurve)
 	{
-		FOnTimelineFloat TimeLineProgress{};
-		TimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-		AimTimeline->AddInterpFloat(AimFloatCurve, TimeLineProgress, FName("Alpha"));
-		FOnTimelineEvent TimelineFinishEvent{};
-		TimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
-		AimTimeline->SetTimelineFinishedFunc(TimelineFinishEvent);
+		FOnTimelineFloat AimTimeLineProgress{};
+		AimTimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
+		AimTimeline->AddInterpFloat(AimFloatCurve, AimTimeLineProgress, FName("Alpha"));
+		FOnTimelineEvent AimTimelineFinishEvent{};
+		AimTimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+		AimTimeline->SetTimelineFinishedFunc(AimTimelineFinishEvent);
 	}
 }
 
@@ -243,12 +241,9 @@ void APlayerCharacter::ResetAim()
 	{
 		HUD->SetCrosshairVisibility(ESlateVisibility::Hidden);
 	}
-
-	if (AimFloatCurve)
-	{
-		AimTimeline->Reverse();
-		Direction = ETimelineDirection::Backward;
-	}
+	
+	AimTimeline->Reverse();
+	Direction = ETimelineDirection::Backward;
 }
 
 void APlayerCharacter::AimTimeLineUpdate(float Value)
@@ -472,4 +467,14 @@ void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity
 	{
 		HUD->AddRecoil(CrosshairRecoil, ControlTime);
 	}
+}
+
+APlayerCharacter* APlayerCharacter::GetPlayerCharacterReference_Implementation()
+{
+	return this;	
+}
+
+bool APlayerCharacter::IsPlayer_Implementation()
+{
+	return true;	
 }

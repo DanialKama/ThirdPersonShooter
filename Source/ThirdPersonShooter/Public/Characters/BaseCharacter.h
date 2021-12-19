@@ -98,7 +98,10 @@ UCLASS()
 class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
 {
 	GENERATED_BODY()
-
+	
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
+	UTimelineComponent* DeathTimeline;
+	
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
@@ -142,12 +145,16 @@ public:
 	virtual void ResetAim();
 	void StartFireWeapon();
 	void StopFireWeapon();
-	/** Reload Weapon based on movement state and weapon type */
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter", meta = (ToolTip = "Reload Weapon based on movement state and weapon type"))
 	virtual void ReloadWeapon();
-	void HolsterWeapon();
-	void SwitchToPrimary();
-	void SwitchToSecondary();
-	void SwitchToSidearm();
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	virtual void HolsterWeapon();
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	virtual void SwitchToPrimary();
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	virtual void SwitchToSecondary();
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	virtual void SwitchToSidearm();
 	void StartJump();
 	void DropItem();
 
@@ -171,28 +178,35 @@ public:
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
+	virtual ABaseCharacter* GetCharacterReference_Implementation() override;
+	virtual FGameplayTag GetTeamTag_Implementation() override;
 	
 	// Variables
-	uint8 bIsAlive : 1, bIsAimed : 1;
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	uint8 bIsAlive : 1;
+	uint8 bIsAimed : 1;
 	UPROPERTY(BlueprintAssignable, Category = "Defaults")
 	FDeathDelegate DeathDispatcher;
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
 	FGameplayTag TeamTag;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	APickupWeapon* PrimaryWeapon;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	APickupWeapon* SecondaryWeapon;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	APickupWeapon* SidearmWeapon;
+	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	EWeaponToDo CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 	//Functions
 	void ToggleCrouch();
 	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
+	virtual void ResetReload();
+	virtual void SwitchIsEnded();
 	bool SetAimState(bool bIsAiming);
 
 	// Variables
@@ -223,10 +237,7 @@ private:
 	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
 	void SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew);
-	virtual void ResetReload();
 	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
-	/** Override by AI character */
-	virtual void SwitchIsEnded();
 	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
 	void ToggleRagdoll(bool bStart);
 	void Death();
@@ -294,6 +305,8 @@ private:
 	TArray<UAnimMontage*> ProneDeathMontages;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
 	float FallDamageMultiplier = 0.025;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	float MinVelocityToApplyFallDamage = 1250.0f;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
 	float StandingDelay = 2.5;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
@@ -320,6 +333,4 @@ private:
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;
 	uint8 DelayedFrames = 0;
-	UPROPERTY()
-	UTimelineComponent* DeathTimeline;
 };

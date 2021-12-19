@@ -2,6 +2,7 @@
 
 #include "Characters/AICharacter.h"
 #include "AIController.h"
+#include "Actors/PickupWeapon.h"
 #include "Actors/RespawnActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -9,6 +10,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AIControllerInterface.h"
+#include "Interfaces/PlayerCharacterInterface.h"
 #include "Interfaces/WidgetInterface.h"
 
 // Sets default values
@@ -19,6 +21,13 @@ AAICharacter::AAICharacter()
 
 	// Setup components attachment
 	Widget->SetupAttachment(GetRootComponent());
+
+	// Initialize components
+	Widget->SetWidgetSpace(EWidgetSpace::Screen);
+	Widget->SetGenerateOverlapEvents(false);
+	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Widget->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Widget->SetVisibility(false);
 }
 
 void AAICharacter::BeginPlay()
@@ -53,11 +62,36 @@ void AAICharacter::BeginPlay()
 
 void AAICharacter::SetPrimaryWeapon()
 {
+	if (PrimaryWeapons.Num() > 0)
+	{
+		const TSubclassOf<APickupWeapon> WeaponToSpawn = PrimaryWeapons[FMath::RandRange(0, PrimaryWeapons.Num() - 1)];
+		const FVector Location = GetMesh()->GetSocketLocation(FName("RightHandHoldSocket"));
+		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("RightHandHoldSocket"));
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = this;
+		SpawnParameters.Instigator = GetInstigator();
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters);
+		SetPickup_Implementation(EItemType::Weapon, NewWeapon);
+		Interact_Implementation();
+	}
 }
 
 void AAICharacter::SetSidearmWeapon()
 {
-	
+	if (SidearmWeapons.Num() > 0)
+	{
+		const TSubclassOf<APickupWeapon> WeaponToSpawn = SidearmWeapons[FMath::RandRange(0, SidearmWeapons.Num() - 1)];
+		const FVector Location = GetMesh()->GetSocketLocation(FName("Weapon3Socket"));
+		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("Weapon3Socket"));
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = this;
+		SpawnParameters.Instigator = GetInstigator();
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters);
+		SetPickup_Implementation(EItemType::Weapon, NewWeapon);
+		Interact_Implementation();
+	}
 }
 
 void AAICharacter::ReloadWeapon()
@@ -70,17 +104,60 @@ void AAICharacter::ReloadWeapon()
 void AAICharacter::ResetReload()
 {
 	Super::ResetReload();
-	
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+}
+
+void AAICharacter::SwitchToPrimary()
+{
+	// Stop AI movement while switching to not interrupt montages
+	GetCharacterMovement()->DisableMovement();
+	Super::SwitchToPrimary();
+}
+
+void AAICharacter::SwitchToSecondary()
+{
+	GetCharacterMovement()->DisableMovement();
+	Super::SwitchToSecondary();
+}
+
+void AAICharacter::SwitchToSidearm()
+{
+	GetCharacterMovement()->DisableMovement();
+	Super::SwitchToSidearm();
+}
+
+void AAICharacter::HolsterWeapon()
+{
+	GetCharacterMovement()->DisableMovement();
+	Super::HolsterWeapon();
+}
+
+void AAICharacter::SwitchIsEnded()
+{
+	Super::SwitchIsEnded();
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
+}
+
+void AAICharacter::TryToResetMovement() const
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 float AAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (bIsAlive && Execute_IsPlayer(DamageCauser->GetOwner()) && Execute_GetTeamTag(DamageCauser->GetOwner()) != TeamTag)
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (bIsAlive &&  Execute_GetTeamTag(DamageCauser->GetOwner()) != TeamTag)
 	{
-		Widget->SetVisibility(true);
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AAICharacter::HideWidget, 2.0f);
-		return DamageAmount;
+		if (DamageCauser->GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()) && ICommonInterface::Execute_IsPlayer(DamageCauser->GetOwner()))
+		{
+			Widget->SetVisibility(true);
+			GetWorld()->GetTimerManager().ClearTimer(WidgetTimerHandle);
+			GetWorld()->GetTimerManager().SetTimer(WidgetTimerHandle, this, &AAICharacter::HideWidget, 2.0f);
+		}
 	}
 	return DamageAmount;
 }
@@ -90,7 +167,7 @@ void AAICharacter::HideWidget() const
 	Widget->SetVisibility(false);	
 }
 
-void AAICharacter::UseWeapon_Implementation(bool bAim, bool bFire)
+void AAICharacter::UseWeapon(bool bAim, bool bFire)
 {
 	if (bAim)
 	{
@@ -115,6 +192,85 @@ void AAICharacter::UseWeapon_Implementation(bool bAim, bool bFire)
 		StopFireWeapon();
 		SetAimState(false);
 	}
+}
+
+bool AAICharacter::SwitchToWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch)
+{
+	if (WeaponToSwitch != CurrentHoldingWeapon)
+	{
+		switch (WeaponToSwitch)
+		{
+		case 0:
+			// No Weapon
+			HolsterWeapon();
+			return true;
+		case 1:
+			// Primary Weapon
+			if (PrimaryWeapon)
+			{
+				SwitchToPrimary();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (SecondaryWeapon)
+				{
+					SwitchToSecondary();
+					return true;
+				}
+				if (SidearmWeapon)
+				{
+					SwitchToSidearm();
+					return true;
+				}
+			}
+			return false;
+		case 2:
+			// Secondary Weapon
+			if (SecondaryWeapon)
+			{
+				SwitchToSecondary();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (PrimaryWeapon)
+				{
+					SwitchToPrimary();
+					return true;
+				}
+				if (SidearmWeapon)
+				{
+					SwitchToSidearm();
+					return true;
+				}
+			}
+			return false;
+		case 3:
+			// Sidearm Weapon
+			if (SidearmWeapon)
+			{
+				SwitchToSidearm();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (PrimaryWeapon)
+				{
+					SwitchToPrimary();
+					return true;
+				}
+				if (SecondaryWeapon)
+				{
+					SwitchToSecondary();
+					return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+	return true;
 }
 
 void AAICharacter::SetHealthLevel_Implementation(float Health)
@@ -166,4 +322,14 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		}
 		break;
 	}
+}
+
+AAICharacter* AAICharacter::GetAICharacterReference_Implementation()
+{
+	return this;
+}
+
+APatrolPathActor* AAICharacter::GetPatrolPathActor()
+{
+	return PatrolPath;	
 }

@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "PlayerCharacterInterface.generated.h"
 
-class APickup;
+class APlayerCharacter;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -22,8 +22,6 @@ class THIRDPERSONSHOOTER_API IPlayerCharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// With Output
-	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get parent character reference"))
-	// PlayerCharacter* GetPlayerCharacterReference(); TODO complete it after player character class implemented
-	
-	// Without Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PlayerCharacterInterface")
+	APlayerCharacter* GetPlayerCharacterReference();
 };

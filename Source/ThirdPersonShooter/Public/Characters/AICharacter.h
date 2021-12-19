@@ -11,6 +11,7 @@ class AAIController;
 class UWidgetComponent;
 class UBlackboardComponent;
 class ARespawnActor;
+class APatrolPathActor;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AAICharacter : public ABaseCharacter, public IAICharacterInterface
@@ -26,28 +27,42 @@ public:
 	UWidgetComponent* Widget;
 
 	// Functions
-	virtual void ReloadWeapon() override;
-	// Interfaces
 	/** True to do it, false to stop it (to start fire weapon aim is necessary) */
-	virtual void UseWeapon_Implementation(bool bAim, bool bFire) override;
+	UFUNCTION(BlueprintCallable, Category = "AICharacter")
+	void UseWeapon(bool bAim, bool bFire);
+	virtual void ReloadWeapon() override;
+	virtual void ResetReload() override;
+	UFUNCTION(BlueprintCallable, Category = "AICharacter")
+	bool SwitchToWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch);
+	virtual void SwitchToPrimary() override;
+	virtual void SwitchToSecondary() override;
+	virtual void SwitchToSidearm() override;
+	virtual void HolsterWeapon() override;
+	UFUNCTION(BlueprintCallable, Category = "AICharacter")
+	APatrolPathActor* GetPatrolPathActor();
+	// Interfaces
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
+	virtual AAICharacter* GetAICharacterReference_Implementation() override;
 
 	// Variables
 	UPROPERTY()
 	ARespawnActor* RespawnHandler;
 	
 protected:
+	// Functions
 	virtual void BeginPlay() override;
+	virtual void SwitchIsEnded() override;
 
 private:
 	// Functions
 	void SetPrimaryWeapon();
+	UFUNCTION()
 	void SetSidearmWeapon();
-	virtual void ResetReload() override;
 	/** Show health widget if damage causer is the player and is not in the same team with AI */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void HideWidget() const;
+	void TryToResetMovement() const;
 	
 	// Variables
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1, bReloadGate : 1;
@@ -56,7 +71,12 @@ private:
 	UPROPERTY()
 	UBlackboardComponent* Blackboard;
 	UPROPERTY(EditInstanceOnly, Category = "Defaults")
-	AActor* PatrolPath;
+	APatrolPathActor* PatrolPath;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<APickupWeapon>> PrimaryWeapons;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Sidearm weapons to spawn and attach", AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	float RespawnTime = 5.0f;
+	FTimerHandle WidgetTimerHandle;
 };

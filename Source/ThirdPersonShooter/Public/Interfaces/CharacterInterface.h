@@ -10,6 +10,7 @@
 #include "CharacterInterface.generated.h"
 
 class APickup;
+class ABaseCharacter;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -25,11 +26,8 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// With Output
-	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get character base reference"))
-	// BaseCharacter* GetCharacterReference(); TODO complete it after base character class implemented
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	bool IsPlayer();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get a reference of base character"))
+	ABaseCharacter* GetCharacterReference();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	FGameplayTag GetTeamTag();

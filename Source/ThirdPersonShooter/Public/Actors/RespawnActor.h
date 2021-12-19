@@ -11,7 +11,7 @@ class AAICharacter;
 struct FRespawnInfo
 {
 	float SpawnTime;
-	TSubclassOf<AAICharacter*> CharacterToSpawn;
+	TSubclassOf<AAICharacter> CharacterToSpawn;
 };
 
 UCLASS()

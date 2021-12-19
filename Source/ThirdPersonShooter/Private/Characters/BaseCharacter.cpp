@@ -37,6 +37,7 @@ ABaseCharacter::ABaseCharacter()
 	PhysicsConstraint2 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Physics Constraint 2"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DeathTimeline"));
 	
 	// Setup components attachment
 	FallCapsule->SetupAttachment(GetMesh());
@@ -47,11 +48,13 @@ ABaseCharacter::ABaseCharacter()
 	Hinge2->SetupAttachment(Root2);
 	PhysicsConstraint2->SetupAttachment(Hinge2);
 
-	// Set component defaults
+	// Initialize components
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>CubeAsset(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
 	UStaticMesh* Cube = CubeAsset.Object;
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>PlaneAsset(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
 	UStaticMesh* Plane = PlaneAsset.Object;
+
+	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
 	
 	FallCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	
@@ -1267,21 +1270,17 @@ void ABaseCharacter::Death()
 			// Select a random montage based on current movement state
 			switch (MovementState)
 			{
-				int32 ArrayLenght;
 			case 0: case 1: case 2:
 				// Walk, Run, Sprint
-				ArrayLenght = StandUpDeathMontages.Num();
-				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, ArrayLenght)];
+				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, StandUpDeathMontages.Num() - 1)];
 				break;
 			case 3:
 				// Crouch
-				ArrayLenght = CrouchDeathMontages.Num();
-				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, ArrayLenght)];
+				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, CrouchDeathMontages.Num() - 1)];
 				break;
 			case 4:
 				// Prone
-				ArrayLenght = ProneDeathMontages.Num();
-				MontageToPlay = ProneDeathMontages[FMath::RandRange(0, ArrayLenght)];
+				MontageToPlay = ProneDeathMontages[FMath::RandRange(0, ProneDeathMontages.Num() - 1)];
 				break;
 			}
 			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
@@ -1531,12 +1530,12 @@ void ABaseCharacter::StartDeathLifeSpan()
 {
 	if (FadeFloatCurve)
 	{
-		FOnTimelineFloat TimeLineProgress;
-		TimeLineProgress.BindUFunction(this, FName("DeathTimeLineUpdate"));
-		DeathTimeline->AddInterpFloat(FadeFloatCurve, TimeLineProgress, FName("Fade"));
-		FOnTimelineEvent TimelineEvent;
-		TimelineEvent.BindUFunction(this, FName("Destroy"));
-		DeathTimeline->SetTimelineFinishedFunc(TimelineEvent);
+		FOnTimelineFloat DeathTimeLineProgress{};
+		DeathTimeLineProgress.BindUFunction(this, FName("DeathTimeLineUpdate"));
+		DeathTimeline->AddInterpFloat(FadeFloatCurve, DeathTimeLineProgress, FName("Fade"));
+		FOnTimelineEvent DeathTimelineEvent{};
+		DeathTimelineEvent.BindUFunction(this, FName("Destroy"));
+		DeathTimeline->SetTimelineFinishedFunc(DeathTimelineEvent);
 		DeathTimeline->Play();
 	}
 }
@@ -1563,8 +1562,7 @@ void ABaseCharacter::PlayIdleAnimation()
 	// If the character is not holding a weapon play a random idle animation
 	else if (!bIsAimed && !bIsArmed)
 	{
-		const int32 Lenght = IdleMontages.Num();
-		MontageToPlay = IdleMontages[FMath::RandRange(0, Lenght)];
+		MontageToPlay = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
 	}
 	
 	PlayAnimMontage(MontageToPlay);
@@ -1609,7 +1607,7 @@ void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedCo
 	{
 		// Apply fall damage if velocity between character and other component is higher than 1250
 		const float Velocity = (OtherComp->GetPhysicsLinearVelocity() - GetVelocity()).Size();
-		if (Velocity > 1250.0f)
+		if (Velocity > MinVelocityToApplyFallDamage)
 		{
 			const TSubclassOf<UDamageType> DamageType;
 			UGameplayStatics::ApplyDamage(this, Velocity * FallDamageMultiplier, GetInstigatorController(), this, DamageType);
@@ -1645,14 +1643,12 @@ void ABaseCharacter::CachePose()
 	if (CalculateFacingDirection())
 	{
 		// Character is facing up
-		const int32 Lenght = StandUpFromFrontMontages.Num();
-		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, Lenght)];
+		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, StandUpFromFrontMontages.Num() - 1)];
 	}
 	else
 	{
 		// Character is facing down
-		const int32 Lenght = StandUpFromBackMontages.Num();
-		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, Lenght)];
+		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, StandUpFromBackMontages.Num() - 1)];
 	}
 
 	// Two frame delay for caching the pose
@@ -1750,4 +1746,14 @@ void ABaseCharacter::ResetAim()
 void ABaseCharacter::SwitchIsEnded()
 {
 	bCanReload = true;
+}
+
+ABaseCharacter* ABaseCharacter::GetCharacterReference_Implementation()
+{
+	return this;
+}
+
+FGameplayTag ABaseCharacter::GetTeamTag_Implementation()
+{
+	return TeamTag;	
 }

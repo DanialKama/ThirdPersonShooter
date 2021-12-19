@@ -143,7 +143,7 @@ public:
 	void StartFireWeapon();
 	void StopFireWeapon();
 	/** Reload Weapon based on movement state and weapon type */
-	void ReloadWeapon();
+	virtual void ReloadWeapon();
 	void HolsterWeapon();
 	void SwitchToPrimary();
 	void SwitchToSecondary();
@@ -175,7 +175,8 @@ public:
 	// Variables
 	uint8 bIsAlive : 1, bIsAimed : 1;
 	UPROPERTY(BlueprintAssignable, Category = "Defaults")
-	FDeathDelegate DeathDispatcher; 
+	FDeathDelegate DeathDispatcher;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	FGameplayTag TeamTag;
 	UPROPERTY()
 	APickupWeapon* PrimaryWeapon;
@@ -222,8 +223,7 @@ private:
 	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
 	void SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew);
-	/** Override in child class */
-	void ResetReload();
+	virtual void ResetReload();
 	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
 	/** Override by AI character */
 	virtual void SwitchIsEnded();

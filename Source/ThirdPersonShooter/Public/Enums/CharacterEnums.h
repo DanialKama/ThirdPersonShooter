@@ -31,3 +31,13 @@ enum class EHealthState : uint8
 	RecoveryStopped	UMETA(DisplayName = "Health recovery stopped"),
 	Death			UMETA(DisplayName = "Death")
 };
+
+UENUM(BlueprintType, Category = "CharacterEnums")
+enum class EAIState : uint8
+{
+	Idle		UMETA(DisplayNAme = "Idle"),
+	Chase		UMETA(DisplayNAme = "Chase"),
+	Search		UMETA(DisplayNAme = "Search"),
+	LowHealth	UMETA(DisplayName = "Low Health"),
+	UseMed		UMETA(DisplayNAme = "Using Med")
+};

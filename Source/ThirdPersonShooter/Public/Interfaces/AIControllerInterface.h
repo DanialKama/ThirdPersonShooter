@@ -23,4 +23,10 @@ public:
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
+	void StartPatrol();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
+	void SetAIState(EAIState AIState);
 };

@@ -10,7 +10,6 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AIControllerInterface.h"
-#include "Interfaces/PlayerCharacterInterface.h"
 #include "Interfaces/WidgetInterface.h"
 
 // Sets default values
@@ -329,7 +328,7 @@ AAICharacter* AAICharacter::GetAICharacterReference_Implementation()
 	return this;
 }
 
-APatrolPathActor* AAICharacter::GetPatrolPathActor()
+APatrolPathActor* AAICharacter::GetPatrolPath_Implementation()
 {
 	return PatrolPath;	
 }

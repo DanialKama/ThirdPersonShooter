@@ -451,12 +451,13 @@ void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFul
 	}
 }
 
-void APlayerCharacter::Destroyed()
+void APlayerCharacter::StartDestroy()
 {
+	Super::StartDestroy();
 	if (PlayerController)
 	{
 		PlayerController->RespawnPlayer();
-	}	
+	}
 }
 
 void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)

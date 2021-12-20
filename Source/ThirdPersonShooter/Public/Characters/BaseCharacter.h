@@ -208,6 +208,8 @@ protected:
 	virtual void ResetReload();
 	virtual void SwitchIsEnded();
 	bool SetAimState(bool bIsAiming);
+	UFUNCTION()
+	virtual void StartDestroy();
 
 	// Variables
 	uint8 bCharacterAnimationInterface : 1;
@@ -250,6 +252,7 @@ private:
 	void StartDeathLifeSpan();
 	UFUNCTION()
 	void DeathTimeLineUpdate(float Value);
+	UFUNCTION()
 	void PlayIdleAnimation();
 	void CharacterIsOnMove();
 	/** After ragdoll, if the character is on the ground then it stands up */
@@ -274,7 +277,7 @@ private:
 	// Variables
 	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1;
 	UPROPERTY()
-	TArray<UMaterialInstanceDynamic*> MaterialInstance;
+	TArray<UMaterialInstanceDynamic*> MaterialInstances;
 	UPROPERTY()
 	APickup* Pickup;
 	UPROPERTY()

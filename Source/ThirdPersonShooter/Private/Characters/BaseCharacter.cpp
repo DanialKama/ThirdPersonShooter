@@ -145,7 +145,7 @@ void ABaseCharacter::BeginPlay()
 
 	AnimInstance = GetMesh()->GetAnimInstance();
 	// Detected if the interfaces is present on anim instance
-	if (AnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
+	if (AnimInstance && AnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
 	{
 		bCharacterAnimationInterface = true;
 	}
@@ -159,7 +159,7 @@ void ABaseCharacter::BeginPlay()
 	const int8 Lenght = Materials.Num();
 	for (int8 i = 0; i < Lenght; ++i)
 	{
-		Materials.Add(GetMesh()->CreateDynamicMaterialInstance(i, Materials[i]));
+		MaterialInstances.Add(GetMesh()->CreateDynamicMaterialInstance(i, Materials[i]));
 	}
 
 	HealthComponent->Initialize();
@@ -1224,6 +1224,7 @@ void ABaseCharacter::ToggleRagdoll(bool bStart)
 	{
 		GetCharacterMovement()->DisableMovement();
 		GetMesh()->SetConstraintProfileForAll(FName("Ragdoll"), true);
+		GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 		GetMesh()->SetSimulatePhysics(true);
 		MeshLocation = GetMesh()->GetComponentLocation();
 		bRagdollState = true;
@@ -1534,7 +1535,7 @@ void ABaseCharacter::StartDeathLifeSpan()
 		DeathTimeLineProgress.BindUFunction(this, FName("DeathTimeLineUpdate"));
 		DeathTimeline->AddInterpFloat(FadeFloatCurve, DeathTimeLineProgress, FName("Fade"));
 		FOnTimelineEvent DeathTimelineEvent{};
-		DeathTimelineEvent.BindUFunction(this, FName("Destroy"));
+		DeathTimelineEvent.BindUFunction(this, FName("StartDestroy"));
 		DeathTimeline->SetTimelineFinishedFunc(DeathTimelineEvent);
 		DeathTimeline->Play();
 	}
@@ -1543,11 +1544,16 @@ void ABaseCharacter::StartDeathLifeSpan()
 void ABaseCharacter::DeathTimeLineUpdate(float Value)
 {
 	// Set fade value for character all materials
-	const int8 Lenght = MaterialInstance.Num();
+	const int8 Lenght = MaterialInstances.Num();
 	for (uint8 i = 0; i < Lenght; ++i)
 	{
-		MaterialInstance[i]->SetScalarParameterValue(FName("Fade"), Value);
+		MaterialInstances[i]->SetScalarParameterValue(FName("Fade"), Value);
 	}
+}
+
+void ABaseCharacter::StartDestroy()
+{
+	Destroy();
 }
 
 void ABaseCharacter::PlayIdleAnimation()

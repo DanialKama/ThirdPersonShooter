@@ -14,8 +14,8 @@ void AShooterPlayerController::RespawnPlayer()
 	const FRotator Rotation(PlayerTransform.GetRotation());
 	FActorSpawnParameters ActorSpawnParameters;
 	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	APlayerCharacter* NewPlayer = GetWorld()->SpawnActor<APlayerCharacter>(APlayerCharacter::StaticClass(), Location, Rotation, ActorSpawnParameters);
-	NewPlayer->PossessedBy(this);
+	APlayerCharacter* NewPlayer = GetWorld()->SpawnActor<APlayerCharacter>(PlayerToSpawn, Location, Rotation, ActorSpawnParameters);
+	Possess(NewPlayer);
 }
 
 void AShooterPlayerController::SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState)

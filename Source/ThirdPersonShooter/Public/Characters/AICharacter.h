@@ -38,12 +38,11 @@ public:
 	virtual void SwitchToSecondary() override;
 	virtual void SwitchToSidearm() override;
 	virtual void HolsterWeapon() override;
-	UFUNCTION(BlueprintCallable, Category = "AICharacter")
-	APatrolPathActor* GetPatrolPathActor();
 	// Interfaces
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual AAICharacter* GetAICharacterReference_Implementation() override;
+	virtual APatrolPathActor* GetPatrolPath_Implementation() override;
 
 	// Variables
 	UPROPERTY()

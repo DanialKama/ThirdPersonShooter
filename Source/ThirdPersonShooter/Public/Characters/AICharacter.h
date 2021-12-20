@@ -68,7 +68,7 @@ private:
 	UPROPERTY()
 	AAIController* AIController;
 	UPROPERTY()
-	UBlackboardComponent* Blackboard;
+	UBlackboardComponent* ImplementedBlackboard;
 	UPROPERTY(EditInstanceOnly, Category = "Defaults")
 	APatrolPathActor* PatrolPath;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = "true"))

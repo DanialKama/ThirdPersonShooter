@@ -335,5 +335,7 @@ private:
 	EWeaponType WeaponToSwitchType;
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;
+	UPROPERTY()
+	UAnimMontage* IdleMontage;
 	uint8 DelayedFrames = 0;
 };

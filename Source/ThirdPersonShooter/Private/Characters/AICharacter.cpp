@@ -49,8 +49,8 @@ void AAICharacter::BeginPlay()
 		bWidgetInterface = true;
 	}
 	
-	Blackboard = UAIBlueprintHelperLibrary::GetBlackboard(this);
-	Blackboard->SetValueAsFloat(FName("Health"), Health);
+	ImplementedBlackboard = UAIBlueprintHelperLibrary::GetBlackboard(this);
+	ImplementedBlackboard->SetValueAsFloat(FName("Health"), Health);
 	
 	SetPrimaryWeapon();
 	FTimerDelegate TimerDelegate;
@@ -278,9 +278,9 @@ void AAICharacter::SetHealthLevel_Implementation(float Health)
 	{
 		IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
 	}
-	if (Blackboard)
+	if (ImplementedBlackboard)
 	{
-		Blackboard->SetValueAsFloat(FName("Health"), Health);
+		ImplementedBlackboard->SetValueAsFloat(FName("Health"), Health);
 	}
 }
 

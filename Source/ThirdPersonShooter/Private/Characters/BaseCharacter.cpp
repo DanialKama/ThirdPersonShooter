@@ -7,7 +7,6 @@
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Interfaces/CommonInterface.h"
-#include "Interfaces/CharacterInterface.h"
 #include "Interfaces/CharacterAnimationInterface.h"
 #include "Interfaces/PickupWeaponInterface.h"
 #include "Actors/PickupWeapon.h"
@@ -176,7 +175,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 	{
 		if (bDoOnceStopped)
 		{
-			GetWorld()->GetTimerManager().SetTimer(IdleTimer, this, &ABaseCharacter::PlayIdleAnimation, FMath::FRandRange(60.0f, 90.0f), true);
+			GetWorld()->GetTimerManager().SetTimer(IdleTimer, this, &ABaseCharacter::PlayIdleAnimation, FMath::FRandRange(45.0f, 60.0f), true);
 			bDoOnceStopped = false;
 			bDoOnceMoving = true;
 		}
@@ -1558,20 +1557,23 @@ void ABaseCharacter::StartDestroy()
 
 void ABaseCharacter::PlayIdleAnimation()
 {
-	UAnimMontage* MontageToPlay = nullptr;
-	const int32 Index = static_cast<int32>(WeaponType);
-	// If the character is holding a weapon but not aiming play idle montage based on weapon type
-	if (!bIsAimed && bIsArmed)
+	// Play montage only when character is in walking state and standing
+	if (MovementState == EMovementState::Walk)
 	{
-		MontageToPlay = ArmedIdleMontages[Index];
-	}
-	// If the character is not holding a weapon play a random idle animation
-	else if (!bIsAimed && !bIsArmed)
-	{
-		MontageToPlay = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
-	}
+		// If the character is holding a weapon but not aiming play idle montage based on weapon type
+		if (!bIsAimed && bIsArmed)
+		{
+			const int32 Index = static_cast<int32>(WeaponType);
+			IdleMontage = ArmedIdleMontages[Index];
+		}
+		// If the character is not holding a weapon play a random idle animation
+		else if (!bIsAimed && !bIsArmed)
+		{
+			IdleMontage = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
+		}
 	
-	PlayAnimMontage(MontageToPlay);
+		PlayAnimMontage(IdleMontage);
+	}
 }
 
 void ABaseCharacter::StartJump()
@@ -1592,6 +1594,12 @@ void ABaseCharacter::Landed(const FHitResult& Hit)
 
 void ABaseCharacter::ToggleCrouch()
 {
+	// If idle montage is playing stop it and then toggle crouch
+	if (AnimInstance->IsAnyMontagePlaying() && AnimInstance->Montage_IsPlaying(IdleMontage))
+	{
+		StopAnimMontage();
+	}
+	
 	switch (MovementState)
 	{
 	case 0: case 1: case 2: case 4:

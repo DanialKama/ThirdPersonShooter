@@ -7,6 +7,8 @@
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "AIControllerInterface.generated.h"
 
+class AShooterAIController;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
 class UAIControllerInterface : public UInterface
@@ -20,6 +22,10 @@ class THIRDPERSONSHOOTER_API IAIControllerInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	// With Output
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
+	AShooterAIController* GetAIControllerReference();
+	
 	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState);

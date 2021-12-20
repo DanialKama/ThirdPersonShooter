@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 #include "Enums/CharacterEnums.h"
 #include "UObject/Interface.h"
 #include "Enums/PickupEnums.h"
@@ -28,9 +27,6 @@ public:
 	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get a reference of base character"))
 	ABaseCharacter* GetCharacterReference();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	FGameplayTag GetTeamTag();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	EWeaponToDo CanPickupAmmo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType);

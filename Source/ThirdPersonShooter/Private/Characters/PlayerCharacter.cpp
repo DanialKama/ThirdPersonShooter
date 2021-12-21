@@ -73,17 +73,33 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpawnDefaultController();
 	ChildCameraComponent = TPP;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
-	
+
+	// Try to get the player controller in the next frame to access a valid reference
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &APlayerCharacter::NextFrameBeginPlay);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+
+	if (AimFloatCurve)
+	{
+		FOnTimelineFloat AimTimeLineProgress{};
+		AimTimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
+		AimTimeline->AddInterpFloat(AimFloatCurve, AimTimeLineProgress, FName("Alpha"));
+		FOnTimelineEvent AimTimelineFinishEvent{};
+		AimTimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
+		AimTimeline->SetTimelineFinishedFunc(AimTimelineFinishEvent);
+	}
+}
+
+void APlayerCharacter::NextFrameBeginPlay()
+{
 	if (GetController() && GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 	{
 		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReference(GetController());
 		if(PlayerController)
 		{
-			UE_LOG(LogTemp, Warning, TEXT(__FUNCTION__));
 			PlayerController->PlayerTransform = GetActorTransform();
 			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UHUDInterface::StaticClass()))
 			{
@@ -95,16 +111,6 @@ void APlayerCharacter::BeginPlay()
 				}
 			}
 		}
-	}
-
-	if (AimFloatCurve)
-	{
-		FOnTimelineFloat AimTimeLineProgress{};
-		AimTimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-		AimTimeline->AddInterpFloat(AimFloatCurve, AimTimeLineProgress, FName("Alpha"));
-		FOnTimelineEvent AimTimelineFinishEvent{};
-		AimTimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
-		AimTimeline->SetTimelineFinishedFunc(AimTimelineFinishEvent);
 	}
 }
 

@@ -19,6 +19,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
 	void StartHealthRecovery();
 
+	/** Stop when stamina is not full */
 	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
 	void StopHealthRecovery();
 
@@ -39,6 +40,7 @@ public:
 	FVector ShotOrigin = FVector::ZeroVector;	// direction of the shot
 	
 protected:
+	// Functions
 	virtual void SetupComponent() override;
 
 	// Variables

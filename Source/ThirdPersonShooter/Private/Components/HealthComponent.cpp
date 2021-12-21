@@ -104,18 +104,16 @@ void UHealthComponent::StartHealthRecovery()
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
 		}
 
-		GetWorld()->GetTimerManager().SetTimer(HealthRecoveryTimer, this, &UHealthComponent::RecoverHealth, true);
+		GetWorld()->GetTimerManager().SetTimer(HealthRecoveryTimer, this, &UHealthComponent::RecoverHealth, HealthRecoveryRate, true);
 	}
 }
 
-// Stop when stamina is not full
 void UHealthComponent::StopHealthRecovery()
 {
 	if(bCommonInterface)
 	{
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStopped);
 	}
-
 	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 }
 

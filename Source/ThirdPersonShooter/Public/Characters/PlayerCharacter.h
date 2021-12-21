@@ -55,6 +55,8 @@ protected:
 	
 private:
 	// Functions
+	/** Wait for one frame to access a valid player controller */
+	void NextFrameBeginPlay();
 	void GamepadAddToYaw(float AxisValue);
 	void GamepadAddToPitch(float AxisValue);
 	void AddToForwardMovement(float AxisValue);

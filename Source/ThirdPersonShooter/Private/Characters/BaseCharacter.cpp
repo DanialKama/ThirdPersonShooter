@@ -1259,10 +1259,12 @@ void ABaseCharacter::Death()
 		HealthComponent->DestroyComponent();
 		StaminaComponent->DestroyComponent();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+		FallCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		// If character is falling don't play the death montage
 		if (GetCharacterMovement()->IsFalling())
-		{	
-			DeathMontageHandler(nullptr, false);	
+		{
+			DeathMontageHandler(nullptr, false);
 		}
 		else
 		{
@@ -1290,6 +1292,14 @@ void ABaseCharacter::Death()
 				EndedDelegate.BindUObject(this, &ABaseCharacter::DeathMontageHandler);
 				AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
 			}
+		}
+		
+		GetCharacterMovement()->DisableMovement();
+		// If character is AI, detach it from controller
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (AIController)
+		{
+			DetachFromControllerPendingDestroy();
 		}
 	}
 }
@@ -1518,12 +1528,6 @@ void ABaseCharacter::DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterr
 	// Timer to start fade effect
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StartDeathLifeSpan, DeathLifeSpan);
-	// If character is AI, detach it from controller
-	AAIController* AIController = Cast<AAIController>(GetController());
-	if (AIController)
-	{
-		DetachFromControllerPendingDestroy();
-	}
 }
 
 void ABaseCharacter::StartDeathLifeSpan()

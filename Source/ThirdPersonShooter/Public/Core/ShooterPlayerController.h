@@ -16,9 +16,6 @@ class THIRDPERSONSHOOTER_API AShooterPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	// Functions
-	UFUNCTION(BlueprintCallable, Category = "ShooterPlayerController")
-	void RespawnPlayer() ;
 	// Interfaces
 	virtual AShooterPlayerController* GetPlayerControllerReference_Implementation() override;
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState) override;

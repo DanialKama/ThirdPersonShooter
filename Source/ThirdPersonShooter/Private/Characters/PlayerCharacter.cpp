@@ -3,6 +3,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Components/HealthComponent.h"
 #include "Components/SlateWrapperTypes.h"
+#include "Core/ShooterGameModeBase.h"
 #include "Core/ShooterPlayerController.h"
 #include "GameFramework/HUD.h"
 #include "Interfaces/HUDInterface.h"
@@ -71,7 +72,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SpawnDefaultController();
 	ChildCameraComponent = TPP;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
@@ -81,6 +83,7 @@ void APlayerCharacter::BeginPlay()
 		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReference(GetController());
 		if(PlayerController)
 		{
+			UE_LOG(LogTemp, Warning, TEXT(__FUNCTION__));
 			PlayerController->PlayerTransform = GetActorTransform();
 			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UHUDInterface::StaticClass()))
 			{
@@ -453,10 +456,18 @@ void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFul
 
 void APlayerCharacter::StartDestroy()
 {
+	// Get player controller reference before destroy player
+	AController* ControllerRef = GetController();
+	
 	Super::StartDestroy();
-	if (PlayerController)
+
+	// Get the World and GameMode in the world to invoke its restart player function.
+	if (const UWorld* World = GetWorld())
 	{
-		PlayerController->RespawnPlayer();
+		if (const AShooterGameModeBase* GameMode = Cast<AShooterGameModeBase>(World->GetAuthGameMode()))
+		{
+			GameMode->OnPlayerDied.Broadcast(ControllerRef);
+		}
 	}
 }
 

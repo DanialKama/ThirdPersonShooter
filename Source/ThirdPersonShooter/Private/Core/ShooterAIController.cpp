@@ -28,19 +28,16 @@ AShooterAIController::AShooterAIController()
 	AIPerception->ConfigureSense(*AISense_Damage);
 	AIPerception->ConfigureSense(*AISense_Hearing);
 	AIPerception->ConfigureSense(*AISense_Prediction);
-	AIPerception->SetDominantSense(AISense_Sight->GetSenseImplementation());
+	AIPerception->SetDominantSense(AISense_Damage->GetSenseImplementation());
 
 	AISense_Sight->PeripheralVisionAngleDegrees = 45.0f;
 	AISense_Sight->PointOfViewBackwardOffset = 250.0f;
-	AISense_Sight->DetectionByAffiliation.bDetectEnemies = true;
-	AISense_Sight->DetectionByAffiliation.bDetectFriendlies = true;
-	AISense_Sight->DetectionByAffiliation.bDetectNeutrals = true;
+	AISense_Sight->DetectionByAffiliation.DetectAllFlags();
 
-	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
-	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
-	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;
+	AISense_Hearing->DetectionByAffiliation.DetectAllFlags();
 	
-	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
+	// AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
+	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
 }
 
 void AShooterAIController::BeginPlay()
@@ -64,32 +61,32 @@ void AShooterAIController::BeginPlay()
 	}
 }
 
-void AShooterAIController::PerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)	// TODO Change OnTargetPerceptionUpdated with PerceptionUpdated
+void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
-	if (Actor->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
-	{
-		const FGameplayTag ActorTag = ICommonInterface::Execute_GetTeamTag(Actor);
-		// Check if the actor is not in the same team as the AI
-		if (ActorTag != ControlledPawn->TeamTag)
-		{
-			const FString String = UAIPerceptionSystem::GetSenseClassForStimulus(GetWorld(), Stimulus)->GetName();
-			UE_LOG(LogTemp, Warning, TEXT("%S"), *String);
-			const FName Name = FName(*String);
-			switch (Name.GetNumber())
-			{
-			case 0:
-				break;
-			case 1:
-				break;
-			case 2:
-				break;
-			case 3:
-				break;
-				default:
-					UE_LOG(LogTemp, Warning, TEXT("Default"));
-			}
-		}
-	}
+	// if (Actor->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+	// {
+	// 	const FGameplayTag ActorTag = ICommonInterface::Execute_GetTeamTag(Actor);
+	// 	// Check if the actor is not in the same team as the AI
+	// 	if (ActorTag != ControlledPawn->TeamTag)
+	// 	{
+	// 		const FString String = UAIPerceptionSystem::GetSenseClassForStimulus(GetWorld(), Stimulus)->GetName();
+	// 		UE_LOG(LogTemp, Warning, TEXT("%S"), *String);
+	// 		const FName Name = FName(*String);
+	// 		switch (Name.GetNumber())
+	// 		{
+	// 		case 0:
+	// 			break;
+	// 		case 1:
+	// 			break;
+	// 		case 2:
+	// 			break;
+	// 		case 3:
+	// 			break;
+	// 			default:
+	// 				UE_LOG(LogTemp, Warning, TEXT("Default"));
+	// 		}
+	// 	}
+	// }
 }
 
 void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState)

@@ -7,6 +7,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Perception/AISense_Damage.h"
 #include "Structs/ExplosiveProjectileInfoStruct.h"
 #include "Structs/ProjectileInfoStruct.h"
 
@@ -50,6 +51,7 @@ AProjectile::AProjectile()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	float AppliedDamage = 0.0f;
 	if(Hit.PhysMaterial.IsValid())
 	{
 		SwitchExpression = StaticEnum<EPhysicalSurface>()->GetIndexByValue(UGameplayStatics::GetSurfaceType(Hit));
@@ -69,6 +71,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 			// Apply radial damage with fall off for explosive projectiles
 			const TArray<AActor*> IgnoreActors;
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ExplosiveProjectileInfo->BaseDamage, ExplosiveProjectileInfo->MinimumDamage, Hit.ImpactPoint, ExplosiveProjectileInfo->DamageInnerRadius, ExplosiveProjectileInfo->DamageOuterRadius, 2.0f, DamageType, IgnoreActors, GetOwner(), GetInstigatorController(), ECollisionChannel::ECC_Visibility);
+			AppliedDamage = ExplosiveProjectileInfo->BaseDamage;
 		}
 	}
 	else if(ProjectileDataTable)
@@ -77,7 +80,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		if(ProjectileInfo)
 		{
 			// Apply point damage for nonexplosive projectiles based on surface type
-			UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
+			AppliedDamage = UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
 		}
 	}
 	else
@@ -85,6 +88,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		UE_LOG(LogTemp, Warning, TEXT("No damage applied."));
 	}
 	HitEffect(Hit);
+	UAISense_Damage::ReportDamageEvent(GetWorld(), OtherActor, GetInstigator(), AppliedDamage, Hit.TraceStart, Hit.ImpactPoint);
 	Destroy();
 }
 

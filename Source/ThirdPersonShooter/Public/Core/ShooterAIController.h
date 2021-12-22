@@ -59,7 +59,7 @@ protected:
 private:
 	// Functions
 	UFUNCTION()
-	void PerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))

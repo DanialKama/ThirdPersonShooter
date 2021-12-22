@@ -17,9 +17,8 @@ class THIRDPERSONSHOOTER_API UAmmoComponent : public UBaseComponent
 public:	
 	// Sets default values for this component's properties
 	UAmmoComponent();
-
+	
 	// Functions
-	UFUNCTION(BlueprintCallable, Category = "AmmoComponent")
 	FAmmoComponentInfo GetAmmoComponentInfo() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "AmmoComponent")

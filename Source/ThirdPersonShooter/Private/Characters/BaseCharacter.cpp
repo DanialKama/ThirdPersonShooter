@@ -17,6 +17,8 @@
 #include "AIModule/Classes/AIController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/TimelineComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 class AAIController;
 
@@ -36,7 +38,8 @@ ABaseCharacter::ABaseCharacter()
 	PhysicsConstraint2 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Physics Constraint 2"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
-	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DeathTimeline"));
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
+	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
 	// Setup components attachment
 	FallCapsule->SetupAttachment(GetMesh());
@@ -108,7 +111,7 @@ ABaseCharacter::ABaseCharacter()
 	PhysicsConstraint2->SetAngularSwing1Limit(ACM_Limited, 10.0f);
 	PhysicsConstraint2->SetAngularSwing2Limit(ACM_Limited, 5.0f);
 	PhysicsConstraint2->SetAngularTwistLimit(ACM_Limited, 10.0f);
-
+	
 	GetCharacterMovement()->BrakingFriction = 0.1f;
 	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
@@ -129,12 +132,12 @@ ABaseCharacter::ABaseCharacter()
 	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
 
 	// Initialize variables
-	bIsAlive = true;
-	bDoOnceMoving = true;
 	bDoOnceStopped = true;
+	bDoOnceMoving = true;
 	bDoOnceReload = true;
 	bDoOnceDeath = true;
 	bCanReload = true;
+	bIsAlive = true;
 }
 
 // Called when the game starts or when spawned
@@ -155,8 +158,8 @@ void ABaseCharacter::BeginPlay()
 
 	// Create material instances for every material on mesh, mainly used for death dither effect
 	TArray<UMaterialInterface*> Materials = GetMesh()->GetMaterials();
-	const int8 Lenght = Materials.Num();
-	for (int8 i = 0; i < Lenght; ++i)
+	const uint8 Lenght = Materials.Num();
+	for (uint8 i = 0; i < Lenght; ++i)
 	{
 		MaterialInstances.Add(GetMesh()->CreateDynamicMaterialInstance(i, Materials[i]));
 	}
@@ -1295,6 +1298,8 @@ void ABaseCharacter::Death()
 		}
 		
 		GetCharacterMovement()->DisableMovement();
+		StimuliSource->UnregisterFromSense(UAISense_Sight::StaticClass());
+		StimuliSource->UnregisterFromPerceptionSystem();
 		// If character is AI, detach it from controller
 		AAIController* AIController = Cast<AAIController>(GetController());
 		if (AIController)
@@ -1547,7 +1552,7 @@ void ABaseCharacter::StartDeathLifeSpan()
 void ABaseCharacter::DeathTimeLineUpdate(float Value)
 {
 	// Set fade value for character all materials
-	const int8 Lenght = MaterialInstances.Num();
+	const uint8 Lenght = MaterialInstances.Num();
 	for (uint8 i = 0; i < Lenght; ++i)
 	{
 		MaterialInstances[i]->SetScalarParameterValue(FName("Fade"), Value);

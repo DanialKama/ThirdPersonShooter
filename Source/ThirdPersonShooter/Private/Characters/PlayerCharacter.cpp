@@ -20,7 +20,7 @@ APlayerCharacter::APlayerCharacter()
 	// Create Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	TPP = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AimTimeline"));
+	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
 
 	// Setup components attachment
 	SpringArm->SetupAttachment(GetRootComponent());

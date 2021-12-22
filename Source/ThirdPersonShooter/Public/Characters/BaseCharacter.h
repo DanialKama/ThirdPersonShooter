@@ -12,6 +12,7 @@
 class UPhysicsConstraintComponent;
 class UHealthComponent;
 class UStaminaComponent;
+class UAIPerceptionStimuliSourceComponent;
 class APickup;
 class APickupWeapon;
 class APickupAmmo;
@@ -132,12 +133,15 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UPhysicsConstraintComponent* PhysicsConstraint2;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaminaComponent* StaminaComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAIPerceptionStimuliSourceComponent* StimuliSource;
 
 	//Functions
 	void SetArmedState(bool bArmedState);

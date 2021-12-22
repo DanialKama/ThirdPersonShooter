@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include "UObject/NoExportTypes.h"
 #include "AmmoComponentInfoStruct.generated.h"
 
-// Ammo component info that owner needs
+/** Ammo component info that owner needs */
 USTRUCT(BlueprintType)
 struct THIRDPERSONSHOOTER_API FAmmoComponentInfo
 {

@@ -47,6 +47,8 @@ public:
 	// Variables
 	UPROPERTY()
 	ARespawnActor* RespawnHandler;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UAnimMontage* SurrenderMontage;
 	
 protected:
 	// Functions

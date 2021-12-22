@@ -27,6 +27,8 @@ AAICharacter::AAICharacter()
 	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Widget->SetCollisionResponseToAllChannels(ECR_Ignore);
 	Widget->SetVisibility(false);
+
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AAICharacter::BeginPlay()

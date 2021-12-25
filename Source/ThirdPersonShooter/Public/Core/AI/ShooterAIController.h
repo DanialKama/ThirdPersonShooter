@@ -23,6 +23,11 @@ class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public
 {
 	GENERATED_BODY()
 	
+	UAISenseConfig_Damage* AISense_Damage;
+	UAISenseConfig_Sight* AISense_Sight;
+	UAISenseConfig_Hearing* AISense_Hearing;
+	UAISenseConfig_Prediction* AISense_Prediction;
+	
 public:
 	// Sets default values for this character's properties
 	AShooterAIController();
@@ -30,15 +35,6 @@ public:
 	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCustomAIPerceptionComponent* AIPerception;
-
-	UPROPERTY()
-	UAISenseConfig_Damage* AISense_Damage;
-	UPROPERTY()
-	UAISenseConfig_Sight* AISense_Sight;
-	UPROPERTY()
-	UAISenseConfig_Hearing* AISense_Hearing;
-	UPROPERTY()
-	UAISenseConfig_Prediction* AISense_Prediction;
 
 	// Functions
 	// Interfaces

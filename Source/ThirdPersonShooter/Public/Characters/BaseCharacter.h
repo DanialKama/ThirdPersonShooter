@@ -238,7 +238,7 @@ private:
 	Because when the player picks up a weapon from a streamed level
 	and then that level unloads the weapon will be destroyed,
 	so instead of just attaching the current weapon from the streamed level
-	we spawn a new weapon that includes in persistent level and does not destroy on level unloads.*/
+	we spawn a new weapon that includes in persistent level and does not destroy on level unloads. */
 	APickupWeapon* SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn);
 	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
@@ -279,7 +279,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1;
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1, bCanHolster : 1;
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> MaterialInstances;
 	UPROPERTY()

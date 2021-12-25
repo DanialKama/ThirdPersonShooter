@@ -158,8 +158,8 @@ void ABaseCharacter::BeginPlay()
 
 	// Create material instances for every material on mesh, mainly used for death dither effect
 	TArray<UMaterialInterface*> Materials = GetMesh()->GetMaterials();
-	const uint8 Lenght = Materials.Num();
-	for (uint8 i = 0; i < Lenght; ++i)
+	const uint8 Length = Materials.Num();
+	for (uint8 i = 0; i < Length; ++i)
 	{
 		MaterialInstances.Add(GetMesh()->CreateDynamicMaterialInstance(i, Materials[i]));
 	}
@@ -172,7 +172,7 @@ void ABaseCharacter::BeginPlay()
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	// Check if character stopped or moving
 	if (GetVelocity().Size() == 0.0f)
 	{
@@ -188,6 +188,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 		if (bDoOnceMoving)
 		{
 			CharacterIsOnMove();
+			bCanHolster = false;
 			bDoOnceMoving = false;
 			bDoOnceStopped = true;
 		}
@@ -653,8 +654,8 @@ void ABaseCharacter::ReloadWeapon()
 			break;
 		}
 		
-		const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
-		if (MontageLenght > 0.0f)
+		const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+		if (MontageLength > 0.0f)
 		{
 			AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
 			
@@ -779,8 +780,8 @@ void ABaseCharacter::HolsterWeapon()
 		{
 			bCanReload = false;
 			CurrentWeapon->LowerWeapon();
-			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLenght > 0.0f)
+			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
 				FOnMontageEnded EndedDelegate;
@@ -799,8 +800,15 @@ void ABaseCharacter::HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool
 {
 	if (bInterrupted)
 	{
-		SetArmedState(true);
 		SwitchIsEnded();
+		if (CurrentWeapon)
+		{
+			SetArmedState(true);
+		}
+		else
+		{
+			SetArmedState(false);
+		}
 	}
 }
 
@@ -811,55 +819,59 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 	case 0:
 		// Begin
 		bCanReload = false;
+		bCanHolster = true;
 		break;
 	case 1:
 		// End
-		if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
+		if (bCanHolster)
 		{
-			switch (WeaponToGrab)
+			if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
 			{
-			case 0:
-				// No Weapon = no switch
-				break;
-			case 1:
-				// Primary Weapon
-				SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
-				break;
-			case 2:
-				// Secondary Weapon
-				SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
-				break;
-			case 3:
-				// Sidearm Weapon
-				SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
-				break;
+				switch (WeaponToGrab)
+				{
+				case 0:
+					// No Weapon = no switch
+					break;
+				case 1:
+					// Primary Weapon
+					SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
+					break;
+				case 2:
+					// Secondary Weapon
+					SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
+					break;
+				case 3:
+					// Sidearm Weapon
+					SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
+					break;
+				}
 			}
-		}
-		else
-		{
-			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
-			SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-			SetArmedState(false);
-			switch (WeaponToGrab)
+			else
 			{
-			case 0:
-				// No Weapon = nothing to switch
-				break;
-			case 1:
-				// Primary Weapon
-				SwitchToPrimary();
-				break;
-			case 2:
-				// Secondary Weapon
-				SwitchToSecondary();
-				break;
-			case 3:
-				// Sidearm Weapon
-				SwitchToSidearm();
-				break;
+				AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
+				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+				SetArmedState(false);
+				switch (WeaponToGrab)
+				{
+				case 0:
+					// No Weapon = nothing to switch
+					break;
+				case 1:
+					// Primary Weapon
+					SwitchToPrimary();
+					break;
+				case 2:
+					// Secondary Weapon
+					SwitchToSecondary();
+					break;
+				case 3:
+					// Sidearm Weapon
+					SwitchToSidearm();
+					break;
+				}
 			}
+			bCanReload = true;
 		}
-		bCanReload = true;
 		break;
 	}
 }
@@ -878,11 +890,11 @@ void ABaseCharacter::SwitchToPrimary()
 
 		switch (CurrentHoldingWeapon)
 		{
-			float MontageLenght;
+			float MontageLength;
 		case 0:
 			// If currently holding no weapon then grab the primary weapon
-			MontageLenght = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(GrabMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
 				GrabbedWeapon = PrimaryWeapon;
@@ -897,8 +909,8 @@ void ABaseCharacter::SwitchToPrimary()
 			// If currently holding the secondary or sidearm weapon then holster it and grab the primary weapon
 			CurrentWeapon->LowerWeapon();
 			GrabbedWeapon = PrimaryWeapon;
-			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
@@ -927,11 +939,11 @@ void ABaseCharacter::SwitchToSecondary()
 		
 		switch (CurrentHoldingWeapon)
 		{
-			float MontageLenght;
+			float MontageLength;
 		case 0:
 			// If currently holding no weapon then grab the secondary weapon
-			MontageLenght = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(GrabMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
 				GrabbedWeapon = SecondaryWeapon;
@@ -946,8 +958,8 @@ void ABaseCharacter::SwitchToSecondary()
 			// If currently holding the primary or sidearm weapon then holster it and grab the secondary weapon
 			CurrentWeapon->LowerWeapon();
 			GrabbedWeapon = SecondaryWeapon;
-			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::SecondaryWeapon;
@@ -976,11 +988,11 @@ void ABaseCharacter::SwitchToSidearm()
 		
 		switch (CurrentHoldingWeapon)
 		{
-			float MontageLenght;
+			float MontageLength;
 		case 0:
 			// If currently holding no weapon then grab the sidearm weapon
-			MontageLenght = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(GrabMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
 				GrabbedWeapon = SidearmWeapon;
@@ -994,8 +1006,8 @@ void ABaseCharacter::SwitchToSidearm()
 		case 1: case 2:
 			// If currently holding the primary or secondary weapon then holster it and grab the sidearm weapon
 			CurrentWeapon->LowerWeapon();
-			MontageLenght = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLenght > 0.0f)
+			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
 				WeaponToGrab = EWeaponToDo::SidearmWeapon;
@@ -1060,8 +1072,8 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 			const int32 GrabbedWeaponIndex = static_cast<int32>(WeaponType);
 			UAnimMontage* MontageToPlay = GrabWeaponMontages[GrabbedWeaponIndex];
 			
-			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLenght > 0.0f)
+			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+			if (MontageLength > 0.0f)
 			{
 				AnimInstance->Montage_JumpToSection(FName("Grab"), MontageToPlay);
 			}
@@ -1288,8 +1300,8 @@ void ABaseCharacter::Death()
 				MontageToPlay = ProneDeathMontages[FMath::RandRange(0, ProneDeathMontages.Num() - 1)];
 				break;
 			}
-			const float MontageLenght = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLenght > 0.0f)
+			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+			if (MontageLength > 0.0f)
 			{
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::DeathMontageHandler);
@@ -1552,8 +1564,8 @@ void ABaseCharacter::StartDeathLifeSpan()
 void ABaseCharacter::DeathTimeLineUpdate(float Value)
 {
 	// Set fade value for character all materials
-	const uint8 Lenght = MaterialInstances.Num();
-	for (uint8 i = 0; i < Lenght; ++i)
+	const uint8 Length = MaterialInstances.Num();
+	for (uint8 i = 0; i < Length; ++i)
 	{
 		MaterialInstances[i]->SetScalarParameterValue(FName("Fade"), Value);
 	}
@@ -1580,8 +1592,12 @@ void ABaseCharacter::PlayIdleAnimation()
 		{
 			IdleMontage = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
 		}
-	
-		PlayAnimMontage(IdleMontage);
+		
+		const float MontageLength = PlayAnimMontage(IdleMontage);
+		if (MontageLength > 0.0f)
+		{
+			bCanHolster = false;
+		}
 	}
 }
 
@@ -1604,7 +1620,7 @@ void ABaseCharacter::Landed(const FHitResult& Hit)
 void ABaseCharacter::ToggleCrouch()
 {
 	// If idle montage is playing stop it and then toggle crouch
-	if (AnimInstance->IsAnyMontagePlaying() && AnimInstance->Montage_IsPlaying(IdleMontage))
+	if (IdleMontage && AnimInstance->Montage_IsPlaying(IdleMontage))
 	{
 		StopAnimMontage();
 	}
@@ -1695,8 +1711,8 @@ void ABaseCharacter::SetGetupOrientation()
 void ABaseCharacter::StandUp()
 {
 	ToggleRagdoll(false);
-	const float MontageLenght = AnimInstance->Montage_Play(StandUpMontage);
-	if (MontageLenght > 0.0f)
+	const float MontageLength = AnimInstance->Montage_Play(StandUpMontage);
+	if (MontageLength > 0.0f)
 	{
 		FOnMontageEnded EndedDelegate;
 		EndedDelegate.BindUObject(this, &ABaseCharacter::StanUpMontageHandler);

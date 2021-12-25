@@ -19,14 +19,14 @@ AShooterAIController::AShooterAIController()
 {
 	// Create Components
 	AIPerception = CreateDefaultSubobject<UCustomAIPerceptionComponent>(TEXT("AI Perception"));
-	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
 	AISense_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Sence"));
+	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
 	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
 	AISense_Prediction = CreateDefaultSubobject<UAISenseConfig_Prediction>(TEXT("Prediction Sense"));
 	
 	// Initialize components
-	AIPerception->ConfigureSense(*AISense_Damage);
 	AIPerception->ConfigureSense(*AISense_Sight);
+	AIPerception->ConfigureSense(*AISense_Damage);
 	AIPerception->ConfigureSense(*AISense_Hearing);
 	AIPerception->ConfigureSense(*AISense_Prediction);
 	AIPerception->SetDominantSense(AISense_Damage->GetSenseImplementation());
@@ -64,9 +64,15 @@ void AShooterAIController::BeginPlay()
 			}
 		}
 	}
-	
-	AIPerception->SetStimulusAge(AISense_Damage->GetSenseID(), 0.1f);
-	AIPerception->SetStimulusAge(AISense_Hearing->GetSenseID(), 0.1f);
+	if (AISense_Damage && AISense_Hearing)
+	{
+		AIPerception->SetStimulusAge(AISense_Damage->GetSenseID(), 0.1f);
+		AIPerception->SetStimulusAge(AISense_Hearing->GetSenseID(), 0.1f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Senses are invalid."));
+	}
 }
 
 void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActors)
@@ -89,25 +95,29 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 					switch (j)
 					{
 					case 0:
-						// Damage Sense
-						DamageHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						break;
-					case 1:
 						// Sight Sense
 						SightHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
+						break;
+					case 1:
+						// Damage Sense
+						DamageHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
 						break;
 					case 2:
 						// Hearing Sense
 						HearingHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
 						break;
 					case 3:
 						// Prediction Sense
 						PredictionHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
 						break;
 					default:
 						UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
 					}
-					UE_LOG(LogTemp, Warning, TEXT("Was Successfully Sensed = %s"), ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() ? TEXT("true") : TEXT("false"));
+					UE_LOG(LogTemp, Warning, TEXT("Sensed = %s"), ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() ? TEXT("True") : TEXT("False"));
 				}
 			}
 		}
@@ -116,11 +126,6 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 
 void AShooterAIController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (Stimulus.GetAge() == FLT_MAX)
-	{
-		UE_LOG(LogTemp, Error, TEXT("EXPIRED!"));
-		Stimulus.MarkExpired();
-	}
 	// const FAISenseID ID = AISense_Sight->GetSenseID();
 	// if (ID.IsValid() && Stimulus.IsValid() && Stimulus.Type == ID)
 	// {

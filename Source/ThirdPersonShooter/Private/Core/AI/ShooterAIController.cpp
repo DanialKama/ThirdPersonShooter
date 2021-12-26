@@ -17,7 +17,7 @@
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Prediction.h"
-// #include "Perception/AISense_Prediction.h"
+#include "Perception/AISense_Prediction.h"
 
 // Sets default values
 AShooterAIController::AShooterAIController()
@@ -135,6 +135,9 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
 		{
 			SetFocus(UpdatedActor, EAIFocusPriority::Gameplay);
+			BlackboardComp->SetValueAsBool(FName("Search"), false);
+			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
+			BlackboardComp->SetValueAsObject(FName("TargetActor"), UpdatedActor);
 			Attacker = UpdatedActor;
 			Fight();
 		}
@@ -144,13 +147,13 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 		ClearFocus(EAIFocusPriority::Move);
 		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
 		BlackboardComp->SetValueAsBool(FName("Search"), true);
-		BlackboardComp->SetValueAsBool(FName("SearchForPlayer"), true);
+		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
 		Attacker = nullptr;
 		if (WeaponState != EWeaponState::Reloading)
 		{
 			ControlledPawn->UseWeapon(false, false);
 		}
-		// UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
+		UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
 	}
 }
 
@@ -185,6 +188,7 @@ void AShooterAIController::PredictionHandler(FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
+		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		UE_LOG(LogTemp, Warning, TEXT("Prediction Sense"));
 	}
 }
@@ -226,7 +230,6 @@ void AShooterAIController::TryToUseWeapon()
 		// Reloading
 		break;
 	case 8:
-		// Empty
 		SwitchWeapon();
 		break;
 	case 9:
@@ -244,7 +247,14 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		// Idle
 		if (AmmoComponentInfo.bNoAmmoLeftToReload)
 		{
-			SwitchWeapon();
+			if (ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > 0)
+			{
+				ControlledPawn->UseWeapon(true, true);
+			}
+			else
+			{
+				SwitchWeapon();
+			}
 		}
 		else if (AmmoComponentInfo.CurrentMagazineAmmo < 0)
 		{
@@ -273,11 +283,9 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 			Fight();
 		}
 		break;
-	case 5: case 6:
+	case 5: case 6: case 7:
+		// Cancel Reload, Reloaded, Ammo Added
 		Fight();
-		break;
-	case 7:
-		// Ammo Added
 		break;
 	case 8:
 		// Empty
@@ -291,79 +299,77 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 
 void AShooterAIController::SwitchWeapon() const
 {
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AShooterAIController::Surrender);
 	// If there is no weapon to switch then surrender
 	switch (ControlledPawn->CurrentHoldingWeapon)
 	{
 	case 0:
 		// No Weapon
-		if (ControlledPawn->PrimaryWeapon)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SecondaryWeapon)
+		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}
-		else if (ControlledPawn->SidearmWeapon)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
 		else
 		{
-			ControlledPawn->DropItem();
-			ControlledPawn->GetCharacterMovement()->DisableMovement();
-			ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
+			ControlledPawn->UseWeapon(false, false);
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 		}
 		break;
 	case 1:
 		// Primary Weapon
-		if (ControlledPawn->SecondaryWeapon)
+		if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}
-		else if (ControlledPawn->SidearmWeapon)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
 		else
 		{
-			ControlledPawn->DropItem();
-			ControlledPawn->GetCharacterMovement()->DisableMovement();
-			ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
+			ControlledPawn->UseWeapon(false, false);
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 		}
 		break;
 	case 2:
 		// Secondary Weapon
-		if (ControlledPawn->PrimaryWeapon)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SidearmWeapon)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
 		else
 		{
-			ControlledPawn->DropItem();
-			ControlledPawn->GetCharacterMovement()->DisableMovement();
-			ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
+			ControlledPawn->UseWeapon(false, false);
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 		}
 		break;
 	case 3:
 		// Sidearm Weapon
-		if (ControlledPawn->PrimaryWeapon)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SecondaryWeapon)
+		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}
 		else
 		{
-			ControlledPawn->DropItem();
-			ControlledPawn->GetCharacterMovement()->DisableMovement();
-			ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
+			ControlledPawn->UseWeapon(false, false);
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 		}
 		break;
 	}
@@ -403,12 +409,7 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 
 void AShooterAIController::StartPatrol()
 {
-	// BlackboardComp->SetValueAsBool(FName("Patrol"), true);
-}
-
-AShooterAIController* AShooterAIController::GetAIControllerReference_Implementation()
-{
-	return this;
+	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
 float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor*& CloserActor)
@@ -441,4 +442,11 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 	
 	CloserActor = nullptr;
 	return 0.0f;
+}
+
+void AShooterAIController::Surrender() const
+{
+	ControlledPawn->DropItem();
+	ControlledPawn->GetCharacterMovement()->DisableMovement();
+	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
 }

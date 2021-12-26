@@ -39,13 +39,10 @@ public:
 
 	// Functions
 	void StartPatrol();
-	/*** inline getter | get the AI's blackboard */
-	// FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const { return BlackboardComp; }
-	// Interfaces
+	void TryToUseWeapon();
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
 	virtual void SetAIState_Implementation(EAIState NewAIState) override;
-	virtual AShooterAIController* GetAIControllerReference_Implementation() override;
 
 	// Variables
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
@@ -67,9 +64,10 @@ private:
 	void Fight();
 	void SwitchWeapon() const;
 	void TryToReload(bool bNoAmmoLeftToReload) const;
-	void TryToUseWeapon();
 	/** Return nearest actor as actor object reference and distance to it */
 	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
+	UFUNCTION()
+	void Surrender() const;
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))

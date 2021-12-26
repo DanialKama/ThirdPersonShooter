@@ -269,6 +269,7 @@ private:
 	void StandUp();
 	void CalculateCapsuleLocation();
 	/** Use to perform two frame delay to cache the pose */
+	UFUNCTION()
 	void OneFrameDelay();
 	void ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 	void HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);

@@ -516,10 +516,10 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 		break;
 	}
 
-	// If something dropped and dropped weapon was not the sidearm weapon
+	// If a weapon dropped and dropped weapon was not the sidearm weapon
 	if (WeaponToDrop != EWeaponToDo::NoWeapon && CurrentHoldingWeapon != EWeaponToDo::SidearmWeapon)
 	{
-		SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+		// SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon); TODO Check if current weapon == dropped weapon
 	}
 }
 

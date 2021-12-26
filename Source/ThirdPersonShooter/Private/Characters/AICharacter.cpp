@@ -144,6 +144,11 @@ void AAICharacter::HolsterWeapon()
 void AAICharacter::SwitchIsEnded()
 {
 	Super::SwitchIsEnded();
+	// During weapon switch, the current weapon is invalid but switch end calls so try to use the weapon only weapon current weapon is valid
+	if (CurrentWeapon)
+	{
+		AIController->TryToUseWeapon();
+	}
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
 }

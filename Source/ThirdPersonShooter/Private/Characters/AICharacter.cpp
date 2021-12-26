@@ -5,9 +5,9 @@
 #include "Actors/PickupWeapon.h"
 #include "Actors/RespawnActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/HealthComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Core/AI/ShooterAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/WidgetInterface.h"
@@ -35,30 +35,36 @@ void AAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const float Health = HealthComponent->DefaultHealth / HealthComponent->MaxHealth;
-	AIController = Cast<AAIController>(GetController());
+	SetPrimaryWeapon();
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AAICharacter::SetSidearmWeapon);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+}
+
+void AAICharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	AIController = Cast<AShooterAIController>(NewController);
 	if (AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{
 		bAIControllerInterface = true;
 		if (PatrolPath)
 		{
-			IAIControllerInterface::Execute_StartPatrol(AIController);
+			AIController->StartPatrol();
+		}
+
+		AIBlackboard = AIController->GetBlackboardComponent();
+		const float Health = HealthComponent->DefaultHealth / HealthComponent->MaxHealth;
+		AIBlackboard->SetValueAsFloat(FName("Health"), Health);
+
+		Widget->InitWidget();
+		if (Widget->GetWidget() && Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
+		{
+			IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
+			bWidgetInterface = true;
 		}
 	}
-	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
-	{
-		IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
-		bWidgetInterface = true;
-	}
-	
-	ImplementedBlackboard = UAIBlueprintHelperLibrary::GetBlackboard(this);
-	ImplementedBlackboard->SetValueAsFloat(FName("Health"), Health);
-	
-	SetPrimaryWeapon();
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUObject(this, &AAICharacter::SetSidearmWeapon);
-	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-
 }
 
 void AAICharacter::SetPrimaryWeapon()
@@ -276,13 +282,10 @@ bool AAICharacter::SwitchToWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSw
 
 void AAICharacter::SetHealthLevel_Implementation(float Health)
 {
+	AIBlackboard->SetValueAsFloat(FName("Health"), Health);
 	if (bWidgetInterface)
 	{
 		IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
-	}
-	if (ImplementedBlackboard)
-	{
-		ImplementedBlackboard->SetValueAsFloat(FName("Health"), Health);
 	}
 }
 
@@ -323,11 +326,6 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		}
 		break;
 	}
-}
-
-AAICharacter* AAICharacter::GetAICharacterReference_Implementation()
-{
-	return this;
 }
 
 APatrolPathActor* AAICharacter::GetPatrolPath_Implementation()

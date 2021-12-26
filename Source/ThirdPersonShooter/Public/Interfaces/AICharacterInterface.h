@@ -24,8 +24,5 @@ class THIRDPERSONSHOOTER_API IAICharacterInterface
 public:
 	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AICharacterInterface")
-	AAICharacter* GetAICharacterReference();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AICharacterInterface")
 	APatrolPathActor* GetPatrolPath();
 };

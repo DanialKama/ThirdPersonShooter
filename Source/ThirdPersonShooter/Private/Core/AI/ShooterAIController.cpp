@@ -2,17 +2,22 @@
 
 #include "Core/AI/ShooterAIController.h"
 #include "Actors/PatrolPathActor.h"
+#include "Actors/PickupWeapon.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Characters/AICharacter.h"
+#include "Components/AmmoComponent.h"
 #include "Core/AI/CustomAIPerceptionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AICharacterInterface.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Prediction.h"
+// #include "Perception/AISense_Prediction.h"
 
 // Sets default values
 AShooterAIController::AShooterAIController()
@@ -23,6 +28,8 @@ AShooterAIController::AShooterAIController()
 	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
 	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
 	AISense_Prediction = CreateDefaultSubobject<UAISenseConfig_Prediction>(TEXT("Prediction Sense"));
+	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Component"));
+	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	
 	// Initialize components
 	AIPerception->ConfigureSense(*AISense_Sight);
@@ -36,42 +43,43 @@ AShooterAIController::AShooterAIController()
 	AISense_Sight->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectNeutrals = true;
-
+	
 	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;
 	
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
-	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AShooterAIController::TargetPerceptionUpdated);
 }
 
 void AShooterAIController::BeginPlay()
 {
-	if (RunBehaviorTree(BehaviorTree))
+	Super::BeginPlay();
+
+	RunBehaviorTree(BehaviorTree);
+	BehaviorTreeComp->StartTree(*BehaviorTree);
+	BlackboardComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	AIPerception->SetStimulusAge(AISense_Damage->GetSenseID(), 0.1f);
+	AIPerception->SetStimulusAge(AISense_Hearing->GetSenseID(), 0.1f);
+}
+
+void AShooterAIController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	
+	ControlledPawn = Cast<AAICharacter>(InPawn);
+	if (ControlledPawn)
 	{
-		AIBlackboard = UAIBlueprintHelperLibrary::GetBlackboard(this);
-		
-		if (GetPawn()->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
+		if (InPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 		{
-			ControlledPawn = IAICharacterInterface::Execute_GetAICharacterReference(GetPawn());
 			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
 			// If AI patrol path is true then start patrolling
 			if (PatrolPath)
 			{
-				AIBlackboard->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
-				AIBlackboard->SetValueAsBool(FName("Direction"), true);
-				AIBlackboard->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
+				BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
+				BlackboardComp->SetValueAsBool(FName("Direction"), true);
+				BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
 			}
 		}
-	}
-	if (AISense_Damage && AISense_Hearing)
-	{
-		AIPerception->SetStimulusAge(AISense_Damage->GetSenseID(), 0.1f);
-		AIPerception->SetStimulusAge(AISense_Hearing->GetSenseID(), 0.1f);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Senses are invalid."));
 	}
 }
 
@@ -96,65 +104,72 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 					{
 					case 0:
 						// Sight Sense
-						SightHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
+						SightHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						break;
 					case 1:
 						// Damage Sense
-						DamageHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
+						DamageHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						break;
 					case 2:
 						// Hearing Sense
 						HearingHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
 						break;
 					case 3:
 						// Prediction Sense
 						PredictionHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						UE_LOG(LogTemp, Warning, TEXT("%x"), j);
 						break;
 					default:
 						UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
 					}
-					UE_LOG(LogTemp, Warning, TEXT("Sensed = %s"), ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() ? TEXT("True") : TEXT("False"));
 				}
 			}
 		}
 	}
 }
 
-void AShooterAIController::TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
+void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
-	// const FAISenseID ID = AISense_Sight->GetSenseID();
-	// if (ID.IsValid() && Stimulus.IsValid() && Stimulus.Type == ID)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("YES"));
-	// }
-	// MoveToActor(Actor);
-	// if (AISense_Damage)
-	// {
-		// UE_LOG(LogTemp, Warning, TEXT("YES"));
-	// }
-	if (GetFocusActor() && GetFocusActor() == Actor)
+	if (Stimulus.WasSuccessfullySensed())
 	{
+		// If not focused or the updated actor is focused actor (attacker) start shooting at it
+		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
+		{
+			SetFocus(UpdatedActor, EAIFocusPriority::Gameplay);
+			Attacker = UpdatedActor;
+			Fight();
+		}
+	}
+	else if (GetFocusActor() == UpdatedActor)
+	{
+		ClearFocus(EAIFocusPriority::Move);
+		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
+		BlackboardComp->SetValueAsBool(FName("Search"), true);
+		BlackboardComp->SetValueAsBool(FName("SearchForPlayer"), true);
+		Attacker = nullptr;
+		if (WeaponState != EWeaponState::Reloading)
+		{
+			ControlledPawn->UseWeapon(false, false);
+		}
+		// UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
+	}
+}
+
+void AShooterAIController::DamageHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
+{
+	// Start searching and if the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
+	if (Stimulus.WasSuccessfullySensed() && GetFocusActor() != UpdatedActor)
+	{
+		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
+		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		
-	}
-}
-
-void AShooterAIController::DamageHandler(FAIStimulus Stimulus)
-{
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Damage Sense"));
-	}
-}
-
-void AShooterAIController::SightHandler(FAIStimulus Stimulus)
-{
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Sight Sense"));
+		AActor* TargetActor;
+		FindNearestOfTwoActor(GetFocusActor(), UpdatedActor, ControlledPawn->GetActorLocation(), TargetActor);
+		if (GetFocusActor() != TargetActor)
+		{
+			BlackboardComp->SetValueAsObject(FName("TargetActor"), TargetActor);
+			SetFocus(UpdatedActor, EAIFocusPriority::Gameplay);
+			Attacker = TargetActor;
+		}
 	}
 }
 
@@ -176,7 +191,48 @@ void AShooterAIController::PredictionHandler(FAIStimulus Stimulus)
 
 void AShooterAIController::Fight()
 {
-	
+	switch (AIState)
+	{
+	case 0: case 1: case 2:
+		// Idle, Chase, Search
+		if (Attacker)
+		{
+			TryToUseWeapon();
+		}
+		break;
+	case 3:
+		// Low Health
+		break;
+	case 4:
+		// Use Med
+		break;
+	}
+}
+
+void AShooterAIController::TryToUseWeapon()
+{
+	const FAmmoComponentInfo AmmoComponentInfo;
+	switch (WeaponState)
+	{
+	case 0: case 1: case 2: case 5: case 6: case 7:
+		// Idle, Firing, Better To Reload, Cancel Reload, Reloaded, Ammo Added
+		ControlledPawn->UseWeapon(true, true);
+		break;
+	case 3:
+		// Need To Reload
+		SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+		break;
+	case 4:
+		// Reloading
+		break;
+	case 8:
+		// Empty
+		SwitchWeapon();
+		break;
+	case 9:
+		// Overheat
+		break;
+	}
 }
 
 void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState)
@@ -200,7 +256,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		break;
 	case 2:
 		// Better To Reload, If there is no threat then reload the weapon
-		if (!AIBlackboard->GetValueAsObject(FName("TargetActor")))
+		if (!BlackboardComp->GetValueAsObject(FName("TargetActor")))
 		{
 			TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
 		}
@@ -211,9 +267,13 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		break;
 	case 4:
 		// Reloading
+		// If AI is in combat and there is an attacker and half of the mag is already full then stop reloading and continue fighting
+		if (Attacker && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->AmmoComponent->MagazineSize / 2)
+		{
+			Fight();
+		}
 		break;
 	case 5: case 6:
-		// Cancel Reload, Reloaded
 		Fight();
 		break;
 	case 7:
@@ -229,7 +289,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	}
 }
 
-void AShooterAIController::SwitchWeapon()
+void AShooterAIController::SwitchWeapon() const
 {
 	// If there is no weapon to switch then surrender
 	switch (ControlledPawn->CurrentHoldingWeapon)
@@ -309,7 +369,7 @@ void AShooterAIController::SwitchWeapon()
 	}
 }
 
-void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
+void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload) const
 {
 	if (bNoAmmoLeftToReload)
 	{
@@ -321,8 +381,9 @@ void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
 	}
 }
 
-void AShooterAIController::SetAIState_Implementation(EAIState AIState)
+void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 {
+	AIState = NewAIState;
 	switch (AIState)
 	{
 	case 0: case 1: case 2:
@@ -340,12 +401,44 @@ void AShooterAIController::SetAIState_Implementation(EAIState AIState)
 	}
 }
 
-void AShooterAIController::StartPatrol_Implementation()
+void AShooterAIController::StartPatrol()
 {
-	AIBlackboard->SetValueAsBool(FName("Patrol"), true);
+	// BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
 AShooterAIController* AShooterAIController::GetAIControllerReference_Implementation()
 {
 	return this;
+}
+
+float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor*& CloserActor)
+{
+	float DistanceToActor;
+	if (Actor1)
+	{
+		DistanceToActor = UKismetMathLibrary::Vector_Distance(Actor1->GetActorLocation(), CurrentLocation);
+		if (Actor2)
+		{
+			const float NewDistance = UKismetMathLibrary::Vector_Distance(Actor2->GetActorLocation(), CurrentLocation);
+			if (NewDistance < DistanceToActor)
+			{
+				DistanceToActor = NewDistance;
+				CloserActor = Actor2;
+				return DistanceToActor;
+			}
+		}
+		
+		CloserActor = Actor1;
+		return DistanceToActor;
+	}
+	
+	if (Actor2)
+	{
+		DistanceToActor = UKismetMathLibrary::Vector_Distance(Actor2->GetActorLocation(), CurrentLocation);
+		CloserActor = Actor2;
+		return DistanceToActor;
+	}
+	
+	CloserActor = nullptr;
+	return 0.0f;
 }

@@ -145,6 +145,7 @@ public:
 
 	//Functions
 	void SetArmedState(bool bArmedState);
+	bool SetAimState(bool bIsAiming);
 	/** Call from Set Current Weapon and use in player character to exit aim mode */
 	virtual void ResetAim();
 	void StartFireWeapon();
@@ -201,6 +202,8 @@ public:
 	APickupWeapon* SidearmWeapon;
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	EWeaponToDo CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
+	UPROPERTY()
+	APickupWeapon* CurrentWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -211,7 +214,6 @@ protected:
 	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
 	virtual void ResetReload();
 	virtual void SwitchIsEnded();
-	bool SetAimState(bool bIsAiming);
 	UFUNCTION()
 	virtual void StartDestroy();
 
@@ -221,8 +223,6 @@ protected:
 	EMovementState PreviousMovementState = EMovementState::Walk;
 	UPROPERTY()
 	UAnimInstance* AnimInstance;
-	UPROPERTY()
-	APickupWeapon* CurrentWeapon;
 	UPROPERTY()
 	UCameraComponent* ChildCameraComponent;
 

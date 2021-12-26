@@ -470,7 +470,7 @@ void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState
 		break;
 	case 4:
 		// Reloading
-		bCanFire = false;
+		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
 		StopFireWeapon();
 		break;
 	case 5:

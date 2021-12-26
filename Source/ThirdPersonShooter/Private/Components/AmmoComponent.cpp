@@ -81,13 +81,22 @@ void UAmmoComponent::Reload()
 				const int32 CurrentReloadAmount= FMath::Clamp(ReloadAmount, 0, UsedAmmoFromMag);
 				CurrentAmmo = CurrentAmmo - CurrentReloadAmount;
 				CurrentMagazineAmmo = CurrentReloadAmount + CurrentMagazineAmmo;
+
+				if (CurrentMagazineAmmo == MagazineSize)
+				{
+					ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
+				}
+				else
+				{
+					ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloading);
+				}
 			}
 			else
 			{
 				CurrentMagazineAmmo =+ CurrentAmmo;
 				CurrentAmmo = 0;
+				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
 			}
-			ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
 		}
 		else
 		{

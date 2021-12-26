@@ -7,7 +7,7 @@
 #include "Interfaces/AICharacterInterface.h"
 #include "AICharacter.generated.h"
 
-class AAIController;
+class AShooterAIController;
 class UWidgetComponent;
 class UBlackboardComponent;
 class ARespawnActor;
@@ -41,7 +41,6 @@ public:
 	// Interfaces
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
-	virtual AAICharacter* GetAICharacterReference_Implementation() override;
 	virtual APatrolPathActor* GetPatrolPath_Implementation() override;
 
 	// Variables
@@ -57,6 +56,7 @@ protected:
 
 private:
 	// Functions
+	virtual void PossessedBy(AController* NewController) override;
 	void SetPrimaryWeapon();
 	UFUNCTION()
 	void SetSidearmWeapon();
@@ -68,9 +68,7 @@ private:
 	// Variables
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1, bReloadGate : 1;
 	UPROPERTY()
-	AAIController* AIController;
-	UPROPERTY()
-	UBlackboardComponent* ImplementedBlackboard;
+	AShooterAIController* AIController;
 	UPROPERTY(EditInstanceOnly, Category = "Defaults")
 	APatrolPathActor* PatrolPath;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = "true"))
@@ -80,4 +78,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	float RespawnTime = 5.0f;
 	FTimerHandle WidgetTimerHandle;
+	UPROPERTY()
+	UBlackboardComponent* AIBlackboard;
 };

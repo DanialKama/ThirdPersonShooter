@@ -31,8 +31,5 @@ public:
 	void SetWeaponState(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
-	void StartPatrol();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AIControllerInterface")
-	void SetAIState(EAIState AIState);
+	void SetAIState(EAIState NewAIState);
 };

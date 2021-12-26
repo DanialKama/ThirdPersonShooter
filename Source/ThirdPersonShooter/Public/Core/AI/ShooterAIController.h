@@ -10,6 +10,7 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 
+class UBehaviorTreeComponent;
 class UCustomAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Damage;
@@ -37,11 +38,13 @@ public:
 	UCustomAIPerceptionComponent* AIPerception;
 
 	// Functions
+	void StartPatrol();
+	/*** inline getter | get the AI's blackboard */
+	// FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const { return BlackboardComp; }
 	// Interfaces
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
-	virtual void SetAIState_Implementation(EAIState AIState) override;
-	virtual void StartPatrol_Implementation() override;
+	virtual void SetAIState_Implementation(EAIState NewAIState) override;
 	virtual AShooterAIController* GetAIControllerReference_Implementation() override;
 
 	// Variables
@@ -53,25 +56,32 @@ protected:
 
 private:
 	// Functions
+	virtual void OnPossess(APawn* InPawn) override;
 	UFUNCTION()
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-	UFUNCTION()
-	void TargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-	void DamageHandler(FAIStimulus Stimulus);
-	void SightHandler(FAIStimulus Stimulus);
+	void SightHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
+	void DamageHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HearingHandler(FAIStimulus Stimulus);
 	void PredictionHandler(FAIStimulus Stimulus);
 	/** Gunfight */
 	void Fight();
-	void SwitchWeapon();
-	void TryToReload(bool bNoAmmoLeftToReload);
+	void SwitchWeapon() const;
+	void TryToReload(bool bNoAmmoLeftToReload) const;
+	void TryToUseWeapon();
+	/** Return nearest actor as actor object reference and distance to it */
+	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 	UPROPERTY()
-	UBlackboardComponent* AIBlackboard;
+	UBehaviorTreeComponent* BehaviorTreeComp;
+	UPROPERTY()
+	UBlackboardComponent* BlackboardComp;
 	UPROPERTY()
 	APatrolPathActor* PatrolPath;
 	EWeaponState WeaponState;
+	UPROPERTY()
+	AActor* Attacker;
+	EAIState AIState;
 };

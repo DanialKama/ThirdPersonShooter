@@ -9,7 +9,6 @@
 #include "Interfaces/CommonInterface.h"
 #include "BaseCharacter.generated.h"
 
-class UPhysicsConstraintComponent;
 class UHealthComponent;
 class UStaminaComponent;
 class UAIPerceptionStimuliSourceComponent;
@@ -115,24 +114,6 @@ public:
 	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCapsuleComponent* FallCapsule;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Root1;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Hinge1;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UPhysicsConstraintComponent* PhysicsConstraint1;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Root2;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* Hinge2;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UPhysicsConstraintComponent* PhysicsConstraint2;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComponent;
@@ -244,7 +225,8 @@ private:
 	void PickupAmmo(APickup* NewAmmo);
 	void SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew);
 	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
-	void AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
+	/** Attach to skeletal mesh */
+	void AttachWeapon(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const;
 	void ToggleRagdoll(bool bStart);
 	void Death();
 	void DismembermentInitiate(FVector ShotOrigin, FName HitBone);

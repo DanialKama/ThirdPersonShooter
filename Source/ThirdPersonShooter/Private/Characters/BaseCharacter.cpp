@@ -30,12 +30,6 @@ ABaseCharacter::ABaseCharacter()
 
 	// Create components
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
-	Root1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Root 1"));
-	Hinge1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hinge 1"));
-	PhysicsConstraint1 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Physics Constraint 1"));
-	Root2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Root 2"));
-	Hinge2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hinge 2"));
-	PhysicsConstraint2 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Physics Constraint 2"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
@@ -43,74 +37,11 @@ ABaseCharacter::ABaseCharacter()
 	
 	// Setup components attachment
 	FallCapsule->SetupAttachment(GetMesh());
-	Root1->SetupAttachment(GetMesh(), TEXT("Weapon1Socket"));
-	Hinge1->SetupAttachment(Root1);
-	PhysicsConstraint1->SetupAttachment(Hinge1);
-	Root2->SetupAttachment(GetMesh(), TEXT("Weapon2Socket"));
-	Hinge2->SetupAttachment(Root2);
-	PhysicsConstraint2->SetupAttachment(Hinge2);
 
 	// Initialize components
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>CubeAsset(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	UStaticMesh* Cube = CubeAsset.Object;
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>PlaneAsset(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
-	UStaticMesh* Plane = PlaneAsset.Object;
-
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
 	
 	FallCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	
-	Root1->SetStaticMesh(Cube);
-	Root1->SetGenerateOverlapEvents(false);
-	Root1->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	Root1->SetCollisionObjectType(ECC_WorldDynamic);
-	Root1->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Root1->SetVisibility(false);
-	Root1->SetHiddenInGame(true);
-
-	Hinge1->SetStaticMesh(Plane);
-	Hinge1->SetSimulatePhysics(true);
-	Hinge1->SetEnableGravity(false);
-	Hinge1->SetGenerateOverlapEvents(false);
-	Hinge1->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	Hinge1->SetCollisionObjectType(ECC_WorldDynamic);
-	Hinge1->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Hinge1->SetVisibility(false);
-	Hinge1->SetHiddenInGame(true);
-
-	PhysicsConstraint1->bUseAttachParentBound = true;
-	PhysicsConstraint1->ComponentName1.ComponentName = TEXT("Hinge 1");
-	PhysicsConstraint1->ComponentName2.ComponentName = TEXT("Root 1");
-	PhysicsConstraint1->SetDisableCollision(true);
-	PhysicsConstraint1->SetAngularSwing1Limit(ACM_Limited, 10.0f);
-	PhysicsConstraint1->SetAngularSwing2Limit(ACM_Limited, 5.0f);
-	PhysicsConstraint1->SetAngularTwistLimit(ACM_Limited, 10.0f);
-
-	Root2->SetStaticMesh(Cube);
-	Root2->SetGenerateOverlapEvents(false);
-	Root2->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	Root2->SetCollisionObjectType(ECC_WorldDynamic);
-	Root2->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Root2->SetVisibility(false);
-	Root2->SetHiddenInGame(true);
-	
-	Hinge2->SetStaticMesh(Plane);
-	Hinge2->SetSimulatePhysics(true);
-	Hinge2->SetEnableGravity(false);
-	Hinge2->SetGenerateOverlapEvents(false);
-	Hinge2->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	Hinge2->SetCollisionObjectType(ECC_WorldDynamic);
-	Hinge2->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Hinge2->SetVisibility(false);
-	Hinge2->SetHiddenInGame(true);
-
-	PhysicsConstraint2->bUseAttachParentBound = true;
-	PhysicsConstraint2->ComponentName1.ComponentName = TEXT("Hinge 2");
-	PhysicsConstraint2->ComponentName2.ComponentName = TEXT("Root 2");
-	PhysicsConstraint2->SetDisableCollision(true);
-	PhysicsConstraint2->SetAngularSwing1Limit(ACM_Limited, 10.0f);
-	PhysicsConstraint2->SetAngularSwing2Limit(ACM_Limited, 5.0f);
-	PhysicsConstraint2->SetAngularTwistLimit(ACM_Limited, 10.0f);
 	
 	GetCharacterMovement()->BrakingFriction = 0.1f;
 	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
@@ -408,19 +339,19 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAs
 				break;
 			case 1:
 				// Add to primary weapon slot
-				AttachToPhysicsConstraint(NewWeapon, EWeaponToDo::PrimaryWeapon);
+				AttachWeapon(NewWeapon, EWeaponToDo::PrimaryWeapon);
 				PrimaryWeapon = NewWeapon;
 				PrimaryWeaponSupportedAmmo = PrimaryWeapon->WeaponInfo.AmmoType;
 				break;
 			case 2:
 				// Add to secondary weapon slot
-				AttachToPhysicsConstraint(NewWeapon, EWeaponToDo::SecondaryWeapon);
+				AttachWeapon(NewWeapon, EWeaponToDo::SecondaryWeapon);
 				SecondaryWeapon = NewWeapon;
 				SecondaryWeaponSupportedAmmo = SecondaryWeapon->WeaponInfo.AmmoType;
 				break;
 			case 3:
 				// Add to sidearm weapon slot
-				AttachToPhysicsConstraint(NewWeapon, EWeaponToDo::SidearmWeapon);
+				AttachWeapon(NewWeapon, EWeaponToDo::SidearmWeapon);
 				SidearmWeapon = NewWeapon;
 				SidearmWeaponSupportedAmmo = SidearmWeapon->WeaponInfo.AmmoType;
 				break;
@@ -854,7 +785,7 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 			}
 			else
 			{
-				AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
+				AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
 				SetArmedState(false);
 				switch (WeaponToGrab)
@@ -1038,7 +969,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		// If character try to switch attach the current weapon to physics constraint and set target weapon as current weapon
 		if (bSwitchWeapon)
 		{
-			AttachToPhysicsConstraint(CurrentWeapon, CurrentHoldingWeapon);
+			AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
 		}
 
 		switch (TargetWeapon)
@@ -1096,28 +1027,22 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
 	}
 }
 
-void ABaseCharacter::AttachToPhysicsConstraint(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const
+void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const
 {
-	const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+	const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	switch (TargetWeapon)
 	{
 	case 0:
 		// No weapon to attach
 		break;
 	case 1:
-		// Attach the primary weapon to hinge 1
-		Hinge1->SetRelativeLocation(FVector::ZeroVector);
-		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
-		WeaponToAttach->AttachToComponent(Hinge1, AttachmentTransformRules);
+		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon1Socket"));
 		break;
 	case 2:
-		// Attach the secondary weapon to hinge 2
-		Hinge2->SetRelativeLocation(FVector::ZeroVector);
-		WeaponToAttach->SkeletalMesh->SetCollisionProfileName(FName("HolsterWeapon"), false);
-		WeaponToAttach->AttachToComponent(Hinge2, AttachmentTransformRules);
+		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon2Socket"));
 		break;
 	case 3:
-		// Attach the sidearm weapon to mesh socket
 		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon3Socket"));
 		break;
 	}

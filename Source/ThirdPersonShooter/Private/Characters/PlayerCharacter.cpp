@@ -57,7 +57,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		InputComponent->BindAction("SwitchToSidearm", IE_Pressed, this, &ABaseCharacter::SwitchToSidearm);
 		InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
 		InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
-		InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropItem);
+		InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
 		// Input Axis
 		InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
 		InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
@@ -446,12 +446,12 @@ void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFul
 	}
 }
 
-void APlayerCharacter::StartDestroy()
+void APlayerCharacter::Destroyed()
 {
 	// Get player controller reference before destroy player
 	AController* ControllerRef = GetController();
 	
-	Super::StartDestroy();
+	Super::Destroyed();
 
 	// Get the World and GameMode in the world to invoke its restart player function.
 	if (const UWorld* World = GetWorld())

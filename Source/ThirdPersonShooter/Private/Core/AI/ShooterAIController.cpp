@@ -528,7 +528,7 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 
 void AShooterAIController::Surrender()
 {
-	ControlledPawn->DropItem();
+	ControlledPawn->DropCurrentObject();
 	bIsDisarm = true;
 	BlackboardComp->SetValueAsBool(FName("IsDisarm"), true);
 	ClearFocus(EAIFocusPriority::Gameplay);

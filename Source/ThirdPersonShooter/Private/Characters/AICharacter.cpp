@@ -248,7 +248,7 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 			FRespawnInfo RespawnInfo;
 			RespawnInfo.SpawnTime = RespawnTime;
 			RespawnInfo.CharacterToSpawn = this->GetClass();
-			RespawnHandler->StartRespawn(RespawnInfo);
+			RespawnHandler->EnterRespawnQueue(RespawnInfo);
 		}
 		break;
 	}

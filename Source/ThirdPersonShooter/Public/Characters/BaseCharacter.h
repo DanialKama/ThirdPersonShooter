@@ -142,7 +142,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
 	virtual void SwitchToSidearm();
 	void StartJump();
-	void DropItem();
+	void DropCurrentObject();
 
 	/** Call from anim notify */
 	void SetReloadNotify(EReloadState ReloadState);
@@ -197,6 +197,7 @@ protected:
 	virtual void SwitchIsEnded();
 	UFUNCTION()
 	virtual void StartDestroy();
+	virtual void Destroyed() override;
 
 	// Variables
 	uint8 bCharacterAnimationInterface : 1;

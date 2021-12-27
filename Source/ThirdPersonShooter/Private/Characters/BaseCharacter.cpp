@@ -1118,7 +1118,7 @@ bool ABaseCharacter::SetAimState(bool bIsAiming)
 	return false;
 }
 
-void ABaseCharacter::DropItem()
+void ABaseCharacter::DropCurrentObject()
 {
 	DropWeapon(CurrentHoldingWeapon);
 	SetArmedState(false);
@@ -1505,6 +1505,17 @@ void ABaseCharacter::DeathTimeLineUpdate(float Value)
 void ABaseCharacter::StartDestroy()
 {
 	Destroy();
+}
+
+void ABaseCharacter::Destroyed()
+{
+	// Death handler does not call and weapons never detach if character get killed by world
+	// Call drop weapon again in case if character killed by the world
+	DropWeapon(EWeaponToDo::PrimaryWeapon);
+	DropWeapon(EWeaponToDo::SecondaryWeapon);
+	DropWeapon(EWeaponToDo::SidearmWeapon);
+	
+	Super::Destroyed();
 }
 
 void ABaseCharacter::PlayIdleAnimation()

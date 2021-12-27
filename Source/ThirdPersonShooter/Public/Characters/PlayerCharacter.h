@@ -51,8 +51,8 @@ protected:
 	
 	// Functions
 	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot) override;
-	virtual void StartDestroy() override;
-	
+	virtual void Destroyed() override;
+
 private:
 	// Functions
 	/** Wait for one frame to access a valid player controller */

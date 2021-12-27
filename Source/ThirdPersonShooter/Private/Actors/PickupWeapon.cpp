@@ -26,12 +26,12 @@
 APickupWeapon::APickupWeapon()
 {
 	// Create components
-	SkeletalMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	BoxCollision	= CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
-	MuzzleFlash		= CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
-	FireSound		= CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
-	Widget			= CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-	AmmoComponent	= CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
+	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
 	// Setup components attachment
 	SetRootComponent(SkeletalMesh);

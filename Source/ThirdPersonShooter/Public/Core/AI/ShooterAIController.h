@@ -24,9 +24,13 @@ class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public
 {
 	GENERATED_BODY()
 	
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
 	UAISenseConfig_Damage* AISense_Damage;
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
 	UAISenseConfig_Sight* AISense_Sight;
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
 	UAISenseConfig_Hearing* AISense_Hearing;
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
 	UAISenseConfig_Prediction* AISense_Prediction;
 	
 public:
@@ -62,14 +66,17 @@ private:
 	void PredictionHandler(FAIStimulus Stimulus);
 	/** Gunfight */
 	void Fight();
-	void SwitchWeapon() const;
-	void TryToReload(bool bNoAmmoLeftToReload) const;
+	void SwitchWeapon();
+	/** A quick way for AIC to check if the character is holding any weapon and if not try to switch to the next available weapon. */
+	bool CheckWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch);
+	void TryToReload(bool bNoAmmoLeftToReload);
 	/** Return nearest actor as actor object reference and distance to it */
 	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
 	UFUNCTION()
-	void Surrender() const;
+	void Surrender();
 	
 	// Variables
+	uint8 bIsDisarm : 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 	UPROPERTY()

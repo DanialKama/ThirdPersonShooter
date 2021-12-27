@@ -32,8 +32,6 @@ public:
 	void UseWeapon(bool bAim, bool bFire);
 	virtual void ReloadWeapon() override;
 	virtual void ResetReload() override;
-	UFUNCTION(BlueprintCallable, Category = "AICharacter")
-	bool SwitchToWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch);
 	virtual void SwitchToPrimary() override;
 	virtual void SwitchToSecondary() override;
 	virtual void SwitchToSidearm() override;

@@ -2,11 +2,6 @@
 
 #include "UI/ShooterHUD.h"
 
-AShooterHUD* AShooterHUD::GetHUDReference_Implementation()
-{
-	return this;
-}
-
 void AShooterHUD::SetHealth_Implementation(float CurrentHealth)
 {
 }

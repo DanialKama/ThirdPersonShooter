@@ -6,7 +6,6 @@
 #include "Core/ShooterGameModeBase.h"
 #include "Core/ShooterPlayerController.h"
 #include "GameFramework/HUD.h"
-#include "Interfaces/HUDInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
@@ -95,22 +94,12 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::NextFrameBeginPlay()
 {
-	if (GetController() && GetController()->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+	PlayerController = Cast<AShooterPlayerController>(GetController());
+	HUDRef = Cast<AShooterHUD>(PlayerController->GetHUD());
+	if (HUDRef)
 	{
-		PlayerController = IPlayerControllerInterface::Execute_GetPlayerControllerReference(GetController());
-		if(PlayerController)
-		{
-			PlayerController->PlayerTransform = GetActorTransform();
-			if (PlayerController->GetHUD()->GetClass()->ImplementsInterface(UHUDInterface::StaticClass()))
-			{
-				HUD = IHUDInterface::Execute_GetHUDReference(PlayerController->GetHUD());
-				if (HUD)
-				{
-					HUD->SetHealth(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
-					HUD->SetUIVisibility(ESlateVisibility::Visible);
-				}
-			}
-		}
+		HUDRef->SetHealth(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
+		HUDRef->SetUIVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -246,9 +235,9 @@ void APlayerCharacter::TryToStartAiming()
 void APlayerCharacter::ResetAim()
 {
 	SetAimState(false);
-	if (HUD)
+	if (HUDRef)
 	{
-		HUD->SetCrosshairVisibility(ESlateVisibility::Hidden);
+		HUDRef->SetCrosshairVisibility(ESlateVisibility::Hidden);
 	}
 	
 	AimTimeline->Reverse();
@@ -275,10 +264,7 @@ void APlayerCharacter::AimTimeLineFinished()
 {
 	if (Direction == ETimelineDirection::Forward)
 	{
-		if (HUD)
-		{
-			HUD->SetCrosshairVisibility(ESlateVisibility::Visible);
-		}
+		HUDRef->SetCrosshairVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
@@ -387,14 +373,14 @@ void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeapon
 {
 	Super::SetCurrentWeapon(NewCurrentWeapon, WeaponSlot);
 	// Hide ammo info on player UI widget when the player holding no weapon
-	if (CurrentHoldingWeapon == EWeaponToDo::NoWeapon && HUD)
+	if (CurrentHoldingWeapon == EWeaponToDo::NoWeapon)
 	{
-		HUD->SetAmmoInfoVisibility(ESlateVisibility::Hidden);
-		HUD->ToggleCommandMessage(FText::FromString(""), ESlateVisibility::Hidden, false);
+		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Hidden);
+		HUDRef->ToggleCommandMessage(FText::FromString(""), ESlateVisibility::Hidden, false);
 	}
-	else if (HUD)
+	else
 	{
-		HUD->SetAmmoInfoVisibility(ESlateVisibility::Visible);
+		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -433,9 +419,9 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 		break;
 	case 4:
 		// Death
-		if(HUD)
+		if(HUDRef)
 		{
-			HUD->SetUIVisibility(ESlateVisibility::Hidden);
+			HUDRef->SetUIVisibility(ESlateVisibility::Hidden);
 		}
 		break;
 	}
@@ -444,9 +430,9 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 
 void APlayerCharacter::SetHealthLevel_Implementation(float Health)
 {
-	if (HUD)
+	if (HUDRef)
 	{
-		HUD->SetHealth(Health);
+		HUDRef->SetHealth(Health);
 	}	
 }
 
@@ -454,9 +440,9 @@ void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFul
 {
 	Super::SetStaminaLevel_Implementation(Stamina, bIsFull);
 
-	if (HUD)
+	if (HUDRef)
 	{
-		HUD->SetStamina(Stamina);
+		HUDRef->SetStamina(Stamina);
 	}
 }
 
@@ -481,10 +467,7 @@ void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity
 {
 	Super::AddRecoil_Implementation(RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
 	AddControllerPitchInput(ControllerPitch);
-	if (HUD)
-	{
-		HUD->AddRecoil(CrosshairRecoil, ControlTime);
-	}
+	HUDRef->AddRecoil(CrosshairRecoil, ControlTime);
 }
 
 APlayerCharacter* APlayerCharacter::GetPlayerCharacterReference_Implementation()

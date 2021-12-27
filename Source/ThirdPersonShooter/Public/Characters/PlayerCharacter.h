@@ -90,7 +90,7 @@ private:
 	UPROPERTY()
 	AShooterPlayerController* PlayerController;
 	UPROPERTY()
-	AShooterHUD* HUD;
+	AShooterHUD* HUDRef;
 	uint8 TabNumber, PreviousTapNumber;
 	/** Enum data indicating the direction the Timeline is playing */
 	TEnumAsByte<ETimelineDirection::Type> Direction;

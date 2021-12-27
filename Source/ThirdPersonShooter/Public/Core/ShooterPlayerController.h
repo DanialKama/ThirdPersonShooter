@@ -17,16 +17,13 @@ class THIRDPERSONSHOOTER_API AShooterPlayerController : public APlayerController
 
 public:
 	// Interfaces
-	virtual AShooterPlayerController* GetPlayerControllerReference_Implementation() override;
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState WeaponState) override;
 	virtual void PlayCameraShake_Implementation(TSubclassOf<UCameraShakeBase> CameraShake) override;
 
-	// Variables
-	UPROPERTY(BlueprintReadWrite, Category = "Variables")
-	FTransform PlayerTransform;
+protected:
+	virtual void BeginPlay() override;
 
 private:
-	// Variables
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
-	TSubclassOf<APlayerCharacter> PlayerToSpawn;
+	UPROPERTY()
+	AShooterHUD* ShooterHUD;
 };

@@ -491,6 +491,10 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			PrimaryWeapon->LowerWeapon();
 			PrimaryWeapon->DetachFromActor(DetachmentTransformRules);
 			PrimaryWeapon->SetPickupStatus(EPickupState::Drop);
+			if (CurrentWeapon == PrimaryWeapon)
+			{
+				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+			}
 			PrimaryWeapon = nullptr;
 		}
 		break;
@@ -501,6 +505,10 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			SecondaryWeapon->LowerWeapon();
 			SecondaryWeapon->DetachFromActor(DetachmentTransformRules);
 			SecondaryWeapon->SetPickupStatus(EPickupState::Drop);
+			if (CurrentWeapon == SecondaryWeapon)
+			{
+				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+			}
 			SecondaryWeapon = nullptr;
 		}
 		break;
@@ -511,15 +519,13 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			SidearmWeapon->LowerWeapon();
 			SidearmWeapon->DetachFromActor(DetachmentTransformRules);
 			SidearmWeapon->SetPickupStatus(EPickupState::Drop);
+			if (CurrentWeapon == SidearmWeapon)
+			{
+				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+			}
 			SidearmWeapon = nullptr;
 		}
 		break;
-	}
-
-	// If a weapon dropped and dropped weapon was not the sidearm weapon
-	if (WeaponToDrop != EWeaponToDo::NoWeapon && CurrentHoldingWeapon != EWeaponToDo::SidearmWeapon)
-	{
-		// SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon); TODO Check if current weapon == dropped weapon
 	}
 }
 
@@ -1127,6 +1133,7 @@ void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, 
 
 void ABaseCharacter::SetArmedState(bool bArmedState)
 {
+	StopAnimMontage();
 	bIsArmed = bArmedState;
 	if (bCharacterAnimationInterface)
 	{
@@ -1139,7 +1146,6 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
 		}
 	}
-	// StopAnimMontage();
 	if (!bArmedState)
 	{
 		SetAimState(false);

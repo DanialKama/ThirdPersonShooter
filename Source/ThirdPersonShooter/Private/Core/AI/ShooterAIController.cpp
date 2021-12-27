@@ -85,41 +85,44 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 
 void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
-	const uint8 NumOfActors = UpdatedActors.Num();
-	for (uint8 i = 0; i < NumOfActors; ++i)
+	if (!bIsDisarm)
 	{
-		AActor* UpdatedActor = UpdatedActors[i];
-		if (UpdatedActor->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+		const uint8 NumOfActors = UpdatedActors.Num();
+		for (uint8 i = 0; i < NumOfActors; ++i)
 		{
-			const FGameplayTag ActorTag = ICommonInterface::Execute_GetTeamTag(UpdatedActor);
-			// Check if the actor is not in the same team as the this AI
-			if (ActorTag != ControlledPawn->TeamTag)
+			AActor* UpdatedActor = UpdatedActors[i];
+			if (UpdatedActor->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 			{
-				FActorPerceptionBlueprintInfo ActorPerceptionInfo;
-				AIPerception->GetActorsPerception(UpdatedActor, ActorPerceptionInfo);
-				const uint8 NumOfStimulus = ActorPerceptionInfo.LastSensedStimuli.Num();
-				for (uint8 j = 0; j < NumOfStimulus; ++j)
+				const FGameplayTag ActorTag = ICommonInterface::Execute_GetTeamTag(UpdatedActor);
+				// Check if the actor is not in the same team as the this AI
+				if (ActorTag != ControlledPawn->TeamTag)
 				{
-					switch (j)
+					FActorPerceptionBlueprintInfo ActorPerceptionInfo;
+					AIPerception->GetActorsPerception(UpdatedActor, ActorPerceptionInfo);
+					const uint8 NumOfStimulus = ActorPerceptionInfo.LastSensedStimuli.Num();
+					for (uint8 j = 0; j < NumOfStimulus; ++j)
 					{
-					case 0:
-						// Sight Sense
-						SightHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
-						break;
-					case 1:
-						// Damage Sense
-						DamageHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
-						break;
-					case 2:
-						// Hearing Sense
-						HearingHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						break;
-					case 3:
-						// Prediction Sense
-						PredictionHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
-						break;
-					default:
-						UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
+						switch (j)
+						{
+						case 0:
+							// Sight Sense
+							SightHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							break;
+						case 1:
+							// Damage Sense
+							DamageHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							break;
+						case 2:
+							// Hearing Sense
+							HearingHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+							break;
+						case 3:
+							// Prediction Sense
+							PredictionHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+							break;
+						default:
+							UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
+						}
 					}
 				}
 			}
@@ -144,7 +147,7 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 	}
 	else if (GetFocusActor() == UpdatedActor)
 	{
-		ClearFocus(EAIFocusPriority::Move);
+		ClearFocus(EAIFocusPriority::Gameplay);
 		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
 		BlackboardComp->SetValueAsBool(FName("Search"), true);
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
@@ -297,7 +300,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	}
 }
 
-void AShooterAIController::SwitchWeapon() const
+void AShooterAIController::SwitchWeapon()
 {
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AShooterAIController::Surrender);
@@ -375,7 +378,86 @@ void AShooterAIController::SwitchWeapon() const
 	}
 }
 
-void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload) const
+bool AShooterAIController::CheckWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch)
+{
+	if (WeaponToSwitch != ControlledPawn->CurrentHoldingWeapon)
+	{
+		switch (WeaponToSwitch)
+		{
+		case 0:
+			// No Weapon
+			ControlledPawn->HolsterWeapon();
+			return true;
+		case 1:
+			// Primary Weapon
+			if (ControlledPawn->PrimaryWeapon)
+			{
+				ControlledPawn->SwitchToPrimary();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (ControlledPawn->SecondaryWeapon)
+				{
+					ControlledPawn->SwitchToSecondary();
+					return true;
+				}
+				if (ControlledPawn->SidearmWeapon)
+				{
+					ControlledPawn->SwitchToSidearm();
+					return true;
+				}
+			}
+			return false;
+		case 2:
+			// Secondary Weapon
+			if (ControlledPawn->SecondaryWeapon)
+			{
+				ControlledPawn->SwitchToSecondary();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (ControlledPawn->PrimaryWeapon)
+				{
+					ControlledPawn->SwitchToPrimary();
+					return true;
+				}
+				if (ControlledPawn->SidearmWeapon)
+				{
+					ControlledPawn->SwitchToSidearm();
+					return true;
+				}
+			}
+			return false;
+		case 3:
+			// Sidearm Weapon
+			if (ControlledPawn->SidearmWeapon)
+			{
+				ControlledPawn->SwitchToSidearm();
+				return true;
+			}
+			if (SwitchToAvailable)
+			{
+				if (ControlledPawn->PrimaryWeapon)
+				{
+					ControlledPawn->SwitchToPrimary();
+					return true;
+				}
+				if (ControlledPawn->SecondaryWeapon)
+				{
+					ControlledPawn->SwitchToSecondary();
+					return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+	return true;
+}
+
+void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
 {
 	if (bNoAmmoLeftToReload)
 	{
@@ -394,11 +476,11 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 	{
 	case 0: case 1: case 2:
 		// Idle, Chase, Search
-		ControlledPawn->SwitchToWeapon(true, EWeaponToDo::PrimaryWeapon);
+		CheckWeapon(true, EWeaponToDo::PrimaryWeapon);
 		break;
 	case 3:
 		// Low Health
-		ClearFocus(EAIFocusPriority::Move);
+		ClearFocus(EAIFocusPriority::Gameplay);
 		ControlledPawn->UseWeapon(false, false);
 		break;
 	case 4:
@@ -444,9 +526,12 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 	return 0.0f;
 }
 
-void AShooterAIController::Surrender() const
+void AShooterAIController::Surrender()
 {
 	ControlledPawn->DropItem();
+	bIsDisarm = true;
+	BlackboardComp->SetValueAsBool(FName("IsDisarm"), true);
+	ClearFocus(EAIFocusPriority::Gameplay);
 	ControlledPawn->GetCharacterMovement()->DisableMovement();
 	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
 }

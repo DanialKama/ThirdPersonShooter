@@ -235,7 +235,8 @@ private:
 	USkeletalMeshComponent* DismembermentRightLeg(FName HitBone);
 	USkeletalMeshComponent* DismembermentLeftHand(FName HitBone);
 	USkeletalMeshComponent* DismembermentRightHand(FName HitBone);
-	USkeletalMeshComponent* AddSkeletalMeshComponent(FName Name, USkeletalMesh* SkeletalMesh);
+	/** Add skeletal mesh component */
+	USkeletalMeshComponent* SpawnBodyPart(FName Name, USkeletalMesh* SkeletalMesh);
 	void StartDeathLifeSpan();
 	UFUNCTION()
 	void DeathTimeLineUpdate(float Value);

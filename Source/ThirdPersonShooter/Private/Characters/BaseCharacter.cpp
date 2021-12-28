@@ -1261,7 +1261,7 @@ void ABaseCharacter::DismembermentInitiate(FVector ShotOrigin, FName HitBone)
 		{
 			constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
 			GetMesh()->HideBoneByName(FName("neck_01"), PhysBodyOption);
-			AmputatedLimb = AddSkeletalMeshComponent("Head", BodyParts.Head);
+			AmputatedLimb = SpawnBodyPart("Head", BodyParts.Head);
 		}
 		else if (HitBone == "Thigh_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Thigh_L")))
 		{
@@ -1295,36 +1295,39 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentLeftLeg(FName HitBone)
 	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
 	if (HitBone == "Thigh_L" || HitBone == "thigh_twist_01_l")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("calf_l")))
+		if (GetMesh()->IsBoneHiddenByName(FName("calf_l")) && BodyParts.ThighLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Thigh", BodyParts.ThighLeft);
+			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Thigh", BodyParts.ThighLeft);
 		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")))
+		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.ThighAndCalfLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Thigh and Calf", BodyParts.ThighAndCalfLeft);
+			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Thigh and Calf", BodyParts.ThighAndCalfLeft);
 		}
-		else
+		else if (BodyParts.LegLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Leg", BodyParts.LegLeft);
+			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Leg", BodyParts.LegLeft);
 		}
-		GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
 	}
 	else if (HitBone == "calf_l" || HitBone == "calf_twist_01_l")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")))
+		if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.CalfLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Calf", BodyParts.CalfLeft);
+			GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Calf", BodyParts.CalfLeft);
 		}
-		else
+		else if (BodyParts.CalfAndFootLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Calf and Foot", BodyParts.CalfAndFootLeft);
+			GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Calf and Foot", BodyParts.CalfAndFootLeft);
 		}
-		GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
 	}
-	else if(HitBone == "Foot_L" || HitBone == "ball_l")
+	else if(HitBone == "Foot_L" || HitBone == "ball_l" && BodyParts.FootLeft)
 	{
-		NewBodyPart = AddSkeletalMeshComponent("Left Foot", BodyParts.FootLeft);
 		GetMesh()->HideBoneByName(FName("Foot_L"), PhysBodyOption);
+		NewBodyPart = SpawnBodyPart("Left Foot", BodyParts.FootLeft);
 	}
 	return NewBodyPart;
 }
@@ -1335,36 +1338,39 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentRightLeg(FName HitBone)
 	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
 	if (HitBone == "Thigh_R" || HitBone == "thigh_twist_01_r")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("calf_r")))
+		if (GetMesh()->IsBoneHiddenByName(FName("calf_r")) && BodyParts.ThighRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Thigh", BodyParts.ThighRight);
+			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Thigh", BodyParts.ThighRight);
 		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")))
+		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.ThighAndCalfRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Thigh and Calf", BodyParts.ThighAndCalfRight);
+			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Thigh and Calf", BodyParts.ThighAndCalfRight);
 		}
-		else
+		else if (BodyParts.LegRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Leg", BodyParts.LegRight);
+			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Leg", BodyParts.LegRight);
 		}
-		GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
 	}
 	else if (HitBone == "calf_r" || HitBone == "calf_twist_01_r")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")))
+		if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.CalfRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Calf", BodyParts.CalfRight);
+			GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Calf", BodyParts.CalfRight);
 		}
-		else
+		else if (BodyParts.CalfAndFootRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Calf and Foot", BodyParts.CalfAndFootRight);
+			GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Calf and Foot", BodyParts.CalfAndFootRight);
 		}
-		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
 	}
-	else if(HitBone == "Foot_R" || HitBone == "ball_r")
+	else if(HitBone == "Foot_R" || HitBone == "ball_r" && BodyParts.FootRight)
 	{
-		NewBodyPart = AddSkeletalMeshComponent("Right Foot", BodyParts.FootRight);
 		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+		NewBodyPart = SpawnBodyPart("Right Foot", BodyParts.FootRight);
 	}
 	return NewBodyPart;
 }
@@ -1375,36 +1381,39 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentLeftHand(FName HitBone)
 	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
 	if (HitBone == "UpperArm_L")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_l")))
+		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_l")) && BodyParts.UpperArmLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Upper Arm", BodyParts.UpperArmLeft);
+			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Upper Arm", BodyParts.UpperArmLeft);
 		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")))
+		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.UpperArmAndLowerArmLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmLeft);
+			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmLeft);
 		}
-		else
+		else if (BodyParts.ArmLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Arm", BodyParts.ArmLeft);
+			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Arm", BodyParts.ArmLeft);
 		}
-		GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
 	}
 	else if (HitBone == "lowerarm_l" || HitBone == "lowerarm_twist_01_l")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")))
+		if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.LowerArmLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Lower Arm", BodyParts.LowerArmLeft);
+			GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Lower Arm", BodyParts.LowerArmLeft);
 		}
-		else
+		else if (BodyParts.LowerArmAndHandLeft)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Left Lower Arm and Hand", BodyParts.LowerArmAndHandLeft);
+			GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Left Lower Arm and Hand", BodyParts.LowerArmAndHandLeft);
 		}
-		GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
 	}
-	else if(HitBone == "Hand_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_L")))
+	else if (HitBone == "Hand_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_L")) && BodyParts.HandLeft)
 	{
-		NewBodyPart = AddSkeletalMeshComponent("Left Hand", BodyParts.HandLeft);
 		GetMesh()->HideBoneByName(FName("Hand_L"), PhysBodyOption);
+		NewBodyPart = SpawnBodyPart("Left Hand", BodyParts.HandLeft);
 	}
 	return NewBodyPart;
 }
@@ -1415,53 +1424,57 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentRightHand(FName HitBone)
 	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
 	if (HitBone == "UpperArm_R")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_r")))
+		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_r")) && BodyParts.UpperArmRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Upper Arm", BodyParts.UpperArmRight);
+			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Upper Arm", BodyParts.UpperArmRight);
 		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")))
+		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.UpperArmAndLowerArmRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmRight);
+			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmRight);
 		}
-		else
+		else if (BodyParts.ArmRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Arm", BodyParts.ArmRight);
+			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Arm", BodyParts.ArmRight);
 		}
-		GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
 	}
 	else if (HitBone == "lowerarm_r" || HitBone == "lowerarm_twist_01_r")
 	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")))
+		if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.LowerArmRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Lower Arm", BodyParts.LowerArmRight);
+			GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Lower Arm", BodyParts.LowerArmRight);
 		}
-		else
+		else if (BodyParts.LowerArmAndHandRight)
 		{
-			NewBodyPart = AddSkeletalMeshComponent("Right Lower Arm and Hand", BodyParts.LowerArmAndHandRight);
+			GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
+			NewBodyPart = SpawnBodyPart("Right Lower Arm and Hand", BodyParts.LowerArmAndHandRight);
 		}
-		GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
 	}
-	else if(HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")))
+	else if(HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")) && BodyParts.HandRight)
 	{
-		NewBodyPart = AddSkeletalMeshComponent("Right Hand", BodyParts.HandRight);
 		GetMesh()->HideBoneByName(FName("Hand_R"), PhysBodyOption);
+		NewBodyPart = SpawnBodyPart("Right Hand", BodyParts.HandRight);
 	}
 	return NewBodyPart;
 }
 
-USkeletalMeshComponent* ABaseCharacter::AddSkeletalMeshComponent(FName Name, USkeletalMesh* SkeletalMesh)
+USkeletalMeshComponent* ABaseCharacter::SpawnBodyPart(FName Name, USkeletalMesh* SkeletalMesh)
 {
-	USkeletalMeshComponent* NewSkeletalMeshComponent = NewObject<USkeletalMeshComponent>(this, USkeletalMeshComponent::StaticClass(), Name, RF_NoFlags);
-	NewSkeletalMeshComponent->SetupAttachment(GetRootComponent());
-	NewSkeletalMeshComponent->RegisterComponent();
-	AddInstanceComponent(NewSkeletalMeshComponent);
-	NewSkeletalMeshComponent->SkeletalMesh = SkeletalMesh;
-	NewSkeletalMeshComponent->SetSimulatePhysics(true);
-	NewSkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	NewSkeletalMeshComponent->SetCollisionObjectType(ECC_PhysicsBody);
-	NewSkeletalMeshComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
-	NewSkeletalMeshComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	return NewSkeletalMeshComponent;
+	USkeletalMeshComponent* NewBodyPart = NewObject<USkeletalMeshComponent>(this, USkeletalMeshComponent::StaticClass(), Name, RF_NoFlags);
+	AddInstanceComponent(NewBodyPart);
+	NewBodyPart->SetupAttachment(GetRootComponent());
+	NewBodyPart->SetSkeletalMesh(SkeletalMesh);
+	NewBodyPart->SetRelativeTransform(GetMesh()->GetRelativeTransform());
+	NewBodyPart->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	NewBodyPart->SetCollisionObjectType(ECC_PhysicsBody);
+	NewBodyPart->SetCollisionResponseToAllChannels(ECR_Ignore);
+	NewBodyPart->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	NewBodyPart->SetSimulatePhysics(true);
+	NewBodyPart->RegisterComponent();
+	return NewBodyPart;
 }
 
 void ABaseCharacter::DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)

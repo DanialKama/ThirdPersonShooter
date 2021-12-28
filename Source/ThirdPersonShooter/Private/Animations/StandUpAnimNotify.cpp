@@ -5,10 +5,10 @@
 
 void UStandUpAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if(MeshComp && MeshComp->GetOwner())
+	if (MeshComp && MeshComp->GetOwner())
 	{
 		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if(Character)
+		if (Character)
 		{
 			// Set interrupt to true to character movement set to walk
 			Character->StanUpMontageHandler(nullptr, true);

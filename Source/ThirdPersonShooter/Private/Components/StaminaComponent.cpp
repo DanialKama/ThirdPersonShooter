@@ -20,10 +20,10 @@ void UStaminaComponent::SetupComponent()
 
 	CurrentStamina = FMath::Clamp(DefaultStamina, 0.0f, MaxStamina);
 
-	if(Owner)
+	if (Owner)
 	{
 		// Detected if the interfaces is present on owner
-		if(Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
 			bCharacterInterface = true;
 
@@ -37,7 +37,7 @@ void UStaminaComponent::StopStaminaDrain()
 	GetWorld()->GetTimerManager().ClearTimer(RunningTimer);
 	GetWorld()->GetTimerManager().ClearTimer(SprintingTimer);
 	
-	if(bDoOnce)
+	if (bDoOnce)
 	{
 		GetWorld()->GetTimerManager().SetTimer(RestoreTimer, this, &UStaminaComponent::RestoreStamina, StaminaRestoreRate, true, StartStaminaRecoveryDelay);
 		bDoOnce = false;
@@ -46,7 +46,7 @@ void UStaminaComponent::StopStaminaDrain()
 
 void UStaminaComponent::StartRunning()
 {
-	if(Owner->GetVelocity().Size() > 0)
+	if (Owner->GetVelocity().Size() > 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RestoreTimer);
 		GetWorld()->GetTimerManager().ClearTimer(SprintingTimer);
@@ -54,7 +54,7 @@ void UStaminaComponent::StartRunning()
 		
 		GetWorld()->GetTimerManager().SetTimer(RunningTimer, this, &UStaminaComponent::RunningDrainStamina, 0.1f, true);
 		
-		if(bCharacterInterface)
+		if (bCharacterInterface)
 		{
 			ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
 		}
@@ -63,14 +63,14 @@ void UStaminaComponent::StartRunning()
 
 void UStaminaComponent::StartSprinting()
 {
-	if(Owner->GetVelocity().Size() > 0)
+	if (Owner->GetVelocity().Size() > 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RestoreTimer);
 		GetWorld()->GetTimerManager().ClearTimer(RunningTimer);
 		bDoOnce = true;
 		
 		GetWorld()->GetTimerManager().SetTimer(SprintingTimer, this, &UStaminaComponent::SprintingDrainStamina, 0.1f, true);
-		if(bCharacterInterface)
+		if (bCharacterInterface)
 		{
 			ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
 		}
@@ -83,13 +83,13 @@ void UStaminaComponent::RestoreStamina()
 
 	const bool bIsStaminaFull = CurrentStamina == MaxStamina;
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, bIsStaminaFull);
 	}
 
 	// If stamina is fully restored then stop the timer
-	if(bIsStaminaFull)
+	if (bIsStaminaFull)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RestoreTimer);
 	}	
@@ -99,12 +99,12 @@ void UStaminaComponent::RunningDrainStamina()
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina - RunStaminaDrainAmount, 0.0f, MaxStamina);
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
 
 		// If stamina is zero set owner movement to walk
-		if(CurrentStamina <= 0.0f)
+		if (CurrentStamina <= 0.0f)
 		{
 			ICharacterInterface::Execute_SetMovementState(Owner, EMovementState::Walk, false, false);
 		}
@@ -115,11 +115,11 @@ void UStaminaComponent::SprintingDrainStamina()
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina - SprintStaminaDrainAmount, 0.0f, MaxStamina);
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
 		// If stamina is zero set owner movement to walk
-		if(CurrentStamina <= 0.0f)
+		if (CurrentStamina <= 0.0f)
 		{
 			ICharacterInterface::Execute_SetMovementState(Owner, EMovementState::Walk, false, false);
 		}

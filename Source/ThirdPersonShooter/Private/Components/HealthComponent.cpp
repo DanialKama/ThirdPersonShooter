@@ -20,18 +20,18 @@ void UHealthComponent::SetupComponent()
 {
 	Super::SetupComponent();
 	
-	if(Owner)
+	if (Owner)
 	{
 		Owner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
 		Owner->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
 		Owner->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);
 
 		// Detected if the interfaces is present on owner
-		if(Owner->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+		if (Owner->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 		{
 			bCommonInterface = true;
 		}
-		if(Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
 			bCharacterInterface = true;
 		}
@@ -39,7 +39,7 @@ void UHealthComponent::SetupComponent()
 
 	CurrentHealth = FMath::Clamp(DefaultHealth, 0.0f, MaxHealth);
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
 	}
@@ -62,7 +62,7 @@ void UHealthComponent::TakeRadialDamage(AActor* DamagedActor, float Damage, cons
 
 void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVector ShotFromDirection)
 {
-	if(Damage <= 0)
+	if (Damage <= 0)
 	{
 		return;
 	}
@@ -70,22 +70,22 @@ void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVecto
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
 
 	// Update current health on character
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
 	}
 
-	if(CurrentHealth <= 0.0f)
+	if (CurrentHealth <= 0.0f)
 	{
 		HitBoneName = BoneName;
 		ShotOrigin = ShotFromDirection;
 
-		if(bCommonInterface)
+		if (bCommonInterface)
 		{
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Death);
 		}
 	}
-	else if(CurrentHealth < LowHealth && bCommonInterface)
+	else if (CurrentHealth < LowHealth && bCommonInterface)
 	{
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
 	}
@@ -97,9 +97,9 @@ void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVecto
 // Only start when stamina is full
 void UHealthComponent::StartHealthRecovery()
 {
-	if(bCanRecoverHealth)
+	if (bCanRecoverHealth)
 	{
-		if(bCommonInterface)
+		if (bCommonInterface)
 		{
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
 		}
@@ -110,7 +110,7 @@ void UHealthComponent::StartHealthRecovery()
 
 void UHealthComponent::StopHealthRecovery()
 {
-	if(bCommonInterface)
+	if (bCommonInterface)
 	{
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStopped);
 	}
@@ -121,16 +121,16 @@ void UHealthComponent::RecoverHealth()
 {
 	CurrentHealth = FMath::Clamp(HealingAmount + CurrentHealth, 0.0f, MaxHealth);
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
 	}
 
-	if(CurrentHealth >= MaxHealth)
+	if (CurrentHealth >= MaxHealth)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 
-		if(bCommonInterface)
+		if (bCommonInterface)
 		{
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Full);
 		}
@@ -141,12 +141,12 @@ void UHealthComponent::Healing(const float HealthDifference)
 {
 	CurrentHealth = FMath::Clamp(HealthDifference + CurrentHealth, 0.0f, MaxHealth);
 
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
 	}
 
-	if(CurrentHealth >= MaxHealth && bCommonInterface)
+	if (CurrentHealth >= MaxHealth && bCommonInterface)
 	{
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Full);
 	}

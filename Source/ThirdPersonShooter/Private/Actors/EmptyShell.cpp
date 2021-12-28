@@ -46,10 +46,10 @@ void AEmptyShell::BeginPlay()
 
 void AEmptyShell::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(bDoOnce)
+	if (bDoOnce)
 	{
 		const FCollisionResponseContainer CollisionResponse = OtherComp->GetCollisionResponseToChannels();
-		if(CollisionResponse.WorldStatic == ECR_Block)
+		if (CollisionResponse.WorldStatic == ECR_Block)
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
 			bDoOnce = false;

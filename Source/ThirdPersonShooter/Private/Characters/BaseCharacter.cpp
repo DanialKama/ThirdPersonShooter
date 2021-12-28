@@ -3,7 +3,6 @@
 #include "Characters/BaseCharacter.h"
 #include "Actors/Magazine.h"
 #include "Components/CapsuleComponent.h"
-#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Interfaces/CommonInterface.h"
@@ -762,12 +761,24 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 		// End
 		if (bCanHolster)
 		{
+			// If the character is not trying to switch weapons then just holster the current weapon
+			if (WeaponToGrab == EWeaponToDo::NoWeapon)
+			{
+				AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
+				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+				SetArmedState(false);
+				bCanReload = true;
+				return;
+			}
+
+			// If the character trying to switch weapons and neither of the weapons is not a sidearm
+			// then attach the current weapon to behind the character and attach the target weapon to hand.
 			if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
 			{
 				switch (WeaponToGrab)
 				{
 				case 0:
-					// No Weapon = no switch
+					// No Weapon = nothing to switch
 					break;
 				case 1:
 					// Primary Weapon
@@ -783,6 +794,9 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 					break;
 				}
 			}
+			// Switching or holstering a sidearm weapon requires more steps to do
+			// so if the character is trying to switch weapons and one of them is a sidearm
+			// then attach the current weapon to its socket (behind or side) and start switching to the target weapon
 			else
 			{
 				AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
@@ -966,7 +980,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		WeaponToSwitch->SkeletalMesh->SetSimulatePhysics(false);
 		WeaponToSwitch->SkeletalMesh->SetCollisionProfileName(FName("NoCollision"), false);
 
-		// If character try to switch attach the current weapon to physics constraint and set target weapon as current weapon
+		// If character try to switch attach the current weapon to skeletal mesh socket and set target weapon as current weapon
 		if (bSwitchWeapon)
 		{
 			AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
@@ -1058,7 +1072,6 @@ void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, 
 
 void ABaseCharacter::SetArmedState(bool bArmedState)
 {
-	StopAnimMontage();
 	bIsArmed = bArmedState;
 	if (bCharacterAnimationInterface)
 	{
@@ -1071,7 +1084,7 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
 		}
 	}
-	if (!bArmedState)
+	if (!bIsArmed)
 	{
 		SetAimState(false);
 	}
@@ -1093,7 +1106,7 @@ bool ABaseCharacter::SetAimState(bool bIsAiming)
 		switch (MovementState)
 		{
 		case 0: case 1: case 2:
-			// Set character movement state to walk to stop the character from running or sprinting while aiming
+			// Set character movement state to walk and stop the character from running or sprinting while aiming
 			SetMovementState_Implementation(EMovementState::Walk, false, false);
 			break;
 		case 3:
@@ -1107,6 +1120,7 @@ bool ABaseCharacter::SetAimState(bool bIsAiming)
 		StopAnimMontage();
 		return true;
 	}
+	
 	bIsAimed = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -1324,7 +1338,7 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentLeftLeg(FName HitBone)
 			NewBodyPart = SpawnBodyPart("Left Calf and Foot", BodyParts.CalfAndFootLeft);
 		}
 	}
-	else if(HitBone == "Foot_L" || HitBone == "ball_l" && BodyParts.FootLeft)
+	else if (HitBone == "Foot_L" || HitBone == "ball_l" && BodyParts.FootLeft)
 	{
 		GetMesh()->HideBoneByName(FName("Foot_L"), PhysBodyOption);
 		NewBodyPart = SpawnBodyPart("Left Foot", BodyParts.FootLeft);
@@ -1367,7 +1381,7 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentRightLeg(FName HitBone)
 			NewBodyPart = SpawnBodyPart("Right Calf and Foot", BodyParts.CalfAndFootRight);
 		}
 	}
-	else if(HitBone == "Foot_R" || HitBone == "ball_r" && BodyParts.FootRight)
+	else if (HitBone == "Foot_R" || HitBone == "ball_r" && BodyParts.FootRight)
 	{
 		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
 		NewBodyPart = SpawnBodyPart("Right Foot", BodyParts.FootRight);
@@ -1453,7 +1467,7 @@ USkeletalMeshComponent* ABaseCharacter::DismembermentRightHand(FName HitBone)
 			NewBodyPart = SpawnBodyPart("Right Lower Arm and Hand", BodyParts.LowerArmAndHandRight);
 		}
 	}
-	else if(HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")) && BodyParts.HandRight)
+	else if (HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")) && BodyParts.HandRight)
 	{
 		GetMesh()->HideBoneByName(FName("Hand_R"), PhysBodyOption);
 		NewBodyPart = SpawnBodyPart("Right Hand", BodyParts.HandRight);
@@ -1727,10 +1741,7 @@ void ABaseCharacter::OneFrameDelay()
 
 void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
-	if (bInterrupted)
-	{
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-	}
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // TODO fix character stand up
 }
 
 void ABaseCharacter::ResetAim()

@@ -32,7 +32,7 @@ void AMagazine::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(bMagazineIsEmpty)
+	if (bMagazineIsEmpty)
 	{
 		StaticMesh->SetStaticMesh(EmptyMagazine);
 	}
@@ -44,10 +44,10 @@ void AMagazine::BeginPlay()
 
 void AMagazine::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(bDoOnce)
+	if (bDoOnce)
 	{
 		const FCollisionResponseContainer CollisionResponse = OtherComp->GetCollisionResponseToChannels();
-		if(CollisionResponse.WorldStatic == ECR_Block)
+		if (CollisionResponse.WorldStatic == ECR_Block)
 		{
 			FCollisionResponseContainer NewResponse;
 			NewResponse.Pawn = ECR_Ignore;

@@ -47,7 +47,7 @@ void APickupAmmo::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
+	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
 		IWidgetInterface::Execute_SetAmmoInfo(Widget->GetWidget(), AmmoType, Amount);
 	}
@@ -76,7 +76,6 @@ void APickupAmmo::SetPickupStatus(EPickupState PickupState)
 
 APickupAmmo* APickupAmmo::GetPickupAmmoReference_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("REFERENCE..."))
 	return this;
 }
 // End Of interfaces
@@ -87,20 +86,20 @@ void APickupAmmo::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 {
 	EWeaponToDo WeaponToDo = EWeaponToDo::NoWeapon;
 	
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		WeaponToDo = ICharacterInterface::Execute_CanPickupAmmo(OtherActor, AmmoType);
 	}
 
-	if(WeaponToDo != EWeaponToDo::NoWeapon)
+	if (WeaponToDo != EWeaponToDo::NoWeapon)
 	{
-		if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
 			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Ammo, this);
 		}
 	
 		// If OtherActor is the player then show the widget
-		if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+		if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 		{
 			Widget->SetVisibility(true);
 			StaticMesh->SetRenderCustomDepth(true);
@@ -110,13 +109,13 @@ void APickupAmmo::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 
 void APickupAmmo::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Ammo, nullptr);
 	}
 
 	// If OtherActor is the player then hide the widget
-	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(false);
 		StaticMesh->SetRenderCustomDepth(false);

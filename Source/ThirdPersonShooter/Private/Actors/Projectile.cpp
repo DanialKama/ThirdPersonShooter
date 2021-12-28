@@ -37,13 +37,13 @@ AProjectile::AProjectile()
 
 	// Load data tables
 	static ConstructorHelpers::FObjectFinder<UDataTable> ProjectileDataObject(TEXT("DataTable'/Game/Blueprints/Projectiles/DT_ProjectileInfo.DT_ProjectileInfo'"));
-	if(ProjectileDataObject.Succeeded())
+	if (ProjectileDataObject.Succeeded())
 	{
 		ProjectileDataTable = ProjectileDataObject.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> ExplosiveProjectileDataObject(TEXT("DataTable'/Game/Blueprints/Projectiles/DT_ExplosiveProjectileInfo.DT_ExplosiveProjectileInfo'"));
-	if(ProjectileDataObject.Succeeded())
+	if (ProjectileDataObject.Succeeded())
 	{
 		ExplosiveProjectileDataTable = ExplosiveProjectileDataObject.Object;
 	}
@@ -52,7 +52,7 @@ AProjectile::AProjectile()
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	float AppliedDamage = 0.0f;
-	if(Hit.PhysMaterial.IsValid())
+	if (Hit.PhysMaterial.IsValid())
 	{
 		SwitchExpression = StaticEnum<EPhysicalSurface>()->GetIndexByValue(UGameplayStatics::GetSurfaceType(Hit));
 	}
@@ -63,10 +63,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 
 	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 	
-	if(ProjectileEffect.bIsExplosive && ExplosiveProjectileDataTable)
+	if (ProjectileEffect.bIsExplosive && ExplosiveProjectileDataTable)
 	{
 		const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
-		if(ExplosiveProjectileInfo)
+		if (ExplosiveProjectileInfo)
 		{
 			// Apply radial damage with fall off for explosive projectiles
 			const TArray<AActor*> IgnoreActors;
@@ -74,19 +74,16 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 			AppliedDamage = ExplosiveProjectileInfo->BaseDamage;
 		}
 	}
-	else if(ProjectileDataTable)
+	else if (ProjectileDataTable)
 	{
 		const FProjectileInfo* ProjectileInfo = ProjectileDataTable->FindRow<FProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
-		if(ProjectileInfo)
+		if (ProjectileInfo)
 		{
 			// Apply point damage for nonexplosive projectiles based on surface type
 			AppliedDamage = UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No damage applied."));
-	}
+	
 	HitEffect(Hit);
 	UAISense_Damage::ReportDamageEvent(GetWorld(), OtherActor, GetInstigator(), AppliedDamage, Hit.TraceStart, Hit.ImpactPoint);
 	Destroy();
@@ -116,7 +113,7 @@ void AProjectile::HitEffect(const FHitResult HitResult) const
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
 
 	// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
-	if(ProjectileEffect.bIsExplosive)
+	if (ProjectileEffect.bIsExplosive)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileEffect.ExplosiveEmitter, HitResult.ImpactPoint, SpawnRotation);
 	}

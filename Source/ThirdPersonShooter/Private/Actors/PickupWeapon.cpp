@@ -79,12 +79,12 @@ void APickupWeapon::BeginPlay()
 	MuzzleFlash->SetRelativeScale3D(WeaponDefaults.MuzzleFlashScale);
 
 	// Set weapon info on widget to show it when the player overlap with weapon
-	if(Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
+	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
 		IWidgetInterface::Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
 	}
 	
-	if(WeaponDefaults.Projectile.Num() > 0)
+	if (WeaponDefaults.Projectile.Num() > 0)
 	{
 		CurrentProjectile = WeaponDefaults.Projectile[0].GetDefaultObject();
 	}
@@ -92,14 +92,14 @@ void APickupWeapon::BeginPlay()
 
 void APickupWeapon::StartFireWeapon()
 {
-	if(bCanFire)
+	if (bCanFire)
 	{
-		if(bDoOnceFire)
+		if (bDoOnceFire)
 		{
 			bDoOnceFire = false;
 			FireWeapon();
 			
-			if(bOwnerIsAI || WeaponInfo.bIsAutomatic)
+			if (bOwnerIsAI || WeaponInfo.bIsAutomatic)
 			{
 				GetWorld()->GetTimerManager().SetTimer(FireWeaponTimer, this, &APickupWeapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
 			}
@@ -110,13 +110,13 @@ void APickupWeapon::StartFireWeapon()
 	else
 	{
 		StopFireWeapon();
-		if(AmmoComponent->CurrentMagazineAmmo <= 0 && !AmmoComponent->NoAmmoLeftToReload())
+		if (AmmoComponent->CurrentMagazineAmmo <= 0 && !AmmoComponent->NoAmmoLeftToReload())
 		{
 			SetWeaponState_Implementation(EWeaponState::NeedToReload);
 		}
 		else
 		{
-			if(AmmoComponent->NoAmmoLeftToReload())
+			if (AmmoComponent->NoAmmoLeftToReload())
 			{
 				SetWeaponState_Implementation(EWeaponState::Empty);
 			}
@@ -132,7 +132,7 @@ void APickupWeapon::FireWeapon()
 	SpawnProjectile();
 
 	// Add recoil to character animation and player UI crosshair
-	if(bCharacterInterface)
+	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_AddRecoil(Owner, WeaponDefaults.RotationIntensity, WeaponDefaults.ControlTime, WeaponDefaults.CrosshairRecoil, WeaponDefaults.ControllerPitch);
 	}
@@ -146,7 +146,7 @@ void APickupWeapon::FireWeapon()
 	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickupWeapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
 	// Spawn Empty shell
-	if(WeaponDefaults.EmptyShell.Num() > 0)
+	if (WeaponDefaults.EmptyShell.Num() > 0)
 	{
 		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
 		const FRotator Rotation = SkeletalMesh->GetSocketRotation(TEXT("EjectorSocket"));
@@ -175,7 +175,7 @@ void APickupWeapon::WeaponFireEffect() const
 
 void APickupWeapon::SpawnProjectile()
 {
-	if(CurrentProjectile)
+	if (CurrentProjectile)
 	{
 		for(int i = 0; i < CurrentProjectile->NumberOfPellets; i++)
 		{
@@ -191,10 +191,6 @@ void APickupWeapon::SpawnProjectile()
 			// Spawn projectile
 			GetWorld()->SpawnActor<AProjectile>(WeaponDefaults.Projectile[0], Location, Rotation, ActorSpawnParameters);
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No projectile to spawn!"))
 	}
 }
 
@@ -213,10 +209,10 @@ void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotat
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 
 	// Draw debug line and box
-	if(bDrawDebugLineTrace)
+	if (bDrawDebugLineTrace)
 	{
 		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
-		if(bHit)
+		if (bHit)
 		{
 			DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(10, 10, 10), FColor::Red, false, 2.0f);
 		}
@@ -235,7 +231,7 @@ void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 	FVector RightVector;
 	FVector TraceEnd;
 	
-	if(bOwnerIsAI)
+	if (bOwnerIsAI)
 	{
 		const FRotator SocketRotation = SkeletalMesh->GetSocketRotation(TEXT("MuzzleFlashSocket"));
 		TraceStart = SkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
@@ -253,9 +249,9 @@ void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 		TraceEnd = Points.RotateVector(CameraComponent->GetForwardVector());
 	}
 
-	if(CurrentProjectile)
+	if (CurrentProjectile)
 	{
-		if(CurrentProjectile->NumberOfPellets > 1)
+		if (CurrentProjectile->NumberOfPellets > 1)
 		{
 			const FRotator Points = RandomPointInCircle(FMath::FRandRange(CurrentProjectile->PelletSpread * -1.0f, CurrentProjectile->PelletSpread), true);
 			OutStart = TraceStart;
@@ -278,7 +274,7 @@ FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncl
 	const float Angle = FMath::FRandRange(0.0f, 360.0f);
 
 	FRotator Points;
-	if(bIncludesNegative)
+	if (bIncludesNegative)
 	{
 		Points.Roll = DistanceFromCenter * UKismetMathLibrary::DegCos(Angle);
 		Points.Pitch = DistanceFromCenter * UKismetMathLibrary::DegSin(Angle);
@@ -300,9 +296,9 @@ void APickupWeapon::RaiseWeapon() const
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 
 	// Report weapon state to owner on pickup
-	if(bAIControllerInterface)
+	if (bAIControllerInterface)
 	{
-		if(AmmoComponent->BetterToReload())
+		if (AmmoComponent->BetterToReload())
 		{
 			IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
 		}
@@ -311,9 +307,9 @@ void APickupWeapon::RaiseWeapon() const
 			IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::Idle);
 		}
 	}
-	else if(bPlayerControllerInterface)
+	else if (bPlayerControllerInterface)
 	{
-		if(AmmoComponent->BetterToReload())
+		if (AmmoComponent->BetterToReload())
 		{
 			IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, EWeaponState::BetterToReload);
 		}
@@ -331,7 +327,7 @@ void APickupWeapon::LowerWeapon() const
 
 void APickupWeapon::SetMagazineVisibility(const bool bVisible) const
 {
-	if(bVisible)
+	if (bVisible)
 	{
 		SkeletalMesh->UnHideBoneByName(WeaponDefaults.MagazineBoneName);
 	}
@@ -350,7 +346,7 @@ void APickupWeapon::ReloadWeapon() const
 bool APickupWeapon::CanPickupAmmo() const
 {
 	const int32 CurrentAmmo = AmmoComponent->CurrentAmmo;
-	if(CurrentAmmo < AmmoComponent->MaxAmmo)
+	if (CurrentAmmo < AmmoComponent->MaxAmmo)
 	{
 		return true;
 	}
@@ -405,23 +401,23 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 		}
 		
 		// Detected if the interfaces is present on owner
-		if(Owner)
+		if (Owner)
 		{
 			bCharacterInterface = false;
 			bPlayerControllerInterface = false;
 			bAIControllerInterface = false;
 
-			if(Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+			if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 			{
 				bCharacterInterface = true;
 			}
 
 			OwnerController = Cast<AController>(Owner->GetInstigatorController());
-			if(OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+			if (OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 			{
 				bAIControllerInterface = true;
 			}
-			else if(OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+			else if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
 			{
 				bPlayerControllerInterface = true;
 			}
@@ -443,11 +439,11 @@ void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	
-	if(bAIControllerInterface)
+	if (bAIControllerInterface)
 	{
 		IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
-	else if(bPlayerControllerInterface)
+	else if (bPlayerControllerInterface)
 	{
 		IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
@@ -507,13 +503,13 @@ APickupWeapon* APickupWeapon::GetWeaponReference_Implementation()
 void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
 	}
 	
 	// If Other Actor is the player then show the widget
-	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(true);
 		SkeletalMesh->SetRenderCustomDepth(true);
@@ -522,13 +518,13 @@ void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActo
 
 void APickupWeapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if(OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
 	}
 
 	// If Other Actor is the player then hide the widget
-	if(OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(false);
 		SkeletalMesh->SetRenderCustomDepth(false);

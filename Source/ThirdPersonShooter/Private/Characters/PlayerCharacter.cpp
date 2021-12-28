@@ -419,7 +419,7 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 		break;
 	case 4:
 		// Death
-		if(HUDRef)
+		if (HUDRef)
 		{
 			HUDRef->SetUIVisibility(ESlateVisibility::Hidden);
 		}

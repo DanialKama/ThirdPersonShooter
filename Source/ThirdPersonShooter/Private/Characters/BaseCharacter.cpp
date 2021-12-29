@@ -1643,12 +1643,12 @@ void ABaseCharacter::CachePose()
 	SetGetupOrientation();
 	if (CalculateFacingDirection())
 	{
-		// Character is facing up
+		// Character is facing down
 		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, StandUpFromFrontMontages.Num() - 1)];
 	}
 	else
 	{
-		// Character is facing down
+		// Character is facing up
 		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, StandUpFromBackMontages.Num() - 1)];
 	}
 
@@ -1665,7 +1665,7 @@ void ABaseCharacter::SetGetupOrientation()
 	const FVector Z = FVector(0.0f, 0.0f, 1.0f);
 	const FVector NeckLocation = GetMesh()->GetSocketLocation(FName("neck_01"));
 	const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
-	const FVector X = CalculateFacingDirection() ? PelvisLocation - NeckLocation : NeckLocation - PelvisLocation;
+	const FVector X = CalculateFacingDirection() ? NeckLocation - PelvisLocation : PelvisLocation - NeckLocation;
 	NewTransform.SetRotation(UKismetMathLibrary::MakeRotFromZX(Z, X).Quaternion());
 	SetActorTransform(NewTransform);
 }
@@ -1710,9 +1710,9 @@ bool ABaseCharacter::CalculateFacingDirection() const
 	const float DotProduct = UKismetMathLibrary::Dot_VectorVector(RightVector, FVector(0.0f, 0.0f, 1.0f));
 	if (DotProduct >= 0.0f)
 	{
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void ABaseCharacter::OneFrameDelay()
@@ -1734,7 +1734,7 @@ void ABaseCharacter::OneFrameDelay()
 
 void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // TODO fix character stand up
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
 void ABaseCharacter::ResetAim()

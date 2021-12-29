@@ -433,7 +433,7 @@ void APickupWeapon::SetCanFire_Implementation(const bool bInCanFire)
 	bCanFire = bInCanFire;
 }
 
-void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState)
+void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	

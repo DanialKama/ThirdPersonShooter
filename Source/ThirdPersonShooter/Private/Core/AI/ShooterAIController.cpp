@@ -4,15 +4,14 @@
 #include "Actors/PatrolPathActor.h"
 #include "Actors/PickupWeapon.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
-#include "Core/AI/CustomAIPerceptionComponent.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AICharacterInterface.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISenseConfig_Hearing.h"
@@ -23,7 +22,7 @@
 AShooterAIController::AShooterAIController()
 {
 	// Create Components
-	AIPerception = CreateDefaultSubobject<UCustomAIPerceptionComponent>(TEXT("AI Perception"));
+	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception"));
 	AISense_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Sence"));
 	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
 	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
@@ -43,11 +42,17 @@ AShooterAIController::AShooterAIController()
 	AISense_Sight->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectNeutrals = true;
+
+	AISense_Damage->SetMaxAge(0.2f);
 	
+	AISense_Hearing->HearingRange = 5000.0;
+	AISense_Hearing->SetMaxAge(0.5);
 	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;
-	
+
+	AISense_Prediction->SetMaxAge(0.2f);
+
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
 }
 
@@ -58,8 +63,6 @@ void AShooterAIController::BeginPlay()
 	RunBehaviorTree(BehaviorTree);
 	BehaviorTreeComp->StartTree(*BehaviorTree);
 	BlackboardComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
-	AIPerception->SetStimulusAge(AISense_Damage->GetSenseID(), 0.1f);
-	AIPerception->SetStimulusAge(AISense_Hearing->GetSenseID(), 0.1f);
 }
 
 void AShooterAIController::OnPossess(APawn* InPawn)
@@ -71,8 +74,9 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 	{
 		if (InPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 		{
+			bAICharacterInterface = true;
 			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
-			// If AI patrol path is true then start patrolling
+			// If patrol path is valid then start patrolling
 			if (PatrolPath)
 			{
 				BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
@@ -114,7 +118,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 							break;
 						case 2:
 							// Hearing Sense
-							HearingHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+							HearingHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							break;
 						case 3:
 							// Prediction Sense
@@ -134,7 +138,7 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		// If not focused or the updated actor is focused actor (attacker) start shooting at it
+		// If not focused or the updated actor is focused actor (attacker) start fighting
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
 		{
 			SetFocus(UpdatedActor, EAIFocusPriority::Gameplay);
@@ -142,6 +146,8 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
 			BlackboardComp->SetValueAsObject(FName("TargetActor"), UpdatedActor);
 			Attacker = UpdatedActor;
+			OnFindEnemy.Broadcast();
+			AIState = EAIState::Fight;
 			Fight();
 		}
 	}
@@ -156,6 +162,8 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 		{
 			ControlledPawn->UseWeapon(false, false);
 		}
+		
+		AIState = EAIState::Search;
 		UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
 	}
 }
@@ -165,6 +173,7 @@ void AShooterAIController::DamageHandler(AActor* UpdatedActor, FAIStimulus Stimu
 	// Start searching and if the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
 	if (Stimulus.WasSuccessfullySensed() && GetFocusActor() != UpdatedActor)
 	{
+		AIState = EAIState::Search;
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		
@@ -179,11 +188,80 @@ void AShooterAIController::DamageHandler(AActor* UpdatedActor, FAIStimulus Stimu
 	}
 }
 
-void AShooterAIController::HearingHandler(FAIStimulus Stimulus)
+void AShooterAIController::HearingHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
-	if (Stimulus.WasSuccessfullySensed())
+	if (Stimulus.WasSuccessfullySensed() && !Attacker)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hearing Sense"));
+		// Run EQS to check if updated actor is reachable
+		SetFocus(UpdatedActor);
+		FEnvQueryRequest HidingSpotQueryRequest = FEnvQueryRequest(CanReachTarget, this);
+		HidingSpotQueryRequest.Execute(EEnvQueryRunMode::SingleResult, this, &AShooterAIController::HandleQueryResult);
+		
+		if (bHasPath)
+		{
+			AIState = EAIState::Search;
+			BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
+			if (BlackboardComp->GetValueAsBool(FName("Search")))
+			{
+				const FAmmoComponentInfo AmmoComponentInfo;
+				switch (AIState)
+				{
+				case 0: case 1: case 2:
+					// Idle, Fight, Search
+					switch (WeaponState)
+					{
+				case 0: case 1: case 2: case 5: case 6: case 7:
+					// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
+					ControlledPawn->UseWeapon(true, false);
+						BlackboardComp->SetValueAsBool(FName("Search"), true);
+						BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+						break;
+				case 3:
+					// Need To Reload
+					SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+						BlackboardComp->SetValueAsBool(FName("Search"), true);
+						BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+						break;
+				case 4:
+					// Reloading
+					BlackboardComp->SetValueAsBool(FName("Search"), true);
+						BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+						break;
+				case 8:
+					// Empty
+					SwitchWeapon();
+						BlackboardComp->SetValueAsBool(FName("Search"), true);
+						BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+						break;
+				case 9:
+					// Overheat
+					BlackboardComp->SetValueAsBool(FName("Search"), true);
+						BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+						break;
+					}
+					break;
+				case 3: case 4:
+					// Low Health, Use Med
+					BlackboardComp->SetValueAsBool(FName("Search"), true);
+					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+					break;
+				}
+			}
+			else
+			{
+				SetFocus(UpdatedActor);
+				BlackboardComp->SetValueAsBool(FName("Search"), true);
+				BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+			}
+		}
+		// If enemy is unreachable then take cover
+		else if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
+		{
+			AIState = EAIState::Idle;
+			BlackboardComp->SetValueAsBool(FName("TakeCover"), true);
+			BlackboardComp->SetValueAsFloat(FName("WaitTime"), 5.0f);
+			GetWorld()->GetTimerManager().SetTimer(BackToRoutineTimer, this, &AShooterAIController::BackToRoutine, 5.0f);
+		}
 	}
 }
 
@@ -191,8 +269,50 @@ void AShooterAIController::PredictionHandler(FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
-		UE_LOG(LogTemp, Warning, TEXT("Prediction Sense"));
+		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation); // TODO
+	}
+}
+
+void AShooterAIController::BackToRoutine()
+{
+	// Only return to default behavior if AI is currently idle
+	if (AIState == EAIState::Idle)
+	{
+		// Stop taking cover
+		ClearFocus(EAIFocusPriority::Gameplay);
+		ControlledPawn->UseWeapon(false, false);
+		BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
+		BlackboardComp->SetValueAsFloat(FName("WaitTime"), 0.0f);
+	
+		if (bAICharacterInterface)
+		{
+			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
+		}
+
+		// If patrol path is valid then start patrolling
+		if (PatrolPath)
+		{
+			BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
+			BlackboardComp->SetValueAsBool(FName("Direction"), true);
+			BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
+		}
+		else
+		{
+			BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
+			BlackboardComp->SetValueAsBool(FName("Search"), false);
+		}
+	}
+}
+
+void AShooterAIController::HandleQueryResult(TSharedPtr<FEnvQueryResult> Result)
+{
+	if (Result->IsSuccessful())
+	{
+		bHasPath = true;
+	}
+	else
+	{
+		bHasPath = false;
 	}
 }
 
@@ -201,7 +321,7 @@ void AShooterAIController::Fight()
 	switch (AIState)
 	{
 	case 0: case 1: case 2:
-		// Idle, Chase, Search
+		// Idle, Fight, Search
 		if (Attacker)
 		{
 			TryToUseWeapon();
@@ -475,7 +595,7 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 	switch (AIState)
 	{
 	case 0: case 1: case 2:
-		// Idle, Chase, Search
+		// Idle, Fight, Search
 		CheckWeapon(true, EWeaponToDo::PrimaryWeapon);
 		break;
 	case 3:
@@ -531,6 +651,7 @@ void AShooterAIController::Surrender()
 	ControlledPawn->DropCurrentObject();
 	bIsDisarm = true;
 	BlackboardComp->SetValueAsBool(FName("IsDisarm"), true);
+	BlackboardComp->SetValueAsFloat(FName("WaitTime"), 60.0f); // TODO - improve it with head following the nearest enemy
 	ClearFocus(EAIFocusPriority::Gameplay);
 	ControlledPawn->GetCharacterMovement()->DisableMovement();
 	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);

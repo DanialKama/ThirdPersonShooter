@@ -6,18 +6,21 @@
 #include "AIController.h"
 #include "Enums/PickupEnums.h"
 #include "Enums/CharacterEnums.h"
+#include "EnvironmentQuery/EnvQuery.h"
 #include "Interfaces/AIControllerInterface.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 
 class UBehaviorTreeComponent;
-class UCustomAIPerceptionComponent;
+class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Damage;
 class UAISenseConfig_Hearing;
 class UAISenseConfig_Prediction;
 class AAICharacter;
 class APatrolPathActor;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFindEnemy);
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public IAIControllerInterface
@@ -39,7 +42,7 @@ public:
 
 	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UCustomAIPerceptionComponent* AIPerception;
+	UAIPerceptionComponent* AIPerception;
 
 	// Functions
 	void StartPatrol();
@@ -62,7 +65,7 @@ private:
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	void SightHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void DamageHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HearingHandler(FAIStimulus Stimulus);
+	void HearingHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void PredictionHandler(FAIStimulus Stimulus);
 	/** Gunfight */
 	void Fight();
@@ -72,13 +75,19 @@ private:
 	void TryToReload(bool bNoAmmoLeftToReload);
 	/** Return nearest actor as actor object reference and distance to it */
 	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
+	/** Return to normal behavior */
+	UFUNCTION()
+	void BackToRoutine();
+	void HandleQueryResult(TSharedPtr<FEnvQueryResult> Result);
 	UFUNCTION()
 	void Surrender();
 	
 	// Variables
-	uint8 bIsDisarm : 1;
+	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UEnvQuery* CanReachTarget;
 	UPROPERTY()
 	UBehaviorTreeComponent* BehaviorTreeComp;
 	UPROPERTY()
@@ -89,4 +98,6 @@ private:
 	UPROPERTY()
 	AActor* Attacker;
 	EAIState AIState;
+	FOnFindEnemy OnFindEnemy;
+	FTimerHandle BackToRoutineTimer;
 };

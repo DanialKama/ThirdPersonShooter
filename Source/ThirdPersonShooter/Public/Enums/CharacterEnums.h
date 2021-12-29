@@ -36,7 +36,7 @@ UENUM(BlueprintType, Category = "CharacterEnums")
 enum class EAIState : uint8
 {
 	Idle		UMETA(DisplayNAme = "Idle"),
-	Chase		UMETA(DisplayNAme = "Chase"),
+	Fight		UMETA(DisplayNAme = "Fight"),
 	Search		UMETA(DisplayNAme = "Search"),
 	LowHealth	UMETA(DisplayName = "Low Health"),
 	UseMed		UMETA(DisplayNAme = "Using Med")

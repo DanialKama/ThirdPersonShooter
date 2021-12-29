@@ -127,7 +127,7 @@ public:
 	
 	// Interfaces
 	virtual void SetCanFire_Implementation(const bool bInCanFire) override;
-	virtual void SetWeaponState_Implementation(const EWeaponState WeaponState) override;
+	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
 	
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")

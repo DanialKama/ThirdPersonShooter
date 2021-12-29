@@ -1208,7 +1208,6 @@ void ABaseCharacter::Death()
 		DismembermentInitiate(HealthComponent->ShotOrigin, HealthComponent->HitBoneName);
 		SetArmedState(false);
 		bIsAlive = false;
-		DeathDispatcher.Broadcast();
 		HealthComponent->DestroyComponent();
 		StaminaComponent->DestroyComponent();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

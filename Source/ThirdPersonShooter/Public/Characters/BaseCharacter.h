@@ -92,8 +92,6 @@ struct FBodyParts
 	USkeletalMesh* HandRight;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathSignature);
-
 UCLASS()
 class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
 {
@@ -170,8 +168,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	uint8 bIsAlive : 1;
 	uint8 bIsAimed : 1;
-	UPROPERTY(BlueprintAssignable, Category = "Defaults")
-	FOnDeathSignature DeathDispatcher;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults")
 	FGameplayTag TeamTag;
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")

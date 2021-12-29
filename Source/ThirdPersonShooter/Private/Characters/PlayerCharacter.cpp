@@ -470,11 +470,6 @@ void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity
 	HUDRef->AddRecoil(CrosshairRecoil, ControlTime);
 }
 
-APlayerCharacter* APlayerCharacter::GetPlayerCharacterReference_Implementation()
-{
-	return this;	
-}
-
 bool APlayerCharacter::IsPlayer_Implementation()
 {
 	return true;	

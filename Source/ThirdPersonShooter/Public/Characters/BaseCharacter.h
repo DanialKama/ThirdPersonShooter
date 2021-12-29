@@ -164,7 +164,6 @@ public:
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
-	virtual ABaseCharacter* GetCharacterReference_Implementation() override;
 	virtual FGameplayTag GetTeamTag_Implementation() override;
 	
 	// Variables

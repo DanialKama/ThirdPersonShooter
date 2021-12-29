@@ -25,9 +25,6 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// With Output
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface", meta = (ToolTip = "Get a reference of base character"))
-	ABaseCharacter* GetCharacterReference();
-	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	EWeaponToDo CanPickupAmmo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType);
 	

@@ -365,10 +365,9 @@ FVector APickupWeapon::GetLeftHandAimLocation() const
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
-// Interfaces
 void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 {
-	switch(PickupState)
+	switch (PickupState)
 	{
 	case 0:
 		// Drop
@@ -390,7 +389,7 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 		IgnoredActorsByTrace.Add(this);
 		IgnoredActorsByTrace.Add(GetOwner());
 		
-		// Determine if owner is player or AI controlled
+		// Determine if owner is player or AI
 		if (Cast<APlayerController>(Owner->GetInstigatorController()))
 		{
 			bOwnerIsAI = false;
@@ -400,7 +399,6 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 			bOwnerIsAI = true;
 		}
 		
-		// Detected if the interfaces is present on owner
 		if (Owner)
 		{
 			bCharacterInterface = false;
@@ -448,7 +446,7 @@ void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState
 		IPlayerControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponentInfo, WeaponState);
 	}
 	
-	switch(WeaponState)
+	switch (WeaponState)
 	{
 	case 0:
 		// Idle
@@ -493,13 +491,6 @@ void APickupWeapon::SetWeaponState_Implementation(const EWeaponState WeaponState
 	}
 }
 
-APickupWeapon* APickupWeapon::GetWeaponReference_Implementation()
-{
-	return this;
-}
-// End Of interfaces
-
-// Overlap functions
 void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -530,9 +521,7 @@ void APickupWeapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 		SkeletalMesh->SetRenderCustomDepth(false);
 	}
 }
-// End of overlap functions
 
-//Delays
 void APickupWeapon::CoolDownDelay()
 {
 	bDoOnceFire = true;

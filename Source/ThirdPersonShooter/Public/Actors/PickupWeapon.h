@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "Interfaces/PickupWeaponInterface.h"
 #include "Interfaces/CommonInterface.h"
 #include "Structs/WeaponInfoStruct.h"
 #include "PickupWeapon.generated.h"
@@ -69,7 +68,7 @@ struct FWeaponDefaults
 };
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface, public IPickupWeaponInterface
+class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInterface
 {
 	GENERATED_BODY()
 
@@ -127,7 +126,6 @@ public:
 	virtual void SetPickupStatus(const EPickupState PickupState) override;
 	
 	// Interfaces
-	virtual APickupWeapon* GetWeaponReference_Implementation() override;
 	virtual void SetCanFire_Implementation(const bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(const EWeaponState WeaponState) override;
 	

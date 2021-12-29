@@ -7,7 +7,6 @@
 #include "Components/StaminaComponent.h"
 #include "Interfaces/CommonInterface.h"
 #include "Interfaces/CharacterAnimationInterface.h"
-#include "Interfaces/PickupWeaponInterface.h"
 #include "Actors/PickupWeapon.h"
 #include "Actors/PickupAmmo.h"
 #include "Components/AmmoComponent.h"
@@ -232,7 +231,7 @@ void ABaseCharacter::Interact_Implementation()
 {
 	if (Pickup)
 	{
-		switch(PickupType)
+		switch (PickupType)
 		{
 		case 0:
 			// Weapon
@@ -251,57 +250,54 @@ void ABaseCharacter::Interact_Implementation()
 
 void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 {
-	if (NewWeapon && NewWeapon->GetClass()->ImplementsInterface(UPickupWeaponInterface::StaticClass()))
+	APickupWeapon* Weapon = Cast<APickupWeapon>(NewWeapon);
+	if (Weapon)
 	{
-		APickupWeapon* Weapon = IPickupWeaponInterface::Execute_GetWeaponReference(NewWeapon);
-		if (Weapon)
+		switch (Weapon->WeaponInfo.WeaponType)
 		{
-			switch(Weapon->WeaponInfo.WeaponType)
+		case 0: case 1:
+			// Pistol and SMG
+			if (SidearmWeapon)
 			{
-			case 0: case 1:
-				// Pistol and SMG
-				if (SidearmWeapon)
+				DropWeapon(EWeaponToDo::SidearmWeapon);
+			}
+			AddWeapon(Weapon, EWeaponToDo::SidearmWeapon);
+			break;
+		case 2: case 3: case 4: case 5: case 6:
+			// Rifle, LMG, Shotgun, Sniper, and Launcher
+			if (PrimaryWeapon)
+			{
+				if (SecondaryWeapon)
 				{
-					DropWeapon(EWeaponToDo::SidearmWeapon);
-				}
-				AddWeapon(Weapon, EWeaponToDo::SidearmWeapon);
-				break;
-			case 2: case 3: case 4: case 5: case 6:
-				// Rifle, LMG, Shotgun, Sniper, and Launcher
-				if (PrimaryWeapon)
-				{
-					if (SecondaryWeapon)
+					switch (CurrentHoldingWeapon)
 					{
-						switch (CurrentHoldingWeapon)
-						{
-						case 0: case 1:
-							// No Weapon and Primary Weapon - if character currently holding the primary weapon or no weapon then add the new weapon to the primary slot
-							DropWeapon(EWeaponToDo::PrimaryWeapon);
-							AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
-							break;
-						case 2:
-							// Secondary Weapon - if character currently holding the secondary weapon then add the new weapon to the secondary slot
-							DropWeapon(EWeaponToDo::SecondaryWeapon);
-							AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
-							break;
-						case 3:
-							// Sidearm Weapon - pistol and SMG handles in cases 0 and 1
-							break;
-						}
-					}
-					// If the secondary weapon slot is empty then add it there
-					else
-					{
+					case 0: case 1:
+						// No Weapon and Primary Weapon - if character currently holding the primary weapon or no weapon then add the new weapon to the primary slot
+						DropWeapon(EWeaponToDo::PrimaryWeapon);
+						AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
+						break;
+					case 2:
+						// Secondary Weapon - if character currently holding the secondary weapon then add the new weapon to the secondary slot
+						DropWeapon(EWeaponToDo::SecondaryWeapon);
 						AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
+						break;
+					case 3:
+						// Sidearm Weapon - pistol and SMG handles in cases 0 and 1
+						break;
 					}
 				}
-				// If the primary weapon slot is empty then add it there
+				// If the secondary weapon slot is empty then add it there
 				else
 				{
-					AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
+					AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
 				}
-				break;
 			}
+			// If the primary weapon slot is empty then add it there
+			else
+			{
+				AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
+			}
+			break;
 		}
 	}
 }
@@ -477,32 +473,29 @@ void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponTo
 
 void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 {
-	if (NewAmmo)
+	APickupAmmo* Ammo = Cast<APickupAmmo>(NewAmmo);
+	if (Ammo)
 	{
-		APickupAmmo* Ammo = IPickupAmmoInterface::Execute_GetPickupAmmoReference(NewAmmo);
-		if (Ammo)
+		switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
 		{
-			switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
-			{
-			case 0:
-				// No Weapon = no ammo
-				break;
-			case 1:
-				// Primary Weapon
-				PrimaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
-				break;
-			case 2:
-				// Secondary Weapon
-				SecondaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
-				break;
-			case 3:
-				// Sidearm Weapon
-				SidearmWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
-				break;
-			}
-
-			Ammo->SetPickupStatus(EPickupState::Remove);
+		case 0:
+			// No Weapon = no ammo
+			break;
+		case 1:
+			// Primary Weapon
+			PrimaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			break;
+		case 2:
+			// Secondary Weapon
+			SecondaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			break;
+		case 3:
+			// Sidearm Weapon
+			SidearmWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			break;
 		}
+
+		Ammo->SetPickupStatus(EPickupState::Remove);
 	}
 }
 
@@ -1751,11 +1744,6 @@ void ABaseCharacter::ResetAim()
 void ABaseCharacter::SwitchIsEnded()
 {
 	bCanReload = true;
-}
-
-ABaseCharacter* ABaseCharacter::GetCharacterReference_Implementation()
-{
-	return this;
 }
 
 FGameplayTag ABaseCharacter::GetTeamTag_Implementation()

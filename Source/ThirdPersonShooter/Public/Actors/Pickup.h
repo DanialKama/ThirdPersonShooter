@@ -5,11 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Enums/PickupEnums.h"
-#include "Interfaces/PickupInterface.h"
 #include "Pickup.generated.h"
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickup : public AActor, public IPickupInterface
+class THIRDPERSONSHOOTER_API APickup : public AActor
 {
 	GENERATED_BODY()
 	
@@ -19,9 +18,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
 	virtual void SetPickupStatus(EPickupState PickupState);
-
-	// Interfaces
-	virtual APickup* GetPickupReference_Implementation() override;
 
 protected:
 	// Called when the game starts or when spawned

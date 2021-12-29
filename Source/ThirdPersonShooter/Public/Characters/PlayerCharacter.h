@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
-#include "Interfaces/PlayerCharacterInterface.h"
 #include "PlayerCharacter.generated.h"
 
 class AShooterPlayerController;
@@ -14,7 +13,7 @@ class USpringArmComponent;
 class UCurveFloat;
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter, public IPlayerCharacterInterface
+class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -42,7 +41,6 @@ public:
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
-	virtual APlayerCharacter* GetPlayerCharacterReference_Implementation() override;
 	virtual bool IsPlayer_Implementation() override;
 
 protected:

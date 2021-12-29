@@ -15,13 +15,6 @@ void APickup::BeginPlay()
 	Super::BeginPlay();
 }
 
-// Interfaces
-APickup* APickup::GetPickupReference_Implementation()
-{
-	return this;
-}
-
-/** Override in child classes */
 void APickup::SetPickupStatus(EPickupState PickupState)
 {
 }

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Pickup.h"
-#include "Interfaces/PickupAmmoInterface.h"
 #include "PickupAmmo.generated.h"
 
 class USoundCue;
@@ -12,7 +11,7 @@ class USphereComponent;
 class UWidgetComponent;
 
 UCLASS()
-class THIRDPERSONSHOOTER_API APickupAmmo : public APickup, public IPickupAmmoInterface
+class THIRDPERSONSHOOTER_API APickupAmmo : public APickup
 {
 	GENERATED_BODY()
 
@@ -32,9 +31,6 @@ public:
 
 	// Functions
 	virtual void SetPickupStatus(EPickupState PickupState) override;
-
-	// Interfaces
-	virtual APickupAmmo* GetPickupAmmoReference_Implementation() override;
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))

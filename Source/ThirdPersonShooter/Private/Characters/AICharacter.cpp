@@ -151,6 +151,7 @@ void AAICharacter::SwitchIsEnded()
 	}
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 }
 
 void AAICharacter::TryToResetMovement() const

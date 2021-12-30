@@ -54,6 +54,7 @@ AShooterAIController::AShooterAIController()
 	AISense_Prediction->SetMaxAge(0.2f);
 
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
+	OnFindEnemy.AddDynamic(this, &AShooterAIController::HandleTeam);
 }
 
 void AShooterAIController::BeginPlay()
@@ -110,19 +111,19 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						{
 						case 0:
 							// Sight Sense
-							SightHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							break;
 						case 1:
 							// Damage Sense
-							DamageHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							HandleDamage(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							break;
 						case 2:
 							// Hearing Sense
-							HearingHandler(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							HandleHearing(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							break;
 						case 3:
 							// Prediction Sense
-							PredictionHandler(ActorPerceptionInfo.LastSensedStimuli[j]);
+							HandlePrediction(ActorPerceptionInfo.LastSensedStimuli[j]);
 							break;
 						default:
 							UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
@@ -134,10 +135,22 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 	}
 }
 
-void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
+		// Notify the rest of the team
+		if (OnFindEnemy.IsBound())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Bound"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UNBOUND!!!"));
+		}
+
+		OnFindEnemy.Broadcast(UpdatedActor, ControlledPawn->TeamTag);
+
 		// If not focused or the updated actor is focused actor (attacker) start fighting
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
 		{
@@ -146,7 +159,6 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
 			BlackboardComp->SetValueAsObject(FName("TargetActor"), UpdatedActor);
 			Attacker = UpdatedActor;
-			OnFindEnemy.Broadcast();
 			AIState = EAIState::Fight;
 			Fight();
 		}
@@ -168,7 +180,7 @@ void AShooterAIController::SightHandler(AActor* UpdatedActor, FAIStimulus Stimul
 	}
 }
 
-void AShooterAIController::DamageHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
 	// Start searching and if the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
 	if (Stimulus.WasSuccessfullySensed() && GetFocusActor() != UpdatedActor)
@@ -188,7 +200,7 @@ void AShooterAIController::DamageHandler(AActor* UpdatedActor, FAIStimulus Stimu
 	}
 }
 
-void AShooterAIController::HearingHandler(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed() && !Attacker)
 	{
@@ -265,11 +277,23 @@ void AShooterAIController::HearingHandler(AActor* UpdatedActor, FAIStimulus Stim
 	}
 }
 
-void AShooterAIController::PredictionHandler(FAIStimulus Stimulus)
+void AShooterAIController::HandlePrediction(FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation); // TODO
+	}
+}
+
+void AShooterAIController::HandleTeam(AActor* Enemy, FGameplayTag TeamTag)
+{
+	UE_LOG(LogTemp, Warning, TEXT(__FUNCTION__));
+	// If currently not in a fight and the report is from a teammate then investigate
+	if (!Attacker && TeamTag == ControlledPawn->TeamTag)
+	{
+		AIState = EAIState::Search;
+		BlackboardComp->SetValueAsObject(FName("TargetActor"), Enemy);
+		BlackboardComp->SetValueAsBool(FName("Search"), true);
 	}
 }
 

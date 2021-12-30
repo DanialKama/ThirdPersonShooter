@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "GameplayTagContainer.h"
 #include "Enums/PickupEnums.h"
 #include "Enums/CharacterEnums.h"
 #include "EnvironmentQuery/EnvQuery.h"
@@ -20,7 +21,7 @@ class UAISenseConfig_Prediction;
 class AAICharacter;
 class APatrolPathActor;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFindEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFindEnemyDispatcher, AActor*, Enemy, FGameplayTag, TeamTag);
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public IAIControllerInterface
@@ -63,10 +64,12 @@ private:
 	virtual void OnPossess(APawn* InPawn) override;
 	UFUNCTION()
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-	void SightHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void DamageHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HearingHandler(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void PredictionHandler(FAIStimulus Stimulus);
+	void HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus);
+	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
+	void HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus);
+	void HandlePrediction(FAIStimulus Stimulus);
+	UFUNCTION()
+	void HandleTeam(AActor* Enemy, FGameplayTag TeamTag);
 	/** Gunfight */
 	void Fight();
 	void SwitchWeapon();
@@ -98,6 +101,6 @@ private:
 	UPROPERTY()
 	AActor* Attacker;
 	EAIState AIState;
-	FOnFindEnemy OnFindEnemy;
+	FOnFindEnemyDispatcher OnFindEnemy;
 	FTimerHandle BackToRoutineTimer;
 };

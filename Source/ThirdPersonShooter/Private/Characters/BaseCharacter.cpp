@@ -564,6 +564,7 @@ void ABaseCharacter::ReloadWeapon()
 {
 	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->AmmoComponent->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
 	{
+		bDoOnceReload = false;
 		UAnimMontage* MontageToPlay = nullptr;
 		const int32 Index = static_cast<int32>(WeaponType);
 		switch (MovementState)

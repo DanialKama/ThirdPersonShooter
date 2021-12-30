@@ -128,7 +128,7 @@ void APickupWeapon::FireWeapon()
 {
 	AmmoComponent->ReduceAmmo();
 	WeaponFireEffect();
-	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, TEXT("Weapon"));
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetOwner(), 0.0f, FName("Weapon"));
 	SpawnProjectile();
 
 	// Add recoil to character animation and player UI crosshair
@@ -428,7 +428,7 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 	}
 }
 
-void APickupWeapon::SetCanFire_Implementation(const bool bInCanFire)
+void APickupWeapon::SetCanFire_Implementation(bool bInCanFire)
 {
 	bCanFire = bInCanFire;
 }

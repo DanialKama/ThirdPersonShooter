@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "GameplayTagContainer.h"
 #include "Enums/PickupEnums.h"
 #include "Enums/CharacterEnums.h"
 #include "EnvironmentQuery/EnvQuery.h"
@@ -20,8 +19,6 @@ class UAISenseConfig_Hearing;
 class UAISenseConfig_Prediction;
 class AAICharacter;
 class APatrolPathActor;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFindEnemyDispatcher, AActor*, Enemy, FGameplayTag, TeamTag);
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public IAIControllerInterface
@@ -67,10 +64,9 @@ private:
 	void HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HandlePrediction(FAIStimulus Stimulus);
-	UFUNCTION()
-	void HandleTeam(AActor* Enemy, FGameplayTag TeamTag);
-	/** Gunfight */
+	void HandlePrediction(FAIStimulus Stimulus) const;
+	void HandleTeam(AActor* UpdatedActor);
+	/** Start or resume gunfight */
 	void Fight();
 	void SwitchWeapon();
 	/** A quick way for AIC to check if the character is holding any weapon and if not try to switch to the next available weapon. */
@@ -101,6 +97,5 @@ private:
 	UPROPERTY()
 	AActor* Attacker;
 	EAIState AIState;
-	FOnFindEnemyDispatcher OnFindEnemy;
 	FTimerHandle BackToRoutineTimer;
 };

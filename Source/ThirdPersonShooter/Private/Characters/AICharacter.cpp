@@ -28,6 +28,7 @@ AAICharacter::AAICharacter()
 	Widget->SetCollisionResponseToAllChannels(ECR_Ignore);
 	Widget->SetVisibility(false);
 
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 

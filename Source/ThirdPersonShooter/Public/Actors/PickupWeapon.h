@@ -126,7 +126,7 @@ public:
 	virtual void SetPickupStatus(const EPickupState PickupState) override;
 	
 	// Interfaces
-	virtual void SetCanFire_Implementation(const bool bInCanFire) override;
+	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
 	
 	// Variables

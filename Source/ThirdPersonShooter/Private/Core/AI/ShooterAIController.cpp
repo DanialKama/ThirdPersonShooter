@@ -128,7 +128,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 							{
 								HandleTeam(UpdatedActor);
 							}
-							else if (ControlledPawn->TeamTag != ActorTag)
+							else if (ControlledPawn->TeamTag != ActorTag || !GetFocusActor())
 							{
 								HandleHearing(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							}
@@ -136,7 +136,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						break;
 					case 3:
 						// Prediction Sense
-						if (ActorTag != ControlledPawn->TeamTag)
+						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ActorTag != ControlledPawn->TeamTag)
 						{
 							HandlePrediction(ActorPerceptionInfo.LastSensedStimuli[j]);
 						}
@@ -156,6 +156,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	{
 		// Notify the rest of the team (asking for help)
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help")); // TODO - Improve it
+		UE_LOG(LogTemp, Warning, TEXT("HELP"));
 
 		// Start fighting if not focused or the updated actor is the focused actor (attacker)
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
@@ -173,9 +174,9 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	}
 	else if (GetFocusActor() == UpdatedActor)
 	{
+		AIState = EAIState::Search;
 		ClearFocus(EAIFocusPriority::Gameplay);
 		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
-		BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
 		BlackboardComp->SetValueAsBool(FName("Search"), true);
 		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
@@ -184,9 +185,12 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		{
 			ControlledPawn->UseWeapon(false, false);
 		}
-		
-		AIState = EAIState::Search;
-		UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
+
+		// Only predict if AI is not taking cover
+		if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
+		{
+			UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
+		}
 	}
 }
 
@@ -217,10 +221,9 @@ void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimu
 	SetFocus(UpdatedActor);
 	FEnvQueryRequest HidingSpotQueryRequest = FEnvQueryRequest(CanReachTarget, this);
 	HidingSpotQueryRequest.Execute(EEnvQueryRunMode::SingleResult, this, &AShooterAIController::HandleQueryResult);
-		
+	
 	if (bHasPath)
 	{
-		UE_LOG(LogTemp, Warning, TEXT(__FUNCTION__));
 		AIState = EAIState::Search;
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		BlackboardComp->SetValueAsBool(FName("Urgent"), false);
@@ -283,6 +286,9 @@ void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimu
 	else if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
 	{
 		AIState = EAIState::Idle;
+		BlackboardComp->SetValueAsBool(FName("Search"), false);
+		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
+		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
 		BlackboardComp->SetValueAsBool(FName("TakeCover"), true);
 		BlackboardComp->SetValueAsFloat(FName("WaitTime"), 5.0f);
 		GetWorld()->GetTimerManager().SetTimer(BackToRoutineTimer, this, &AShooterAIController::BackToRoutine, 5.0f);
@@ -291,19 +297,16 @@ void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimu
 
 void AShooterAIController::HandlePrediction(FAIStimulus Stimulus) const
 {
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
-	}
+	BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 }
 
-void AShooterAIController::HandleTeam(AActor* UpdatedActor)
+void AShooterAIController::HandleTeam(const AActor* UpdatedActor)
 {
 	AAIController* AIC = Cast<AAIController>(UpdatedActor->GetInstigatorController());
-	if (AIC)
+	if (AIC && AIC->GetFocusActor())
 	{
 		BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
-		BlackboardComp->SetValueAsVector(FName("TargetLocation"), UpdatedActor->GetActorLocation());
+		BlackboardComp->SetValueAsVector(FName("TargetLocation"), AIC->GetFocusActor()->GetActorLocation());
 		BlackboardComp->SetValueAsBool(FName("Urgent"), true);
 		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
@@ -328,7 +331,7 @@ void AShooterAIController::BackToRoutine()
 			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
 		}
 
-		// If patrol path is valid then start patrolling
+		// Start patrolling if patrol path is valid	
 		if (PatrolPath)
 		{
 			BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);

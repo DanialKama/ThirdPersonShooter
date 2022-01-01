@@ -65,7 +65,7 @@ private:
 	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandlePrediction(FAIStimulus Stimulus) const;
-	void HandleTeam(AActor* UpdatedActor);
+	void HandleTeam(const AActor* UpdatedActor);
 	/** Start or resume gunfight */
 	void Fight();
 	void SwitchWeapon();

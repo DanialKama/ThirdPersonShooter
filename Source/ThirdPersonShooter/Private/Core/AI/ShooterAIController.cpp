@@ -155,7 +155,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		// Notify the rest of the team (asking for help)
-		// UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help")); TODO - Improve it
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help")); // TODO - Improve it
 
 		// Start fighting if not focused or the updated actor is the focused actor (attacker)
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)

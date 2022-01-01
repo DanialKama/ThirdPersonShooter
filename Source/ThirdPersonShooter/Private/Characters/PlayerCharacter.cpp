@@ -49,8 +49,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
 		InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
 		InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
-		InputComponent->BindAction("Fire", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
-		InputComponent->BindAction("Fire", IE_Released, this, &ABaseCharacter::StopFireWeapon);
+		InputComponent->BindAction("Shoot", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
+		InputComponent->BindAction("Shoot", IE_Released, this, &ABaseCharacter::StopFireWeapon);
 		InputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
 		InputComponent->BindAction("SwitchToPrimary", IE_Pressed, this, &ABaseCharacter::SwitchToPrimary);
 		InputComponent->BindAction("SwitchToSecondary", IE_Pressed, this, &ABaseCharacter::SwitchToSecondary);

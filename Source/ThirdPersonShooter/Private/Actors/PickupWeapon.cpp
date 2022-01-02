@@ -223,8 +223,7 @@ void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotat
 	bHit ? OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.ImpactPoint) : OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.TraceEnd);
 }
 
-// Calculate line trace start and end points
-void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
+void APickupWeapon::CalculateLineTrace(FVector& Start, FVector& End)
 {
 	FVector TraceStart;
 	FVector UpVector;
@@ -238,15 +237,21 @@ void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 		UpVector = UKismetMathLibrary::GetUpVector(SocketRotation);
 		RightVector = UKismetMathLibrary::GetRightVector(SocketRotation);
 		const FRotator Points = RandomPointInCircle(FMath::FRandRange(WeaponInfo.MinFireOffset, WeaponInfo.MaxFireOffset) * WeaponInfo.WeaponSpreadCurve->GetFloatValue(FMath::FRand()), true);
-		TraceEnd = Points.RotateVector(UKismetMathLibrary::GetForwardVector(SocketRotation));
+		if (AIController->GetFocusActor())
+		{
+			TraceEnd = Points.RotateVector(AIController->GetFocusActor()->GetActorLocation());
+		}
+		else
+		{
+			TraceEnd = Points.RotateVector(UKismetMathLibrary::GetForwardVector(SocketRotation));
+		}
 	}
 	else
 	{
 		TraceStart = CameraComponent->GetComponentLocation();
 		RightVector = CameraComponent->GetRightVector();
 		UpVector = CameraComponent->GetUpVector();
-		const FRotator Points = RandomPointInCircle(WeaponInfo.WeaponSpreadCurve->GetFloatValue(FMath::FRand()), false);
-		TraceEnd = Points.RotateVector(CameraComponent->GetForwardVector());
+		TraceEnd = CameraComponent->GetForwardVector();
 	}
 
 	if (CurrentProjectile)
@@ -254,13 +259,14 @@ void APickupWeapon::CalculateLineTrace(FVector& OutStart, FVector& OutEnd)
 		if (CurrentProjectile->NumberOfPellets > 1)
 		{
 			const FRotator Points = RandomPointInCircle(FMath::FRandRange(CurrentProjectile->PelletSpread * -1.0f, CurrentProjectile->PelletSpread), true);
-			OutStart = TraceStart;
-			OutEnd = (TraceStart + (TraceEnd * WeaponInfo.Range)) + (RightVector * Points.Roll) + (UpVector * Points.Pitch);
+			Start = TraceStart;
+			const FVector EndPoint = bOwnerIsAI ? TraceEnd : TraceStart + TraceEnd * WeaponInfo.Range;
+			End = EndPoint + RightVector * Points.Roll + UpVector * Points.Pitch;
 		}
 		else
 		{
-			OutStart = TraceStart;
-			OutEnd = TraceStart + (TraceEnd * WeaponInfo.Range);
+			Start = TraceStart;
+			End = bOwnerIsAI ? TraceEnd : TraceStart + TraceEnd * WeaponInfo.Range;
 		}
 	}
 }
@@ -289,12 +295,11 @@ FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncl
 	return Points;
 }
 
-void APickupWeapon::RaiseWeapon() const
+void APickupWeapon::RaiseWeapon()
 {
 	UGameplayStatics::SpawnSoundAttached(WeaponDefaults.RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
-
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
-
+	
 	// Report weapon state to owner on pickup
 	if (bAIControllerInterface)
 	{
@@ -375,7 +380,7 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
 		SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
-		SetLifeSpan(FMath::FRandRange(30.0f, 60.0f));
+		SetLifeSpan(FMath::FRandRange(15.0f, 30.0f));
 		break;
 	case 1:
 		// Pickup
@@ -397,6 +402,7 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 		else
 		{
 			bOwnerIsAI = true;
+			AIController = Cast<AAIController>(Owner->GetInstigatorController());
 		}
 		
 		if (Owner)

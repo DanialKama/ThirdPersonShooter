@@ -1,6 +1,7 @@
 // All Rights Reserved.
 
 #include "Actors/Projectile.h"
+#include "Actors/ProjectileFieldSystemActor.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -68,6 +69,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
 		if (ExplosiveProjectileInfo)
 		{
+			SpawnFieldSystem(ExplosiveProjectileInfo->StrainMagnitude, ExplosiveProjectileInfo->ForceMagnitude, ExplosiveProjectileInfo->TorqueMagnitude);
 			// Apply radial damage with fall off for explosive projectiles
 			const TArray<AActor*> IgnoreActors;
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ExplosiveProjectileInfo->BaseDamage, ExplosiveProjectileInfo->MinimumDamage, Hit.ImpactPoint, ExplosiveProjectileInfo->DamageInnerRadius, ExplosiveProjectileInfo->DamageOuterRadius, 2.0f, DamageType, IgnoreActors, GetOwner(), GetInstigatorController(), ECollisionChannel::ECC_Visibility);
@@ -79,6 +81,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		const FProjectileInfo* ProjectileInfo = ProjectileDataTable->FindRow<FProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
 		if (ProjectileInfo)
 		{
+			SpawnFieldSystem(ProjectileInfo->StrainMagnitude, ProjectileInfo->ForceMagnitude, ProjectileInfo->TorqueMagnitude);
 			// Apply point damage for nonexplosive projectiles based on surface type
 			AppliedDamage = UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
 		}
@@ -87,6 +90,16 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	HitEffect(Hit);
 	UAISense_Damage::ReportDamageEvent(GetWorld(), OtherActor, GetInstigator(), AppliedDamage, Hit.TraceStart, Hit.ImpactPoint);
 	Destroy();
+}
+
+void AProjectile::SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const
+{
+	const FTransform Transform = GetActorTransform();
+	AProjectileFieldSystemActor* FieldSystem = GetWorld()->SpawnActorDeferred<AProjectileFieldSystemActor>(ProjectileImpactFieldSystem, Transform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	FieldSystem->StrainMagnitude = StrainMagnitude;
+	FieldSystem->ForceMagnitude = ForceMagnitude;
+	FieldSystem->TorqueMagnitude = TorqueMagnitude;
+	UGameplayStatics::FinishSpawningActor(FieldSystem, Transform);
 }
 
 void AProjectile::HitEffect(const FHitResult HitResult) const

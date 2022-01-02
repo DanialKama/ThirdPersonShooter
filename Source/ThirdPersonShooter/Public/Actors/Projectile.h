@@ -11,67 +11,53 @@
 
 class USoundCue;
 class UProjectileMovementComponent;
+class AProjectileFieldSystemActor;
 
 USTRUCT(BlueprintType)
 struct FProjectileEffect
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	uint8 bIsExplosive : 1;
 
 	// Particle systems and particle spawn scale
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* FleshHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* WoodHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* MetalHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* StoneHitEmitter;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* DirtHitEmitter;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UParticleSystem* ExplosiveEmitter;
 	
 	// Sound Cues
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	USoundCue* FleshHitSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	USoundCue* ObjectHitSound;
 	
 	// Decals, decal spawn size, and decal life span
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UMaterialInterface* FleshDecal;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	float FleshDecalLifeSpan = 20.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UMaterialInterface* WoodDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UMaterialInterface* MetalDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UMaterialInterface* StoneDecal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	UMaterialInterface* DirtDecal;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|Effects", meta = (AllowPrivateAccess = "true"))
 	float ObjectDecalLifeSpan = 10.0f;
 };
 
@@ -95,38 +81,38 @@ public:
 	UProjectileMovementComponent* ProjectileMovement;
 	
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	int32 NumberOfPellets = 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	float PelletSpread = 0.0f;
 
 private:
 	// Functions
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 	void HitEffect(const FHitResult HitResult) const;
-
 	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
-	
-	void CalculateProjectileHitInfo(UParticleSystem*& Emitter,
-		USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+	void CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+	void SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const;
 
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UDataTable* ProjectileDataTable;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UDataTable* ExplosiveProjectileDataTable;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UDamageType> DamageType;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AProjectileFieldSystemActor> ProjectileImpactFieldSystem;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FProjectileEffect ProjectileEffect;
 
 	int32 SwitchExpression = 0;

@@ -103,7 +103,7 @@ public:
 	void StopFireWeapon();
 	
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void RaiseWeapon() const;
+	void RaiseWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void LowerWeapon() const;
@@ -157,8 +157,8 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
 
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void CalculateLineTrace(FVector& OutStart, FVector& OutEnd);
+	/** Calculate line trace start and end points */
+	void CalculateLineTrace(FVector& Start, FVector& End);
 
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon", meta = (ToolTip = "Use in line trace for bullet spread. Set Includes Negative to false if do not want negative numbers in output (mostly used for player character)"))
 	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
@@ -186,9 +186,10 @@ private:
 
 	FTimerHandle FireWeaponTimer;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	TArray<AActor*> IgnoredActorsByTrace;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	AController* OwnerController;
+	UPROPERTY()
+	AAIController* AIController;
 };

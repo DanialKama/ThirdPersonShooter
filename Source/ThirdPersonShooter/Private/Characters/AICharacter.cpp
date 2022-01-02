@@ -106,6 +106,10 @@ void AAICharacter::ReloadWeapon()
 {
 	// Stop AI movement while reloading to not interrupt reloading montage
 	GetCharacterMovement()->DisableMovement();
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Reload);
+	}
 	Super::ReloadWeapon();
 }
 
@@ -121,35 +125,46 @@ void AAICharacter::SwitchToPrimary()
 {
 	// Stop AI movement while switching to not interrupt montages
 	GetCharacterMovement()->DisableMovement();
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
+	}
 	Super::SwitchToPrimary();
 }
 
 void AAICharacter::SwitchToSecondary()
 {
 	GetCharacterMovement()->DisableMovement();
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
+	}
 	Super::SwitchToSecondary();
 }
 
 void AAICharacter::SwitchToSidearm()
 {
 	GetCharacterMovement()->DisableMovement();
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
+	}
 	Super::SwitchToSidearm();
 }
 
 void AAICharacter::HolsterWeapon()
 {
 	GetCharacterMovement()->DisableMovement();
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
+	}
 	Super::HolsterWeapon();
 }
 
 void AAICharacter::SwitchIsEnded()
 {
 	Super::SwitchIsEnded();
-	// During weapon switch, the current weapon is invalid but switch end calls so try to use the weapon only weapon current weapon is valid
-	if (CurrentWeapon)
-	{
-		AIController->TryToUseWeapon();
-	}
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
 	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
@@ -158,6 +173,10 @@ void AAICharacter::SwitchIsEnded()
 void AAICharacter::TryToResetMovement() const
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	if (bAIControllerInterface)
+	{
+		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Idle);
+	}
 }
 
 float AAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

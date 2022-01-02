@@ -43,7 +43,7 @@ public:
 	UAIPerceptionComponent* AIPerception;
 
 	// Functions
-	void StartPatrol();
+	void StartPatrol() const;
 	void TryToUseWeapon();
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
@@ -69,8 +69,6 @@ private:
 	/** Start or resume gunfight */
 	void Fight();
 	void SwitchWeapon();
-	/** A quick way for AIC to check if the character is holding any weapon and if not try to switch to the next available weapon. */
-	bool CheckWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch);
 	void TryToReload(bool bNoAmmoLeftToReload);
 	/** Return nearest actor as actor object reference and distance to it */
 	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
@@ -82,7 +80,7 @@ private:
 	void Surrender();
 	
 	// Variables
-	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1;
+	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceHelp : 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))

@@ -38,6 +38,8 @@ enum class EAIState : uint8
 	Idle		UMETA(DisplayNAme = "Idle"),
 	Fight		UMETA(DisplayNAme = "Fight"),
 	Search		UMETA(DisplayNAme = "Search"),
+	Reload		UMETA(DisplayNAme = "Reload"),
+	Switch		UMETA(DisplayNAme = "Switch"),
 	LowHealth	UMETA(DisplayName = "Low Health"),
 	UseMed		UMETA(DisplayNAme = "Using Med")
 };

@@ -598,10 +598,10 @@ void ABaseCharacter::ReloadWeapon()
 				Execute_SetWeaponState(CurrentWeapon, EWeaponState::Idle);
 			}
 		}
-	}
-	else
-	{
-		ResetReload();
+		else
+		{
+			bDoOnceReload = true;
+		}
 	}
 }
 

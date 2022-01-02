@@ -54,6 +54,9 @@ AShooterAIController::AShooterAIController()
 	AISense_Prediction->SetMaxAge(0.2f);
 
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
+
+	// Initialize variables
+	bDoOnceHelp = true;
 }
 
 void AShooterAIController::BeginPlay()
@@ -155,8 +158,11 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		// Notify the rest of the team (asking for help)
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help")); // TODO - Improve it
-		UE_LOG(LogTemp, Warning, TEXT("HELP"));
+		if (bDoOnceHelp)
+		{
+			bDoOnceHelp = false;
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help"));
+		}
 
 		// Start fighting if not focused or the updated actor is the focused actor (attacker)
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
@@ -174,6 +180,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	}
 	else if (GetFocusActor() == UpdatedActor)
 	{
+		bDoOnceHelp = true;
 		AIState = EAIState::Search;
 		ClearFocus(EAIFocusPriority::Gameplay);
 		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
@@ -268,8 +275,8 @@ void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimu
 					break;
 				}
 				break;
-			case 3: case 4:
-				// Low Health, Use Med
+			case 3: case 4: case 5: case 6:
+				// Reload, Switch, Low Health, Use Med
 				BlackboardComp->SetValueAsBool(FName("Search"), true);
 				BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
 				break;
@@ -370,9 +377,15 @@ void AShooterAIController::Fight()
 		}
 		break;
 	case 3:
-		// Low Health
+		// Reload
 		break;
 	case 4:
+		// Switch
+		break;
+	case 5:
+		// Low Health
+		break;
+	case 6:
 		// Use Med
 		break;
 	}
@@ -410,20 +423,9 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	{
 	case 0:
 		// Idle
-		if (AmmoComponentInfo.bNoAmmoLeftToReload)
+		if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == 0)
 		{
-			if (ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > 0)
-			{
-				ControlledPawn->UseWeapon(true, true);
-			}
-			else
-			{
-				SwitchWeapon();
-			}
-		}
-		else if (AmmoComponentInfo.CurrentMagazineAmmo < 0)
-		{
-			ControlledPawn->ReloadWeapon();
+			SwitchWeapon();
 		}
 		break;
 	case 1:
@@ -431,14 +433,17 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		break;
 	case 2:
 		// Better To Reload, If there is no threat then reload the weapon
-		if (!Attacker && !BlackboardComp->GetValueAsObject(FName("TargetActor")))
+		if (!Attacker && !BlackboardComp->GetValueAsObject(FName("TargetActor")) && AIState != EAIState::Reload && AIState != EAIState::Switch)
 		{
 			TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
 		}
 		break;
 	case 3:
-		// Need To 
-		TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
+		// Need To Reload
+		if (AIState != EAIState::Reload && AIState != EAIState::Switch)
+		{
+			TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
+		}
 		break;
 	case 4:
 		// Reloading
@@ -454,7 +459,10 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		break;
 	case 8:
 		// Empty
-		SwitchWeapon();
+		if (AIState != EAIState::Switch)
+		{
+			SwitchWeapon();
+		}
 		break;
 	case 9:
 		// Overheat
@@ -540,85 +548,6 @@ void AShooterAIController::SwitchWeapon()
 	}
 }
 
-bool AShooterAIController::CheckWeapon(bool SwitchToAvailable, EWeaponToDo WeaponToSwitch)
-{
-	if (WeaponToSwitch != ControlledPawn->CurrentHoldingWeapon)
-	{
-		switch (WeaponToSwitch)
-		{
-		case 0:
-			// No Weapon
-			ControlledPawn->HolsterWeapon();
-			return true;
-		case 1:
-			// Primary Weapon
-			if (ControlledPawn->PrimaryWeapon)
-			{
-				ControlledPawn->SwitchToPrimary();
-				return true;
-			}
-			if (SwitchToAvailable)
-			{
-				if (ControlledPawn->SecondaryWeapon)
-				{
-					ControlledPawn->SwitchToSecondary();
-					return true;
-				}
-				if (ControlledPawn->SidearmWeapon)
-				{
-					ControlledPawn->SwitchToSidearm();
-					return true;
-				}
-			}
-			return false;
-		case 2:
-			// Secondary Weapon
-			if (ControlledPawn->SecondaryWeapon)
-			{
-				ControlledPawn->SwitchToSecondary();
-				return true;
-			}
-			if (SwitchToAvailable)
-			{
-				if (ControlledPawn->PrimaryWeapon)
-				{
-					ControlledPawn->SwitchToPrimary();
-					return true;
-				}
-				if (ControlledPawn->SidearmWeapon)
-				{
-					ControlledPawn->SwitchToSidearm();
-					return true;
-				}
-			}
-			return false;
-		case 3:
-			// Sidearm Weapon
-			if (ControlledPawn->SidearmWeapon)
-			{
-				ControlledPawn->SwitchToSidearm();
-				return true;
-			}
-			if (SwitchToAvailable)
-			{
-				if (ControlledPawn->PrimaryWeapon)
-				{
-					ControlledPawn->SwitchToPrimary();
-					return true;
-				}
-				if (ControlledPawn->SecondaryWeapon)
-				{
-					ControlledPawn->SwitchToSecondary();
-					return true;
-				}
-			}
-			return false;
-		}
-		return false;
-	}
-	return true;
-}
-
 void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
 {
 	if (bNoAmmoLeftToReload)
@@ -638,20 +567,26 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 	{
 	case 0: case 1: case 2:
 		// Idle, Fight, Search
-		CheckWeapon(true, EWeaponToDo::PrimaryWeapon);
+		Fight();
 		break;
 	case 3:
+		// Reload
+		break;
+	case 4:
+		// Switch
+		break;
+	case 5:
 		// Low Health
 		ClearFocus(EAIFocusPriority::Gameplay);
 		ControlledPawn->UseWeapon(false, false);
 		break;
-	case 4:
+	case 6:
 		// Use Med
 		break;
 	}
 }
 
-void AShooterAIController::StartPatrol()
+void AShooterAIController::StartPatrol() const
 {
 	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
@@ -693,7 +628,7 @@ void AShooterAIController::Surrender()
 	ControlledPawn->DropCurrentObject();
 	bIsDisarm = true;
 	BlackboardComp->SetValueAsBool(FName("IsDisarm"), true);
-	BlackboardComp->SetValueAsFloat(FName("WaitTime"), 60.0f); // TODO - improve it with head following the nearest enemy
+	BlackboardComp->SetValueAsFloat(FName("WaitTime"), 60.0f);
 	ClearFocus(EAIFocusPriority::Gameplay);
 	ControlledPawn->GetCharacterMovement()->DisableMovement();
 	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);

@@ -10,15 +10,17 @@ AEmptyShell::AEmptyShell()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+	InitialLifeSpan = 3.0f;
 
 	// Create components
-	StaticMesh			= CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Empty Shell"));
-	ProjectileMovement	= CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Empty Shell"));
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 
 	// Setup components attachment
 	SetRootComponent(StaticMesh);
 
 	// Set component defaults
+	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->SetCollisionObjectType(ECC_GameTraceChannel2);

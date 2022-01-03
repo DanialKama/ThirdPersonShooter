@@ -34,20 +34,8 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ControlRig",
-			"Enabled": true
-		},
-		{
-			"Name": "ChaosVehiclesPlugin",
-			"Enabled": true
-		},
-		{
 			"Name": "Volumetrics",
 			"Enabled": true
-		},
-		{
-			"Name": "RiderLink",
-			"Enabled": false
 		}
 	],
 	"TargetPlatforms": [

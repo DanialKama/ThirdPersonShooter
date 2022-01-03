@@ -607,6 +607,7 @@ void ABaseCharacter::ReloadWeapon()
 
 void ABaseCharacter::ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
 {
+	bCanReload = true;
 	if (bInterrupted)
 	{
 		if (CurrentWeapon)
@@ -640,6 +641,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 		{
 		case 0:
 			// Start Reload
+			bCanReload = false;
 			break;
 		case 1:
 			// Remove Mag
@@ -659,6 +661,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			break;
 		case 4:
 			// Insert Mag
+			bCanReload = true;
 			Magazine->Destroy();
 			CurrentWeapon->SetMagazineVisibility(true);
 			break;

@@ -1,7 +1,6 @@
 // All Rights Reserved.
 
 #include "Core/ShooterPlayerController.h"
-
 #include "Components/SlateWrapperTypes.h"
 #include "UI/ShooterHUD.h"
 

@@ -50,10 +50,6 @@ void AAICharacter::PossessedBy(AController* NewController)
 	if (AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{
 		bAIControllerInterface = true;
-		if (PatrolPath)
-		{
-			AIController->StartPatrol();
-		}
 
 		AIBlackboard = AIController->GetBlackboardComponent();
 		const float Health = HealthComponent->DefaultHealth / HealthComponent->MaxHealth;

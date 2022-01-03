@@ -43,7 +43,6 @@ public:
 	UAIPerceptionComponent* AIPerception;
 
 	// Functions
-	void StartPatrol() const;
 	void TryToUseWeapon();
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
@@ -71,10 +70,11 @@ private:
 	void SwitchWeapon();
 	void TryToReload(bool bNoAmmoLeftToReload);
 	/** Return nearest actor as actor object reference and distance to it */
-	float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
+	static float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
 	/** Return to normal behavior */
 	UFUNCTION()
 	void BackToRoutine();
+	void StartPatrolling();
 	void HandleQueryResult(TSharedPtr<FEnvQueryResult> Result);
 	UFUNCTION()
 	void Surrender();

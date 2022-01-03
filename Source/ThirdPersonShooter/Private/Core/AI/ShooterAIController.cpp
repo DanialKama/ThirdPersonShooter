@@ -71,7 +71,7 @@ void AShooterAIController::BeginPlay()
 void AShooterAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	
+
 	ControlledPawn = Cast<AAICharacter>(InPawn);
 	if (ControlledPawn)
 	{
@@ -82,9 +82,9 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 			// If patrol path is valid then start patrolling
 			if (PatrolPath)
 			{
-				BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
-				BlackboardComp->SetValueAsBool(FName("Direction"), true);
-				BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
+				FTimerDelegate TimerDelegate;
+				TimerDelegate.BindUObject(this, &AShooterAIController::StartPatrolling);
+				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 			}
 		}
 	}
@@ -341,9 +341,7 @@ void AShooterAIController::BackToRoutine()
 		// Start patrolling if patrol path is valid	
 		if (PatrolPath)
 		{
-			BlackboardComp->SetValueAsBool(FName("PathLooping"), PatrolPath->bIsLooping);
-			BlackboardComp->SetValueAsBool(FName("Direction"), true);
-			BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
+			StartPatrolling();
 		}
 		else
 		{
@@ -351,6 +349,14 @@ void AShooterAIController::BackToRoutine()
 			BlackboardComp->SetValueAsBool(FName("Search"), false);
 		}
 	}
+}
+
+void AShooterAIController::StartPatrolling()
+{
+	BlackboardComp->SetValueAsBool(FName("LoopPath"), PatrolPath->bIsLooping);
+	BlackboardComp->SetValueAsBool(FName("Direction"), true);
+	BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
+	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
 void AShooterAIController::HandleQueryResult(TSharedPtr<FEnvQueryResult> Result)
@@ -584,11 +590,6 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 		// Use Med
 		break;
 	}
-}
-
-void AShooterAIController::StartPatrol() const
-{
-	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
 float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor*& CloserActor)

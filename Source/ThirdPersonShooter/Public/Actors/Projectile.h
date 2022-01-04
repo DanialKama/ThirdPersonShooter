@@ -18,46 +18,44 @@ struct FProjectileEffect
 {
 	GENERATED_BODY()
 	
+	UPROPERTY(EditDefaultsOnly)
 	uint8 bIsExplosive : 1;
-
 	// Particle systems and particle spawn scale
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* FleshHitEmitter;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* WoodHitEmitter;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* MetalHitEmitter;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* StoneHitEmitter;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* DirtHitEmitter;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* ExplosiveEmitter;
-	
 	// Sound Cues
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	USoundCue* FleshHitSound;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	USoundCue* ObjectHitSound;
-	
 	// Decals, decal spawn size, and decal life span
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* FleshDecal;
-
+	UPROPERTY(EditDefaultsOnly)
 	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
-
+	UPROPERTY(EditDefaultsOnly)
 	float FleshDecalLifeSpan = 20.0f;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* WoodDecal;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* MetalDecal;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* StoneDecal;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* DirtDecal;
-
+	UPROPERTY(EditDefaultsOnly)
 	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
-
+	UPROPERTY(EditDefaultsOnly)
 	float ObjectDecalLifeSpan = 10.0f;
 };
 

@@ -186,9 +186,9 @@ float AAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
-	if (bIsAlive &&  Execute_GetTeamTag(DamageCauser->GetOwner()) != TeamTag)
+	if (bIsAlive && DamageCauser->GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 	{
-		if (DamageCauser->GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()) && ICommonInterface::Execute_IsPlayer(DamageCauser->GetOwner()))
+		if (Execute_GetTeamTag(DamageCauser->GetOwner()) != TeamTag && Execute_IsPlayer(DamageCauser->GetOwner()))
 		{
 			Widget->SetVisibility(true);
 			GetWorld()->GetTimerManager().ClearTimer(WidgetTimerHandle);
@@ -276,6 +276,13 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		}
 		break;
 	}
+}
+
+void AAICharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
+{
+	Super::HealingMontageHandler(AnimMontage, bInterrupted);
+	AIController->SetAIState_Implementation(EAIState::LowHealth);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 APatrolPathActor* AAICharacter::GetPatrolPath_Implementation()

@@ -61,7 +61,7 @@ private:
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	void HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus);
+	void HandleHearing(FAIStimulus Stimulus);
 	void HandlePrediction(FAIStimulus Stimulus) const;
 	void HandleTeam(const AActor* UpdatedActor);
 	/** Start or resume gunfight */
@@ -79,7 +79,7 @@ private:
 	void Surrender();
 	
 	// Variables
-	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceHelp : 1;
+	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 	UPROPERTY()

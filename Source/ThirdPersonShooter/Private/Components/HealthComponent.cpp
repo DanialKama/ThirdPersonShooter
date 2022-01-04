@@ -99,22 +99,21 @@ void UHealthComponent::StartHealthRecovery()
 {
 	if (bCanRecoverHealth)
 	{
+		GetWorld()->GetTimerManager().SetTimer(HealthRecoveryTimer, this, &UHealthComponent::RecoverHealth, HealthRecoveryRate, true);
 		if (bCommonInterface)
 		{
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
 		}
-
-		GetWorld()->GetTimerManager().SetTimer(HealthRecoveryTimer, this, &UHealthComponent::RecoverHealth, HealthRecoveryRate, true);
 	}
 }
 
 void UHealthComponent::StopHealthRecovery()
 {
+	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 	if (bCommonInterface)
 	{
 		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStopped);
 	}
-	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 }
 
 void UHealthComponent::RecoverHealth()
@@ -129,7 +128,6 @@ void UHealthComponent::RecoverHealth()
 	if (CurrentHealth >= MaxHealth)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
-
 		if (bCommonInterface)
 		{
 			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Full);
@@ -137,7 +135,7 @@ void UHealthComponent::RecoverHealth()
 	}
 }
 
-void UHealthComponent::Healing(const float HealthDifference)
+void UHealthComponent::Healing(float HealthDifference)
 {
 	CurrentHealth = FMath::Clamp(HealthDifference + CurrentHealth, 0.0f, MaxHealth);
 

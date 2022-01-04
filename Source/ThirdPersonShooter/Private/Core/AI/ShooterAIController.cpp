@@ -57,6 +57,7 @@ AShooterAIController::AShooterAIController()
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
 
 	// Initialize variables
+	bDoOnceFight = true;
 	bDoOnceHelp = true;
 }
 
@@ -115,10 +116,14 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						{
 							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						}
+						else if (ActorPerceptionInfo.LastSensedStimuli[i].WasSuccessfullySensed() && !Attacker && !GetFocusActor() && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
+						{
+							ControlledPawn->UseWeapon(false, false);
+						}
 						break;
 					case 1:
 						// Damage Sense, Only handle damage if it's from a new enemy
-						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ActorTag != ControlledPawn->TeamTag && GetFocusActor() != UpdatedActor)
+						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ControlledPawn->TeamTag != ActorTag && GetFocusActor() != UpdatedActor)
 						{
 							HandleDamage(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						}
@@ -134,7 +139,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 							}
 							else if (ControlledPawn->TeamTag != ActorTag || !GetFocusActor())
 							{
-								HandleHearing(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+								HandleHearing(ActorPerceptionInfo.LastSensedStimuli[j]);
 							}
 						}
 						break;
@@ -170,14 +175,20 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		if (GetFocusActor() == nullptr || GetFocusActor() == UpdatedActor)
 		{
 			SetFocus(UpdatedActor);
-			BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
-			BlackboardComp->SetValueAsBool(FName("Search"), false);
-			BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
-			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
-			BlackboardComp->SetValueAsObject(FName("TargetActor"), UpdatedActor);
 			Attacker = UpdatedActor;
 			AIState = EAIState::Fight;
 			Fight();
+			
+			if (bDoOnceFight)
+			{
+				bDoOnceFight = false;
+				BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
+				BlackboardComp->SetValueAsBool(FName("Search"), false);
+				BlackboardComp->SetValueAsBool(FName("Urgent"), false);
+				BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
+				BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
+				BlackboardComp->SetValueAsObject(FName("TargetActor"), UpdatedActor);
+			}
 		}
 	}
 	else if (GetFocusActor() == UpdatedActor)
@@ -185,11 +196,17 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		bDoOnceHelp = true;
 		AIState = EAIState::Search;
 		ClearFocus(EAIFocusPriority::Gameplay);
-		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
-		BlackboardComp->SetValueAsBool(FName("Search"), true);
-		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
-		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
 		Attacker = nullptr;
+		
+		if (!bDoOnceFight)
+		{
+			bDoOnceFight = true;
+			BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
+			BlackboardComp->SetValueAsBool(FName("Search"), true);
+			BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
+			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
+		}
+	
 		if (WeaponState != EWeaponState::Reloading)
 		{
 			ControlledPawn->UseWeapon(false, false);
@@ -205,33 +222,28 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 
 void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
-	// Start searching and if the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
-	if (GetFocusActor() != UpdatedActor)
-	{
-		AIState = EAIState::Search;
-		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
-		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
-		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
-		
-		AActor* TargetActor;
-		FindNearestOfTwoActor(GetFocusActor(), UpdatedActor, ControlledPawn->GetActorLocation(), TargetActor);
-		if (GetFocusActor() != TargetActor)
-		{
-			BlackboardComp->SetValueAsObject(FName("TargetActor"), TargetActor);
-			SetFocus(UpdatedActor);
-			Attacker = TargetActor;
-		}
-	}
+	// Start searching
+	AIState = EAIState::Search;
+	BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
+	BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
+	BlackboardComp->SetValueAsBool(FName("Urgent"), true);
+	BlackboardComp->SetValueAsBool(FName("Search"), true);
+	BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
+	// If the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
+	AActor* TargetActor;
+	FindNearestOfTwoActor(GetFocusActor(), UpdatedActor, ControlledPawn->GetActorLocation(), TargetActor);
+	GetFocusActor() != TargetActor ? SetFocus(UpdatedActor) : SetFocus(TargetActor);
+	BlackboardComp->SetValueAsObject(FName("TargetActor"), TargetActor);
+	Attacker = TargetActor;
 }
 
-void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 {
 	// Check if the updated actor is reachable
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
 	
 	if (NavPath && NavPath->IsValid() && !NavPath->IsPartial())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("bHasPath true"));
 		AIState = EAIState::Search;
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		BlackboardComp->SetValueAsBool(FName("Urgent"), false);
@@ -270,7 +282,6 @@ void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimu
 	// take cover if enemy is unreachable
 	else if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("bHasPath false"));
 		AIState = EAIState::Idle;
 		BlackboardComp->SetValueAsBool(FName("Search"), false);
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
@@ -369,8 +380,8 @@ void AShooterAIController::TryToUseWeapon()
 	const FAmmoComponentInfo AmmoComponentInfo;
 	switch (WeaponState)
 	{
-	case 0: case 1: case 2: case 5: case 6: case 7:
-		// Idle, Firing, Better To Reload, Cancel Reload, Reloaded, Ammo Added
+	case 0: case 2: case 5: case 6: case 7:
+		// Idle, Better To Reload, Cancel Reload, Reloaded, Ammo Added
 		ControlledPawn->UseWeapon(true, true);
 		break;
 	case 3:
@@ -385,8 +396,8 @@ void AShooterAIController::TryToUseWeapon()
 	case 8:
 		SwitchWeapon();
 		break;
-	case 9:
-		// Overheat
+	 case 1: case 9:
+		// Firing, Overheat
 		break;
 	}
 }
@@ -429,7 +440,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 		}
 		break;
 	case 5: case 6: case 7:
-		// Cancel Reload, Reloaded, Ammo Added
+		// Cancel Reload, Reloaded, Ammo Added - Resume fighting after reload finished
 		Fight();
 		break;
 	case 8:

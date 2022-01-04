@@ -1162,14 +1162,13 @@ void ABaseCharacter::SetStaminaLevel_Implementation(float Stamina, const bool bI
 {
 	if (HealthComponent)
 	{
-		HealthComponent->bCanRecoverHealth = bIsFull;
 		if (bIsFull)
 		{
-			HealthComponent->StartHealthRecovery();
+			HealthComponent->StopHealthRecovery();
 		}
 		else
 		{
-			HealthComponent->StopHealthRecovery();
+			HealthComponent->StartHealthRecovery();
 		}
 	}
 }
@@ -1741,6 +1740,10 @@ void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInter
 }
 
 void ABaseCharacter::ResetAim()
+{
+}
+
+void ABaseCharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
 }
 

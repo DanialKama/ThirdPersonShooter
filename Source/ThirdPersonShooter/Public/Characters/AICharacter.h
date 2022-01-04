@@ -28,7 +28,6 @@ public:
 
 	// Functions
 	/** True to do it, false to stop it (to start fire weapon aim is necessary) */
-	UFUNCTION(BlueprintCallable, Category = "AICharacter")
 	void UseWeapon(bool bAim, bool bFire);
 	virtual void ReloadWeapon() override;
 	virtual void ResetReload() override;
@@ -51,6 +50,7 @@ protected:
 	// Functions
 	virtual void BeginPlay() override;
 	virtual void SwitchIsEnded() override;
+	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const override;
 
 private:
 	// Functions

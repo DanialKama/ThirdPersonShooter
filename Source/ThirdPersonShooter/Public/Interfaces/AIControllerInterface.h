@@ -7,8 +7,6 @@
 #include "Structs/AmmoComponentInfoStruct.h"
 #include "AIControllerInterface.generated.h"
 
-class AShooterAIController;
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
 class UAIControllerInterface : public UInterface

@@ -149,8 +149,12 @@ public:
 	/** Call from anim notify */
 	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
 	/** Call from anim notify and montage delegate*/
+	UFUNCTION()
+	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const;
+	UFUNCTION()
 	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const;
 	/** Call from anim notify, Death function, and montage delegate */
+	UFUNCTION()
 	void DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
 	// Interfaces
@@ -250,13 +254,14 @@ private:
 	/** Use to perform two frame delay to cache the pose */
 	UFUNCTION()
 	void OneFrameDelay();
+	UFUNCTION()
 	void ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
+	UFUNCTION()
 	void HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
 	// Overlaps
 	UFUNCTION()
-	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	// Variables
 	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1, bCanHolster : 1;

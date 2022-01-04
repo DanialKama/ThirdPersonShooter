@@ -106,12 +106,14 @@ void AAICharacter::ReloadWeapon()
 	{
 		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Reload);
 	}
+	
 	Super::ReloadWeapon();
 }
 
 void AAICharacter::ResetReload()
 {
 	Super::ResetReload();
+	
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
 	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
@@ -125,6 +127,7 @@ void AAICharacter::SwitchToPrimary()
 	{
 		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
 	}
+	
 	Super::SwitchToPrimary();
 }
 
@@ -135,6 +138,7 @@ void AAICharacter::SwitchToSecondary()
 	{
 		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
 	}
+	
 	Super::SwitchToSecondary();
 }
 
@@ -145,6 +149,7 @@ void AAICharacter::SwitchToSidearm()
 	{
 		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
 	}
+	
 	Super::SwitchToSidearm();
 }
 
@@ -155,12 +160,14 @@ void AAICharacter::HolsterWeapon()
 	{
 		IAIControllerInterface::Execute_SetAIState(AIController, EAIState::Switch);
 	}
+	
 	Super::HolsterWeapon();
 }
 
 void AAICharacter::SwitchIsEnded()
 {
 	Super::SwitchIsEnded();
+
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AAICharacter::TryToResetMovement);
 	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);

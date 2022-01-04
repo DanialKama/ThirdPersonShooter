@@ -6,7 +6,6 @@
 #include "AIController.h"
 #include "Enums/PickupEnums.h"
 #include "Enums/CharacterEnums.h"
-#include "EnvironmentQuery/EnvQuery.h"
 #include "Interfaces/AIControllerInterface.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
@@ -74,8 +73,8 @@ private:
 	/** Return to normal behavior */
 	UFUNCTION()
 	void BackToRoutine();
-	void StartPatrolling();
-	void HandleQueryResult(TSharedPtr<FEnvQueryResult> Result);
+	void StartPatrolling() const;
+	void AskForHelp() const;
 	UFUNCTION()
 	void Surrender();
 	
@@ -83,8 +82,6 @@ private:
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceHelp : 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
-	UEnvQuery* CanReachTarget;
 	UPROPERTY()
 	UBehaviorTreeComponent* BehaviorTreeComp;
 	UPROPERTY()
@@ -92,8 +89,10 @@ private:
 	UPROPERTY()
 	APatrolPathActor* PatrolPath;
 	EWeaponState WeaponState;
+	/** Attacker is the current enemy that AI is fighting with */
 	UPROPERTY()
 	AActor* Attacker;
 	EAIState AIState;
 	FTimerHandle BackToRoutineTimer;
+	FTimerHandle AskForHelpTimer;
 };

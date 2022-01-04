@@ -1,13 +1,14 @@
 // All Rights Reserved.
 
 #include "Core/AI/ShooterAIController.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Actors/PatrolPathActor.h"
 #include "Actors/PickupWeapon.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
-#include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interfaces/AICharacterInterface.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -161,7 +162,8 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		if (bDoOnceHelp)
 		{
 			bDoOnceHelp = false;
-			UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help"));
+			GetWorld()->GetTimerManager().ClearTimer(AskForHelpTimer);
+			GetWorld()->GetTimerManager().SetTimer(AskForHelpTimer, this, &AShooterAIController::AskForHelp, 0.25f);
 		}
 
 		// Start fighting if not focused or the updated actor is the focused actor (attacker)
@@ -224,74 +226,51 @@ void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimul
 
 void AShooterAIController::HandleHearing(AActor* UpdatedActor, FAIStimulus Stimulus)
 {
-	// Run EQS to check if updated actor is reachable
-	SetFocus(UpdatedActor);
-	FEnvQueryRequest HidingSpotQueryRequest = FEnvQueryRequest(CanReachTarget, this);
-	HidingSpotQueryRequest.Execute(EEnvQueryRunMode::SingleResult, this, &AShooterAIController::HandleQueryResult);
+	// Check if the updated actor is reachable
+	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
 	
-	if (bHasPath)
+	if (NavPath && NavPath->IsValid() && !NavPath->IsPartial())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("bHasPath true"));
 		AIState = EAIState::Search;
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 		BlackboardComp->SetValueAsBool(FName("Urgent"), false);
-		BlackboardComp->SetValueAsBool(FName("SearchForSound"), false);
-
-		if (BlackboardComp->GetValueAsBool(FName("Search")))
+		BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+		BlackboardComp->SetValueAsBool(FName("Search"), true);
+		
+		const FAmmoComponentInfo AmmoComponentInfo;
+		switch (AIState)
 		{
-			const FAmmoComponentInfo AmmoComponentInfo;
-			switch (AIState)
+		case 0: case 1: case 2:
+			// Idle, Fight, Search
+			switch (WeaponState)
 			{
-			case 0: case 1: case 2:
-				// Idle, Fight, Search
-				switch (WeaponState)
-				{
-				case 0: case 1: case 2: case 5: case 6: case 7:
-					// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
-					ControlledPawn->UseWeapon(true, false);
-					BlackboardComp->SetValueAsBool(FName("Search"), true);
-					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
-					break;
-				case 3:
-					// Need To Reload
-					SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
-					BlackboardComp->SetValueAsBool(FName("Search"), true);
-					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
-					break;
-				case 4:
-					// Reloading
-					BlackboardComp->SetValueAsBool(FName("Search"), true);
-					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
-					break;
-				case 8:
-					// Empty
-					SwitchWeapon();
-					BlackboardComp->SetValueAsBool(FName("Search"), true);
-					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
-					break;
-				case 9:
-					// Overheat
-					BlackboardComp->SetValueAsBool(FName("Search"), true);
-					BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
-					break;
-				}
+			case 0: case 1: case 2: case 5: case 6: case 7:
+				// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
+				ControlledPawn->UseWeapon(true, false);
 				break;
-			case 3: case 4: case 5: case 6:
-				// Reload, Switch, Low Health, Use Med
-				BlackboardComp->SetValueAsBool(FName("Search"), true);
-				BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+			case 3:
+				// Need To Reload
+				SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+				break;
+			case 4: case 9:
+				// Reloading, Overheat
+				break;
+			case 8:
+				// Empty
+				SwitchWeapon();
 				break;
 			}
-		}
-		else
-		{
-			SetFocus(UpdatedActor);
-			BlackboardComp->SetValueAsBool(FName("Search"), true);
-			BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
+			break;
+		case 3: case 4: case 5: case 6:
+			// Reload, Switch, Low Health, Use Med
+			break;
 		}
 	}
-	// If enemy is unreachable then take cover
+	// take cover if enemy is unreachable
 	else if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("bHasPath false"));
 		AIState = EAIState::Idle;
 		BlackboardComp->SetValueAsBool(FName("Search"), false);
 		BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), false);
@@ -351,24 +330,12 @@ void AShooterAIController::BackToRoutine()
 	}
 }
 
-void AShooterAIController::StartPatrolling()
+void AShooterAIController::StartPatrolling() const
 {
 	BlackboardComp->SetValueAsBool(FName("LoopPath"), PatrolPath->bIsLooping);
 	BlackboardComp->SetValueAsBool(FName("Direction"), true);
 	BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
 	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
-}
-
-void AShooterAIController::HandleQueryResult(TSharedPtr<FEnvQueryResult> Result)
-{
-	if (Result->IsSuccessful())
-	{
-		bHasPath = true;
-	}
-	else
-	{
-		bHasPath = false;
-	}
 }
 
 void AShooterAIController::Fight()
@@ -408,10 +375,12 @@ void AShooterAIController::TryToUseWeapon()
 		break;
 	case 3:
 		// Need To Reload
+		ControlledPawn->UseWeapon(false, false);
 		SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
 		break;
 	case 4:
 		// Reloading
+		ControlledPawn->UseWeapon(false, false);
 		break;
 	case 8:
 		SwitchWeapon();
@@ -556,6 +525,7 @@ void AShooterAIController::SwitchWeapon()
 
 void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
 {
+	ControlledPawn->UseWeapon(false, false);
 	if (bNoAmmoLeftToReload)
 	{
 		SwitchWeapon();
@@ -622,6 +592,11 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 	
 	CloserActor = nullptr;
 	return 0.0f;
+}
+
+void AShooterAIController::AskForHelp() const
+{
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help"));
 }
 
 void AShooterAIController::Surrender()

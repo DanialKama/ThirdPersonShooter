@@ -7,22 +7,20 @@ You can also access the project launcher and pictures of the project [here](http
 
 ## Concepts covered
 - Pickup system for weapons and ammo
-- AI enemy and friend (based on Gameplay Tags) with damage, hearing, prediction, and sight senses and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigate to important places, search, retreat (on low health), and healing.
-- Health system, including reducing health based on damage type like point damage (rife bullet), radial damage (explosion), or fall damage, and health recovery based on stamina level.
-- Stamina system, including reducing stamina based on movement states like walking, running, sprinting, and stamina recovery.
-- Weapon system, including fire rate (time between shots), cool down time, supporting ammo types (projectile), auto fire support, max ammo, default ammo, mag size, reloading, fire sound, particle, and animation
-- Weapon related activities such ass switch, reload, drop with animations and sound, mag actor, and empty shell ejection
-- Weapon recoil (player camera shake, AI aim offset, and character animation) and bullet spread based on Float Curves
-- Projectile system, including reducing damage, impact particle, sound, and decal based on surface type (like flesh or surfaces), travel speed, trail emitter, and field impact on destructible objects
+- AI enemy and friend (based on Gameplay Tags) with sight, damage, hearing, and prediction senses and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigating to important places, search, retreat (on low health), take cover, and healing.
+- Health component (reducing health based on damage type and health recovery based on stamina level)
+- Stamina component (reducing stamina based on movement states and stamina recovery)
+- Ammo component
+- All weapon-related activities implemented (switch, reload, and drop with animations and sound)
+- Weapon, projectile, magazine, empty shell actors
+- Weapon recoil (player camera shake, AI aim offset, and character animation) and bullet spread
 - Advanced animation setups for every weapon type and every movement state and moving direction (2D blend space and aim offsets)
 - Chaos Destruction and Field Systems (plugin is in beta and not stable)
 - Body dismemberment based on hit bone
 - fall damage with getup animation based on mesh orientation
-- Control Rig for character foot place and Correct hands place on gun based on aiming state with IK
 - AI respawn system
 - Level Manager and Interactable actors (like the automatic door)
 - Improved level Streaming blueprints (load or unload levels based on doors state)
-- Dynamic sun and weather system
 
 The assets included are listed below, and some of them were made by myself.
 - [FPS Weapon Bundle](https://www.unrealengine.com/marketplace/en-US/product/fps-weapon-bundle)

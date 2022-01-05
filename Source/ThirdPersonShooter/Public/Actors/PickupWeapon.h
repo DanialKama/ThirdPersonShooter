@@ -15,7 +15,6 @@ class UCameraComponent;
 class UAmmoComponent;
 class AAIController;
 class IAIControllerInterface;
-class IPlayerControllerInterface;
 class AEmptyShell;
 class AProjectile;
 class AMagazine;
@@ -25,45 +24,43 @@ struct FWeaponDefaults
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	FVector MuzzleFlashScale = FVector::OneVector;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly)
 	FName MagazineBoneName = TEXT("None");
-
-	// Recoil
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more intensity"))
+	
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more intensity"))
 	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = faster control"))
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = faster control"))
 	float ControlTime = 0.25f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Bigger number = more fedback"))
+	
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = more fedback"))
 	float CrosshairRecoil = 5.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true", ToolTip = "Smaller number = more fedback"))
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more fedback"))
 	float ControllerPitch = -0.5f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	
-	// Audio
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	USoundCue* ReloadSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly)
 	USoundCue* RaiseSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly)
 	USoundCue* LowerSound;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AProjectile>> Projectile;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMagazine> Magazine;
 };
 
@@ -73,10 +70,8 @@ class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	APickupWeapon();
 	
-	//Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* SkeletalMesh;
 
@@ -95,101 +90,86 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAmmoComponent* AmmoComponent;
 
-	// Functions
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void StartFireWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void StopFireWeapon();
-	
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void RaiseWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void LowerWeapon() const;
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void SetMagazineVisibility(bool bVisible) const;
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void ReloadWeapon() const;
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	bool CanPickupAmmo() const;
-
+	/** Location use to adjust character left hand with IK in animation blueprint */
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	FVector GetLeftHandLocation() const;
-
+	
+	/**	Location use to adjust character left hand with IK in animation blueprint */
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
 	FVector GetLeftHandAimLocation() const;
 	
+	void StartFireWeapon();
+	void StopFireWeapon();
+	void RaiseWeapon();
+	void LowerWeapon() const;
+	void SetMagazineVisibility(bool bVisible) const;
+	void ReloadWeapon() const;
+	bool CanPickupAmmo() const;
 	virtual void SetPickupStatus(const EPickupState PickupState) override;
-	
-	// Interfaces
 	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
 	
-	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	FWeaponDefaults WeaponDefaults;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Defaults", meta = (ToolTip = "use in line trace for player"))
+	/** use for line trace if the owner is player */
+	UPROPERTY()
 	UCameraComponent* CameraComponent;
 	
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
-	// Functions
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	UFUNCTION()
 	void FireWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void WeaponFireEffect() const;
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void SpawnProjectile();
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
-	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
-
-	/** Calculate line trace start and end points */
-	void CalculateLineTrace(FVector& Start, FVector& End);
-
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon", meta = (ToolTip = "Use in line trace for bullet spread. Set Includes Negative to false if do not want negative numbers in output (mostly used for player character)"))
-	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
 	
+	/** Play weapon fire sound and muzzle emitter by activating them and playing weapon fire animation */
+	void WeaponFireEffect() const;
+	
+	void SpawnProjectile();
+	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
+	
+	/** Calculate line trace start and end */
+	void CalculateLineTrace(FVector& Start, FVector& End) const;
+	
+	/** Use in line trace for bullet spread
+	 *	@param Radius Circle radius
+	 *	@param bIncludesNegative Set Includes Negative to false if do not want negative numbers in output (mostly used for player character
+	 */
+	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
+
+	UFUNCTION()
 	void CoolDownDelay();
+	
+	UFUNCTION()
 	void ResetAnimationDelay() const;
 	
-	// Overlaps
 	UFUNCTION()
-	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	UFUNCTION()
-	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	// Variables
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	uint8 bDrawDebugLineTrace : 1;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+
+	UPROPERTY()
 	AProjectile* CurrentProjectile;
-
-	FTimerHandle FireWeaponTimer;
-
+	
 	UPROPERTY()
 	TArray<AActor*> IgnoredActorsByTrace;
+	
 	UPROPERTY()
 	AController* OwnerController;
+	
 	UPROPERTY()
 	AAIController* AIController;
+
+	FTimerHandle FireWeaponTimer;
 };

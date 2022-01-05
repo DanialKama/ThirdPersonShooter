@@ -11,5 +11,6 @@ EBTNodeResult::Type UBTTaskNode_LoopPath::ExecuteTask(UBehaviorTreeComponent& Ow
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("Direction"), true);
 		return EBTNodeResult::Succeeded;
 	}
+	
 	return EBTNodeResult::Failed;
 }

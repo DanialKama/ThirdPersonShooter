@@ -11,7 +11,6 @@
 #include "ShooterAIController.generated.h"
 
 class UBehaviorTreeComponent;
-class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Damage;
 class UAISenseConfig_Hearing;
@@ -34,65 +33,77 @@ class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public
 	UAISenseConfig_Prediction* AISense_Prediction;
 	
 public:
-	// Sets default values for this character's properties
 	AShooterAIController();
 
-	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAIPerceptionComponent* AIPerception;
 
-	// Functions
 	void TryToUseWeapon();
+	virtual void SetAIState_Implementation(EAIState NewAIState) override;
+	
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
-	virtual void SetAIState_Implementation(EAIState NewAIState) override;
 
-	// Variables
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY()
 	AAICharacter* ControlledPawn;
 	
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	// Functions
 	virtual void OnPossess(APawn* InPawn) override;
+	
 	UFUNCTION()
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
+	
 	void HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
 	void HandleHearing(FAIStimulus Stimulus);
 	void HandlePrediction(FAIStimulus Stimulus) const;
 	void HandleTeam(const AActor* UpdatedActor);
+	
 	/** Start or resume gunfight */
 	void Fight();
+	
 	void SwitchWeapon();
 	void TryToReload(bool bNoAmmoLeftToReload);
+	
 	/** Return nearest actor as actor object reference and distance to it */
 	static float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
+
+	UFUNCTION()
+	void StartPatrolling() const;
+
+	UFUNCTION()
+	void AskForHelp() const;
+	
 	/** Return to normal behavior */
 	UFUNCTION()
 	void BackToRoutine();
-	void StartPatrolling() const;
-	void AskForHelp() const;
+	
 	UFUNCTION()
 	void Surrender();
 	
-	// Variables
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
+	
 	UPROPERTY()
 	UBehaviorTreeComponent* BehaviorTreeComp;
+	
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
+	
 	UPROPERTY()
 	APatrolPathActor* PatrolPath;
+	
 	EWeaponState WeaponState;
+	
 	/** Attacker is the current enemy that AI is fighting with */
 	UPROPERTY()
 	AActor* Attacker;
+	
 	EAIState AIState;
-	FTimerHandle BackToRoutineTimer;
-	FTimerHandle AskForHelpTimer;
+	FTimerHandle BackToRoutineTimer, AskForHelpTimer;
 };

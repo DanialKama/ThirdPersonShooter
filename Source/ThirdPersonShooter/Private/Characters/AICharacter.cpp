@@ -1,7 +1,6 @@
 // All Rights Reserved.
 
 #include "Characters/AICharacter.h"
-#include "AIController.h"
 #include "Actors/PickupWeapon.h"
 #include "Actors/RespawnActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -9,19 +8,18 @@
 #include "Components/WidgetComponent.h"
 #include "Core/AI/ShooterAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/WidgetInterface.h"
 
-// Sets default values
 AAICharacter::AAICharacter()
 {
 	// Create components
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
 
-	// Setup components attachment
+	// Attach components
 	Widget->SetupAttachment(GetRootComponent());
 
 	// Initialize components
+	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -195,6 +193,7 @@ float AAICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			GetWorld()->GetTimerManager().SetTimer(WidgetTimerHandle, this, &AAICharacter::HideWidget, 2.0f);
 		}
 	}
+	
 	return DamageAmount;
 }
 
@@ -251,13 +250,13 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		// Low
 		if (bAIControllerInterface)
 		{
-			// If health is low, report health state to the controller to start taking cover and using meds
+			// If health is low, report it to the controller to start taking cover and using meds
 			IAIControllerInterface::Execute_SetAIState(AIController, EAIState::LowHealth);
 		}
 		break;
 	case 2:
 		// Recovery Started
-			Super::SetHealthState_Implementation(HealthState);
+		Super::SetHealthState_Implementation(HealthState);
 		break;
 	case 3:
 		// Recovery Ended
@@ -281,6 +280,7 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 void AAICharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
 	Super::HealingMontageHandler(AnimMontage, bInterrupted);
+	
 	AIController->SetAIState_Implementation(EAIState::LowHealth);
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }

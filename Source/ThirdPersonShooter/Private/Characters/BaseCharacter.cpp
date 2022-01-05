@@ -18,13 +18,10 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
-class AAIController;
-
-// Sets default values
 ABaseCharacter::ABaseCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bUseControllerRotationYaw = false;
 
 	// Create components
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
@@ -33,14 +30,16 @@ ABaseCharacter::ABaseCharacter()
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
 	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
-	// Setup components attachment
+	// Attach components
 	FallCapsule->SetupAttachment(GetMesh());
 
 	// Initialize components
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
-	
+
+	FallCapsule->SetComponentTickEnabled(false);
 	FallCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	
+	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
+
 	GetCharacterMovement()->BrakingFriction = 0.1f;
 	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
@@ -55,11 +54,6 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->NavAgentProps.AgentHeight = 192.0f;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	
-	bUseControllerRotationYaw = false;
-	
-	// Overlap functions
-	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
-
 	// Initialize variables
 	bDoOnceStopped = true;
 	bDoOnceMoving = true;
@@ -69,13 +63,11 @@ ABaseCharacter::ABaseCharacter()
 	bIsAlive = true;
 }
 
-// Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	AnimInstance = GetMesh()->GetAnimInstance();
-	// Detected if the interfaces is present on anim instance
 	if (AnimInstance && AnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
 	{
 		bCharacterAnimationInterface = true;
@@ -83,7 +75,6 @@ void ABaseCharacter::BeginPlay()
 	
 	CharacterTagContainer.AddTag(TeamTag);
 	FallCapsule->SetRelativeLocation(MeshLocationOffset);
-	FallCapsule->IgnoreActorWhenMoving(this, true); // Fall Capsule should ignore self to not register a fall when overlap with self
 
 	// Create material instances for every material on mesh, mainly used for death dither effect
 	TArray<UMaterialInterface*> Materials = GetMesh()->GetMaterials();
@@ -97,7 +88,6 @@ void ABaseCharacter::BeginPlay()
 	StaminaComponent->Initialize();
 }
 
-// Called every frame
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -112,15 +102,12 @@ void ABaseCharacter::Tick(float DeltaTime)
 			bDoOnceMoving = true;
 		}
 	}
-	else
+	else if (bDoOnceMoving)
 	{
-		if (bDoOnceMoving)
-		{
-			CharacterIsOnMove();
-			bCanHolster = false;
-			bDoOnceMoving = false;
-			bDoOnceStopped = true;
-		}
+		CharacterIsOnMove();
+		bCanHolster = false;
+		bDoOnceMoving = false;
+		bDoOnceStopped = true;
 	}
 
 	// If ragdoll state is true then keep mesh and capsule together
@@ -420,6 +407,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			if (CurrentWeapon == PrimaryWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+				StopAnimMontage();
 			}
 			PrimaryWeapon = nullptr;
 		}
@@ -434,6 +422,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			if (CurrentWeapon == SecondaryWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+				StopAnimMontage();
 			}
 			SecondaryWeapon = nullptr;
 		}
@@ -448,6 +437,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 			if (CurrentWeapon == SidearmWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
+				StopAnimMontage();
 			}
 			SidearmWeapon = nullptr;
 		}
@@ -570,7 +560,7 @@ void ABaseCharacter::ReloadWeapon()
 		switch (MovementState)
 		{
 		case 0: case 1: case 2:
-			// Walk, Run, and Sprint
+			// Walk, Run, Sprint
 			MontageToPlay = StandUpReloadMontages[Index];
 			break;
 		case 3:
@@ -977,7 +967,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		WeaponToSwitch->SkeletalMesh->SetSimulatePhysics(false);
 		WeaponToSwitch->SkeletalMesh->SetCollisionProfileName(FName("NoCollision"), false);
 
-		// If character try to switch attach the current weapon to skeletal mesh socket and set target weapon as current weapon
+		// If character try to switch, attach the current weapon to skeletal mesh socket and set target weapon as current weapon
 		if (bSwitchWeapon)
 		{
 			AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
@@ -1003,6 +993,7 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		WeaponToSwitch->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
 		SetArmedState(true);
 	}
+	
 	WeaponToGrab = EWeaponToDo::NoWeapon;
 }
 
@@ -1070,6 +1061,11 @@ void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, 
 void ABaseCharacter::SetArmedState(bool bArmedState)
 {
 	bIsArmed = bArmedState;
+	if (!bArmedState)
+	{
+		SetAimState(false);
+	}
+	
 	if (bCharacterAnimationInterface)
 	{
 		if (CurrentWeapon)
@@ -1080,10 +1076,6 @@ void ABaseCharacter::SetArmedState(bool bArmedState)
 		{
 			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
 		}
-	}
-	if (!bIsArmed)
-	{
-		SetAimState(false);
 	}
 }
 
@@ -1126,6 +1118,7 @@ bool ABaseCharacter::SetAimState(bool bIsAiming)
 	{
 		ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, false, CurrentWeapon);
 	}
+	
 	return false;
 }
 
@@ -1139,17 +1132,8 @@ void ABaseCharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case 0:
-		// Health is full
-		break;
-	case 1:
-		// Health is low
-		break;
-	case 2:
-		// Health recovery started
-		break;
-	case 3:
-		// Health recovery stopped
+	case 0: case 1: case 2: case 3:
+		// Health is full, Health is low, Health recovery started, Health recovery stopped
 		break;
 	case 4:
 		// Death
@@ -1216,7 +1200,7 @@ void ABaseCharacter::Death()
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FallCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		
-		// If character is falling don't play the death montage
+		// Don't play the death montage if character is falling 
 		if (GetCharacterMovement()->IsFalling())
 		{
 			DeathMontageHandler(nullptr, false);
@@ -1252,6 +1236,7 @@ void ABaseCharacter::Death()
 		GetCharacterMovement()->DisableMovement();
 		StimuliSource->UnregisterFromSense(UAISense_Sight::StaticClass());
 		StimuliSource->UnregisterFromPerceptionSystem();
+		
 		// If character is AI, detach it from controller
 		AAIController* AIController = Cast<AAIController>(GetController());
 		if (AIController)
@@ -1516,7 +1501,7 @@ void ABaseCharacter::StartDeathLifeSpan()
 
 void ABaseCharacter::DeathTimeLineUpdate(float Value)
 {
-	// Set fade value for character all materials
+	// Set fade value for the character all materials
 	const uint8 Length = MaterialInstances.Num();
 	for (uint8 i = 0; i < Length; ++i)
 	{
@@ -1602,13 +1587,12 @@ void ABaseCharacter::ToggleCrouch()
 	}
 }
 
-/** Apply fall damage / Toggle ragdoll / Stand up the character */
-void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (bIsAlive)
 	{
-		// Apply fall damage if velocity between character and other component is higher than 1250
+		// Apply fall damage if velocity between character and other component is higher than MinVelocityToApplyFallDamage
 		const float Velocity = (OtherComp->GetPhysicsLinearVelocity() - GetVelocity()).Size();
 		if (Velocity > MinVelocityToApplyFallDamage)
 		{

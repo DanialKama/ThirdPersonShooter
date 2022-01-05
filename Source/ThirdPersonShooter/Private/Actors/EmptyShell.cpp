@@ -5,10 +5,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 
-// Sets default values
 AEmptyShell::AEmptyShell()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	InitialLifeSpan = 3.0f;
 
@@ -16,10 +14,10 @@ AEmptyShell::AEmptyShell()
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Empty Shell"));
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 
-	// Setup components attachment
+	// Attach components
 	SetRootComponent(StaticMesh);
 
-	// Set component defaults
+	// Initialize components
 	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
@@ -35,15 +33,19 @@ AEmptyShell::AEmptyShell()
 	bDoOnce = true;
 }
 
-// Called when the game starts or when spawned
 void AEmptyShell::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	// Simulate physics with a small delay to not collide with weapon but collide with ground
 	FTimerHandle SimulatePhysicsTimer;
-	GetWorldTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
+	GetWorld()->GetTimerManager().SetTimer(SimulatePhysicsTimer, this, &AEmptyShell::StartPhysics, 0.2f);
 	StartPhysics();
+}
+
+void AEmptyShell::StartPhysics() const
+{
+	StaticMesh->SetSimulatePhysics(true);
 }
 
 void AEmptyShell::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -61,9 +63,4 @@ void AEmptyShell::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 			bDoOnce = true;
 		}
 	}
-}
-
-void AEmptyShell::StartPhysics() const
-{
-	StaticMesh->SetSimulatePhysics(true);
 }

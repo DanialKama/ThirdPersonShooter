@@ -14,11 +14,9 @@ class THIRDPERSONSHOOTER_API AEmptyShell : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
+public:
 	AEmptyShell();
 	
-	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
 
@@ -26,19 +24,19 @@ public:
 	UProjectileMovementComponent* ProjectileMovement;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
-	// Functions
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	/** Set simulate physics to true */
+	UFUNCTION()
 	void StartPhysics() const;
-	
-	// Variables
-	uint8 bDoOnce : 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	/** Play the sound of hitting the ground for once */
+	uint8 bDoOnce : 1;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	USoundCue* HitSound;
 };

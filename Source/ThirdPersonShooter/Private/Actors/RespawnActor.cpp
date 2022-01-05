@@ -7,10 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-// Sets default values
 ARespawnActor::ARespawnActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Create components
@@ -22,18 +20,23 @@ ARespawnActor::ARespawnActor()
 	RespawnRadius->SetupAttachment(Billboard);
 	
 	// Initialize components
+	Billboard->SetComponentTickEnabled(false);
 	Billboard->bIsScreenSizeScaled = true;
 
+	RespawnRadius->SetComponentTickEnabled(false);
 	RespawnRadius->SetSphereRadius(250.0f);
 	RespawnRadius->SetGenerateOverlapEvents(false);
 	RespawnRadius->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RespawnRadius->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
-// Called when the game starts or when spawned
 void ARespawnActor::BeginPlay()
 {
+	Super::BeginPlay();
+
+	// Initialize navigation system
 	NavigationSystem = UNavigationSystemV1::GetCurrent(GetWorld());
+	
 	// Start respawning if there is any actor to respawn
 	if (RespawnList.Num() > 0)
 	{

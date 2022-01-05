@@ -12,7 +12,6 @@ class THIRDPERSONSHOOTER_API AShooterHUD : public AHUD
 	GENERATED_BODY()
 	
 public:
-	// Functions
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterHUD")
 	void SetHealth(float CurrentHealth);
 	

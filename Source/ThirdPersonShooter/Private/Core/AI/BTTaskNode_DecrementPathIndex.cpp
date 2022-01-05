@@ -22,5 +22,6 @@ EBTNodeResult::Type UBTTaskNode_DecrementPathIndex::ExecuteTask(UBehaviorTreeCom
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("Direction"), true);
 	}
+	
 	return EBTNodeResult::Succeeded;
 }

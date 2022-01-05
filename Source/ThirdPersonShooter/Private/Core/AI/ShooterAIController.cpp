@@ -10,7 +10,6 @@
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Interfaces/AICharacterInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -19,7 +18,6 @@
 #include "Perception/AISenseConfig_Prediction.h"
 #include "Perception/AISense_Prediction.h"
 
-// Sets default values
 AShooterAIController::AShooterAIController()
 {
 	// Create Components
@@ -229,6 +227,7 @@ void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimul
 	BlackboardComp->SetValueAsBool(FName("Urgent"), true);
 	BlackboardComp->SetValueAsBool(FName("Search"), true);
 	BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
+	
 	// If the Updated actor is a new enemy, check which one is closer then if the new one is closer set it as attacker
 	AActor* TargetActor;
 	FindNearestOfTwoActor(GetFocusActor(), UpdatedActor, ControlledPawn->GetActorLocation(), TargetActor);
@@ -360,17 +359,8 @@ void AShooterAIController::Fight()
 			TryToUseWeapon();
 		}
 		break;
-	case 3:
-		// Reload
-		break;
-	case 4:
-		// Switch
-		break;
-	case 5:
-		// Low Health
-		break;
-	case 6:
-		// Use Med
+	case 3: case 4: case 5: case 6:
+		// Reload, Switch, Low Health, Use Med
 		break;
 	}
 }
@@ -414,9 +404,6 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 			SwitchWeapon();
 		}
 		break;
-	case 1:
-		// Firing
-		break;
 	case 2:
 		// Better To Reload, If there is no threat then reload the weapon
 		if (!Attacker && !BlackboardComp->GetValueAsObject(FName("TargetActor")) && AIState != EAIState::Reload && AIState != EAIState::Switch)
@@ -450,8 +437,8 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 			SwitchWeapon();
 		}
 		break;
-	case 9:
-		// Overheat
+	case 1: case 9:
+		// Firing, Overheat
 		break;
 	}
 }
@@ -556,19 +543,13 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 		// Idle, Fight, Search
 		Fight();
 		break;
-	case 3:
-		// Reload
-		break;
-	case 4:
-		// Switch
-		break;
 	case 5:
 		// Low Health
 		ClearFocus(EAIFocusPriority::Gameplay);
 		ControlledPawn->UseWeapon(false, false);
 		break;
-	case 6:
-		// Use Med
+	case 3: case 4: case 6:
+		// Reload, Switch, Use Med
 		break;
 	}
 }

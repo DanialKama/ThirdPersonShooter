@@ -4,19 +4,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
-// Sets default values
 AMagazine::AMagazine()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
 	// Create components
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Magazine"));
 
-	// Setup components attachment
+	// Attach components
 	SetRootComponent(StaticMesh);
 
-	// Set component defaults
+	// Initialize components
+	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
@@ -27,7 +26,6 @@ AMagazine::AMagazine()
 	bDoOnce = true;
 }
 
-// Called when the game starts or when spawned
 void AMagazine::BeginPlay()
 {
 	Super::BeginPlay();

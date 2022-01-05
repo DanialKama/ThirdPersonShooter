@@ -19,5 +19,6 @@ EBTNodeResult::Type UBTTaskNode_ToggleBoolState::ExecuteTask(UBehaviorTreeCompon
 		}
 		return EBTNodeResult::Succeeded;
 	}
+	
 	return EBTNodeResult::Failed;
 }

@@ -5,15 +5,12 @@
 #include "Components/SlateWrapperTypes.h"
 #include "Core/ShooterGameModeBase.h"
 #include "Core/ShooterPlayerController.h"
-#include "GameFramework/HUD.h"
-#include "Interfaces/PlayerControllerInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UI/ShooterHUD.h"
 
-// Sets default values
 APlayerCharacter::APlayerCharacter()
 {
 	// Create Components
@@ -21,21 +18,23 @@ APlayerCharacter::APlayerCharacter()
 	TPP = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
 
-	// Setup components attachment
+	// Attach components
 	SpringArm->SetupAttachment(GetRootComponent());
 	TPP->SetupAttachment(SpringArm);
 
 	// Initialize components
+	SpringArm->SetComponentTickEnabled(false);
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 75.0f));
 	SpringArm->ProbeSize = 10.0;
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bEnableCameraLag = true;
 
+	TPP->SetComponentTickEnabled(false);
+
 	// Initialize variables
 	bDoOnceCrouch = true;
 }
 
-// Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (InputComponent)
@@ -58,6 +57,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
 		InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
 		InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
+		
 		// Input Axis
 		InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
 		InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
@@ -187,8 +187,6 @@ void APlayerCharacter::TryToToggleCrouch()
 		ToggleCrouch();
 		
 		FVector TargetRelativeLocation;
-		FLatentActionInfo LatentInfo;
-		LatentInfo.CallbackTarget = this;
 		switch (MovementState)
 		{
 		case 0: case 1: case 2:
@@ -204,6 +202,9 @@ void APlayerCharacter::TryToToggleCrouch()
 			TargetRelativeLocation = FVector(0.0f, 0.0f, 25.0f);
 			break;
 		}
+		
+		FLatentActionInfo LatentInfo;
+		LatentInfo.CallbackTarget = this;
 		UKismetSystemLibrary::MoveComponentTo(SpringArm, TargetRelativeLocation, FRotator::ZeroRotator, true, true, 0.2f, true, EMoveComponentAction::Type::Move, LatentInfo);
 	}
 }
@@ -372,6 +373,7 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot)
 {
 	Super::SetCurrentWeapon(NewCurrentWeapon, WeaponSlot);
+	
 	// Hide ammo info on player UI widget when the player holding no weapon
 	if (CurrentHoldingWeapon == EWeaponToDo::NoWeapon)
 	{
@@ -425,6 +427,7 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 		}
 		break;
 	}
+	
 	Super::SetHealthState_Implementation(HealthState);
 }
 
@@ -448,7 +451,7 @@ void APlayerCharacter::SetStaminaLevel_Implementation(float Stamina, bool bIsFul
 
 void APlayerCharacter::Destroyed()
 {
-	// Get player controller reference before destroy player
+	// Get player controller reference before destroying the player
 	AController* ControllerRef = GetController();
 	
 	Super::Destroyed();
@@ -466,6 +469,7 @@ void APlayerCharacter::Destroyed()
 void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)
 {
 	Super::AddRecoil_Implementation(RotationIntensity, ControlTime, CrosshairRecoil, ControllerPitch);
+	
 	AddControllerPitchInput(ControllerPitch);
 	HUDRef->AddRecoil(CrosshairRecoil, ControlTime);
 }

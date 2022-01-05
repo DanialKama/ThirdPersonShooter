@@ -10,7 +10,6 @@
 class AShooterPlayerController;
 class AShooterHUD;
 class USpringArmComponent;
-class UCurveFloat;
 
 UCLASS()
 class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter
@@ -21,22 +20,17 @@ class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter
 	UTimelineComponent* AimTimeline;
 	
 public:
-	// Sets default values for this character's properties
 	APlayerCharacter();
 	
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* TPP;
 
-	//Functions
 	virtual void ResetAim() override;
-	// Interfaces
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
@@ -44,17 +38,16 @@ public:
 	virtual bool IsPlayer_Implementation() override;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
-	// Functions
 	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot) override;
 	virtual void Destroyed() override;
 
 private:
-	// Functions
 	/** Wait for one frame to access a valid player controller */
+	UFUNCTION()
 	void NextFrameBeginPlay();
+	
 	void GamepadAddToYaw(float AxisValue);
 	void GamepadAddToPitch(float AxisValue);
 	void AddToForwardMovement(float AxisValue);
@@ -62,35 +55,53 @@ private:
 	void StartSprinting();
 	void StopSprinting();
 	void TryToToggleCrouch();
+	
 	/** To not spamming crouch */
 	void ResetCrouchByDelay();
+
+	UFUNCTION()
 	void ResetCrouch();
+	
 	void TryToStartAiming();
 	void SwitchToNextWeapon();
 	void SwitchToPreviousWeapon();
+
+	UFUNCTION()
 	void DoubleTabGate();
+
+	UFUNCTION()
 	void DoubleTabHandler();
+	
 	UFUNCTION()
 	void AimTimeLineUpdate(float Value);
+	
 	UFUNCTION()
 	void AimTimeLineFinished();
 	
-	// Variables
 	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	float BaseTurnRate = 45.0f;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate = 45.0f;
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = "true"))
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = "true"))
 	float TapThreshold = 0.2f;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* AimFloatCurve;
+	
 	UPROPERTY()
 	AShooterPlayerController* PlayerController;
+	
 	UPROPERTY()
 	AShooterHUD* HUDRef;
+	
 	uint8 TabNumber, PreviousTapNumber;
+	
 	/** Enum data indicating the direction the Timeline is playing */
 	TEnumAsByte<ETimelineDirection::Type> Direction;
+	
 	FTimerHandle StartSprintingTimer;
 };

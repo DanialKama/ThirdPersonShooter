@@ -15,7 +15,6 @@ class THIRDPERSONSHOOTER_API AProjectileFieldSystemActor : public AFieldSystemAc
 public:
 	AProjectileFieldSystemActor();
 
-	// Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* Sphere;
 	
@@ -34,7 +33,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UUniformVector* UniformVector;
 
-	// Variables
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
 	float StrainMagnitude = 50000.0f;
 	

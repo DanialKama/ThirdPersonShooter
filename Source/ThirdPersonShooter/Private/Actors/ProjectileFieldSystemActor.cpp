@@ -16,13 +16,14 @@ AProjectileFieldSystemActor::AProjectileFieldSystemActor()
 	RandomVector = CreateDefaultSubobject<URandomVector>(TEXT("Random Vector"));
 	UniformVector = CreateDefaultSubobject<UUniformVector>(TEXT("Uniform Vector"));
 	
-	// Setup components attachment
+	// Attach components
 	Sphere->SetupAttachment(GetRootComponent());
 	
-	// Initialize
+	// Initialize components
 	FieldSystemComponent->SetEnableGravity(false);
 	FieldSystemComponent->bApplyImpulseOnDamage = false;
-	
+
+	Sphere->SetComponentTickEnabled(false);
 	Sphere->SetSphereRadius(50.0f);
 	Sphere->SetComponentTickEnabled(false);
 	Sphere->SetEnableGravity(false);

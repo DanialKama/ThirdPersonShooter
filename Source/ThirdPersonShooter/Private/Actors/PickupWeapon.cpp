@@ -2,7 +2,6 @@
 
 #include "Actors/PickupWeapon.h"
 #include "Kismet/GameplayStatics.h"
-#include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "AIController.h"
@@ -20,9 +19,7 @@
 #include "Interfaces/AIControllerInterface.h"
 #include "Interfaces/PlayerControllerInterface.h"
 #include "Interfaces/WidgetInterface.h"
-#include "Structs/AmmoComponentInfoStruct.h"
 
-// Sets default values
 APickupWeapon::APickupWeapon()
 {
 	// Create components
@@ -33,37 +30,42 @@ APickupWeapon::APickupWeapon()
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
-	// Setup components attachment
+	// Attach components
 	SetRootComponent(SkeletalMesh);
 	BoxCollision->SetupAttachment(SkeletalMesh);
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
 	FireSound->SetupAttachment(SkeletalMesh);
 	Widget->SetupAttachment(SkeletalMesh);
 
-	// Set component defaults
+	// Initialize components
+	SkeletalMesh->SetComponentTickEnabled(false);
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
 	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);	// In blueprint set all collision responses for skeletal mesh to ignore and World Static to block
-
+	SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
+	SkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SkeletalMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	
+	BoxCollision->SetComponentTickEnabled(false);
 	BoxCollision->SetBoxExtent(FVector (8.0f, 50.0f, 20.0f));
 	BoxCollision->bApplyImpulseOnDamage = false;
 	BoxCollision->SetGenerateOverlapEvents(true);
 	BoxCollision->CanCharacterStepUp(nullptr);
 	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
+	
+	MuzzleFlash->SetComponentTickEnabled(false);
 	MuzzleFlash->SetAutoActivate(false);
 
+	FireSound->SetComponentTickEnabled(false);
 	FireSound->SetAutoActivate(false);
 
+	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Widget->SetVisibility(false);
-
-	// Component Overlap
-	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
-	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 
 	// Initialize variables
 	PickupType = EItemType::Weapon;
@@ -78,7 +80,7 @@ void APickupWeapon::BeginPlay()
 	AmmoComponent->Initialize();
 	MuzzleFlash->SetRelativeScale3D(WeaponDefaults.MuzzleFlashScale);
 
-	// Set weapon info on widget to show it when the player overlap with weapon
+	// Set weapon info on the widget to show it when the player overlap with the weapon
 	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
 		IWidgetInterface::Execute_SetWeaponInfo(Widget->GetWidget(), WeaponInfo);
@@ -103,6 +105,7 @@ void APickupWeapon::StartFireWeapon()
 			{
 				GetWorld()->GetTimerManager().SetTimer(FireWeaponTimer, this, &APickupWeapon::FireWeapon, WeaponInfo.TimeBetweenShots, true);
 			}
+			
 			FTimerHandle ResetDoOnceTimer;
 			GetWorld()->GetTimerManager().SetTimer(ResetDoOnceTimer, this, &APickupWeapon::CoolDownDelay, WeaponInfo.CoolDownTime);
 		}
@@ -110,6 +113,7 @@ void APickupWeapon::StartFireWeapon()
 	else
 	{
 		StopFireWeapon();
+		
 		if (AmmoComponent->CurrentMagazineAmmo <= 0 && !AmmoComponent->NoAmmoLeftToReload())
 		{
 			SetWeaponState_Implementation(EWeaponState::NeedToReload);
@@ -143,9 +147,9 @@ void APickupWeapon::FireWeapon()
 	}
 	
 	FTimerHandle ResetAnimationTimer;
-	GetWorldTimerManager().SetTimer(ResetAnimationTimer, this, &APickupWeapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
+	GetWorld()->GetTimerManager().SetTimer(ResetAnimationTimer, this, &APickupWeapon::ResetAnimationDelay, WeaponInfo.TimeBetweenShots / 2.0f);
 
-	// Spawn Empty shell
+	// Spawn empty shell
 	if (WeaponDefaults.EmptyShell.Num() > 0)
 	{
 		const FVector Location =  SkeletalMesh->GetSocketLocation(TEXT("EjectorSocket"));
@@ -165,7 +169,6 @@ void APickupWeapon::StopFireWeapon()
 	SkeletalMesh->PlayAnimation(nullptr, false);
 }
 
-// Play weapon fire sound and muzzle emitter by activate them and play weapon fire animation
 void APickupWeapon::WeaponFireEffect() const
 {
 	FireSound->Activate(true);
@@ -177,18 +180,16 @@ void APickupWeapon::SpawnProjectile()
 {
 	if (CurrentProjectile)
 	{
-		for(int i = 0; i < CurrentProjectile->NumberOfPellets; i++)
+		for(int i = 0; i < CurrentProjectile->NumberOfPellets; ++i)
 		{
 			FVector Location;
 			FRotator Rotation;
-
 			ProjectileLineTrace(Location, Rotation);
 			
 			FActorSpawnParameters ActorSpawnParameters;
 			ActorSpawnParameters.Owner = this;
 			ActorSpawnParameters.Instigator = GetInstigator();
 			ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			// Spawn projectile
 			GetWorld()->SpawnActor<AProjectile>(WeaponDefaults.Projectile[0], Location, Rotation, ActorSpawnParameters);
 		}
 	}
@@ -196,16 +197,14 @@ void APickupWeapon::SpawnProjectile()
 
 void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation)
 {
-	FHitResult HitResult;
 	FVector Start;
 	FVector End;
-	
 	CalculateLineTrace(Start, End);
 	
+	FHitResult HitResult;
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.bTraceComplex = true;
 	CollisionQueryParams.AddIgnoredActors(IgnoredActorsByTrace);
-	
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 
 	// Draw debug line and box
@@ -223,7 +222,7 @@ void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotat
 	bHit ? OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.ImpactPoint) : OutRotation = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, HitResult.TraceEnd);
 }
 
-void APickupWeapon::CalculateLineTrace(FVector& Start, FVector& End)
+void APickupWeapon::CalculateLineTrace(FVector& Start, FVector& End) const
 {
 	FVector TraceStart;
 	FVector UpVector;
@@ -300,7 +299,7 @@ void APickupWeapon::RaiseWeapon()
 	UGameplayStatics::SpawnSoundAttached(WeaponDefaults.RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	
-	// Report weapon state to owner on pickup
+	// Report weapon state to the owner on pickup
 	if (bAIControllerInterface)
 	{
 		if (AmmoComponent->BetterToReload())
@@ -360,13 +359,11 @@ bool APickupWeapon::CanPickupAmmo() const
 
 FVector APickupWeapon::GetLeftHandLocation() const
 {
-	// Location use to adjust character left hand with IK in animation blueprint
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandSocket"));
 }
 
 FVector APickupWeapon::GetLeftHandAimLocation() const
 {
-	// Location use to adjust character left hand with IK in animation blueprint
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
@@ -394,7 +391,7 @@ void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
 		IgnoredActorsByTrace.Add(this);
 		IgnoredActorsByTrace.Add(GetOwner());
 		
-		// Determine if owner is player or AI
+		// Determine if the owner is player or AI
 		if (Cast<APlayerController>(Owner->GetInstigatorController()))
 		{
 			bOwnerIsAI = false;
@@ -454,14 +451,8 @@ void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	
 	switch (WeaponState)
 	{
-	case 0:
-		// Idle
-		break;
-	case 1:
-		// Firing
-		break;
-	case 2:
-		// Better To Reload
+	case 0: case 1: case 2: case 7:
+		// Idle, Firing, Better To Reload, Ammo Added
 		break;
 	case 3:
 		// Need To Reload
@@ -481,9 +472,6 @@ void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 		// Reloaded
 		bCanFire = true;
 		break;
-	case 7:
-		// Ammo Added
-		break;
 	case 8:
 		// Empty
 		bCanFire = false;
@@ -497,15 +485,15 @@ void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	}
 }
 
-void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APickupWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, this);
 	}
 	
-	// If Other Actor is the player then show the widget
+	// Show the widget if OtherActor is the player
 	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(true);
@@ -520,7 +508,7 @@ void APickupWeapon::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Weapon, nullptr);
 	}
 
-	// If Other Actor is the player then hide the widget
+	// Hide the widget if OtherActor is the player
 	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(false);

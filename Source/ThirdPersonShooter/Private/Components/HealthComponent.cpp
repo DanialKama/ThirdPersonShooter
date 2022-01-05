@@ -3,13 +3,9 @@
 #include "Components/HealthComponent.h"
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/CommonInterface.h"
-#include "Kismet/GameplayStatics.h"
 
-// Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// Initialize variables
@@ -45,7 +41,7 @@ void UHealthComponent::SetupComponent()
 	}
 }
 
-void UHealthComponent::TakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void UHealthComponent::TakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UpdateHealthOnDamage(Damage, TEXT("None"), Owner->GetActorLocation());
 }
@@ -94,7 +90,6 @@ void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVecto
 	GetWorld()->GetTimerManager().SetTimer(StartHealthRecoveryTimer, this, &UHealthComponent::StartHealthRecovery, StartHealthRecoveryDelay);
 }
 
-// Only start when stamina is full
 void UHealthComponent::StartHealthRecovery()
 {
 	if (bCanRecoverHealth)

@@ -10,24 +10,22 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Perception/AISense_Damage.h"
 #include "Structs/ExplosiveProjectileInfoStruct.h"
-#include "Structs/ProjectileInfoStruct.h"
 
-// Sets default values
 AProjectile::AProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// Create components
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Trail Particle"));
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 
-	// Setup attachment
+	// Attach components
 	SetRootComponent(StaticMesh);
 	TrailParticle->SetupAttachment(StaticMesh, TEXT("TrailSocket"));
 
 	// Initialize components
+	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->bReturnMaterialOnMove = true;
@@ -52,7 +50,6 @@ AProjectile::AProjectile()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	float AppliedDamage = 0.0f;
 	if (Hit.PhysMaterial.IsValid())
 	{
 		SwitchExpression = StaticEnum<EPhysicalSurface>()->GetIndexByValue(UGameplayStatics::GetSurfaceType(Hit));
@@ -61,15 +58,16 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		SwitchExpression = 0;
 	}
-
-	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 	
+	float AppliedDamage = 0.0f;
+	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 	if (ProjectileEffect.bIsExplosive && ExplosiveProjectileDataTable)
 	{
 		const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
 		if (ExplosiveProjectileInfo)
 		{
 			SpawnFieldSystem(ExplosiveProjectileInfo->StrainMagnitude, ExplosiveProjectileInfo->ForceMagnitude, ExplosiveProjectileInfo->TorqueMagnitude);
+
 			// Apply radial damage with fall off for explosive projectiles
 			const TArray<AActor*> IgnoreActors;
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ExplosiveProjectileInfo->BaseDamage, ExplosiveProjectileInfo->MinimumDamage, Hit.ImpactPoint, ExplosiveProjectileInfo->DamageInnerRadius, ExplosiveProjectileInfo->DamageOuterRadius, 2.0f, DamageType, IgnoreActors, GetOwner(), GetInstigatorController(), ECollisionChannel::ECC_Visibility);
@@ -82,6 +80,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		if (ProjectileInfo)
 		{
 			SpawnFieldSystem(ProjectileInfo->StrainMagnitude, ProjectileInfo->ForceMagnitude, ProjectileInfo->TorqueMagnitude);
+
 			// Apply point damage for nonexplosive projectiles based on surface type
 			AppliedDamage = UGameplayStatics::ApplyPointDamage(Hit.GetActor(), CalculatePointDamage(ProjectileInfo), Hit.TraceStart, Hit, GetInstigatorController(), GetOwner(), DamageType);
 		}
@@ -109,7 +108,6 @@ void AProjectile::HitEffect(const FHitResult HitResult) const
 	UMaterialInterface* Decal;
 	FVector DecalSize;
 	float DecalLifeSpan;
-	
 	CalculateProjectileHitInfo(Emitter, Sound, Decal, DecalSize, DecalLifeSpan);
 
 	const FRotator SpawnRotation = UKismetMathLibrary::MakeRotFromX(HitResult.ImpactNormal);
@@ -117,15 +115,14 @@ void AProjectile::HitEffect(const FHitResult HitResult) const
 	// Spawn impact emitter
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.ImpactPoint, SpawnRotation);
 	
-	// Spawn decal attached
-	UGameplayStatics::SpawnDecalAttached(Decal, DecalSize, HitResult.GetComponent(),
-		HitResult.BoneName, HitResult.ImpactPoint, SpawnRotation,
-		EAttachLocation::KeepWorldPosition, DecalLifeSpan);
+	// Spawn decal attached to hit component
+	UGameplayStatics::SpawnDecalAttached(Decal, DecalSize, HitResult.GetComponent(), HitResult.BoneName, HitResult.ImpactPoint,
+		SpawnRotation, EAttachLocation::KeepWorldPosition, DecalLifeSpan);
 
-	// Play sound at location
+	// Play sound at the impact location
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
 
-	// If projectile is explosive in addition to surface impact emitter another emitter spawn for explosion
+	// If the projectile is explosive in addition to the surface impact emitter another emitter spawn for the explosion
 	if (ProjectileEffect.bIsExplosive)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileEffect.ExplosiveEmitter, HitResult.ImpactPoint, SpawnRotation);
@@ -134,7 +131,7 @@ void AProjectile::HitEffect(const FHitResult HitResult) const
 
 float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const
 {
-	// Switch on surface type to calculate the appropriate damage
+	// Switch on surface types to calculate the appropriate damage
 	switch (SwitchExpression)
 	{
 	case 0:
@@ -168,10 +165,9 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	}
 }
 
-void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter,
-	USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
+void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
 {
-	// Switch on surface type to calculate the appropriate effect
+	// Switch on surface types to calculate the appropriate effect
 	switch (SwitchExpression)
 	{
 	case 0:

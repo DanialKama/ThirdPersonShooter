@@ -16,10 +16,8 @@ class THIRDPERSONSHOOTER_API APickupAmmo : public APickup
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	APickupAmmo();
 	
-	//Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
 
@@ -29,32 +27,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UWidgetComponent* Widget;
 
-	// Functions
 	virtual void SetPickupStatus(EPickupState PickupState) override;
 
-	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
+	/** Bitmask / Bitflag Enum */
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
 	int32 AmmoType = static_cast<int32>(EAmmoType::None);
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
 	int32 Amount = 1;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
-	// Overlaps
 	UFUNCTION()
-	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	UFUNCTION()
-	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	// Variables
-	// Audio
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	USoundCue* PickupSound;
 };

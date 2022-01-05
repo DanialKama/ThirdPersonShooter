@@ -8,7 +8,6 @@
 #include "Interfaces/CharacterInterface.h"
 #include "Interfaces/WidgetInterface.h"
 
-// Sets default values
 APickupAmmo::APickupAmmo()
 {
 	// Create components
@@ -16,28 +15,29 @@ APickupAmmo::APickupAmmo()
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 
-	// Setup components attachment
+	// Attach components
 	SetRootComponent(StaticMesh);
 	SphereCollision->SetupAttachment(StaticMesh);
 	Widget->SetupAttachment(StaticMesh);
 
-	// Set component defaults
+	// Initialize components
+	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	StaticMesh->SetCollisionObjectType(ECC_PhysicsBody);
 
+	SphereCollision->SetComponentTickEnabled(false);
 	SphereCollision->bApplyImpulseOnDamage = false;
+	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
+	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 
+	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Widget->SetVisibility(false);
-
-	// Component Overlap
-	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
-	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 
 	// Initialize variables
 	PickupType = EItemType::Ammo;
@@ -89,8 +89,8 @@ void APickupAmmo::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 		{
 			ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Ammo, this);
 		}
-	
-		// If OtherActor is the player then show the widget
+		
+		// Show the widget if OtherActor is the player
 		if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 		{
 			Widget->SetVisibility(true);
@@ -106,7 +106,7 @@ void APickupAmmo::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 		ICharacterInterface::Execute_SetPickup(OtherActor, EItemType::Ammo, nullptr);
 	}
 
-	// If OtherActor is the player then hide the widget
+	// Hide the widget if OtherActor is the player
 	if (OtherActor == UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
 	{
 		Widget->SetVisibility(false);

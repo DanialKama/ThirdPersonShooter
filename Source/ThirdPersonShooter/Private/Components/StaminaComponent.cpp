@@ -3,11 +3,8 @@
 #include "Components/StaminaComponent.h"
 #include "Interfaces/CharacterInterface.h"
 
-// Sets default values for this component's properties
 UStaminaComponent::UStaminaComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// Initialize variables
@@ -118,6 +115,7 @@ void UStaminaComponent::SprintingDrainStamina()
 	if (bCharacterInterface)
 	{
 		ICharacterInterface::Execute_SetStaminaLevel(Owner, CurrentStamina / MaxStamina, false);
+		
 		// If stamina is zero set owner movement to walk
 		if (CurrentStamina <= 0.0f)
 		{

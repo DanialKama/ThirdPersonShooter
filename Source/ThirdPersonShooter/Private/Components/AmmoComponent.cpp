@@ -2,15 +2,9 @@
 
 #include "Components/AmmoComponent.h"
 #include "Interfaces/CommonInterface.h"
-#include "Structs/AmmoComponentInfoStruct.h"
-#include "Math/UnrealMathUtility.h"
-#include "Enums/PickupEnums.h"
 
-// Sets default values for this component's properties
 UAmmoComponent::UAmmoComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
@@ -20,7 +14,6 @@ void UAmmoComponent::SetupComponent()
 	
 	CurrentAmmo = DefaultAmmo;
 
-	// Detected if the interfaces is present on owner
 	if (Owner)
 	{
 		if (Owner->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
@@ -126,7 +119,6 @@ void UAmmoComponent::SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmm
 	MagazineSize = InMagazineSize;
 	CurrentMagazineAmmo = InCurrentMagazineAmmo;
 	SetupComponent();
-	
 }
 
 bool UAmmoComponent::BetterToReload() const

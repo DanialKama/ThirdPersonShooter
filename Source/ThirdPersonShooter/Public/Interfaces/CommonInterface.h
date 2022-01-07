@@ -22,14 +22,12 @@ class THIRDPERSONSHOOTER_API ICommonInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	FGameplayTag GetTeamTag();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	bool IsPlayer();
 	
-	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Call from player controller to handle interaction on current object"))
 	void Interact();
 	

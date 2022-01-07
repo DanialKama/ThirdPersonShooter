@@ -22,7 +22,6 @@ class THIRDPERSONSHOOTER_API IAICharacterInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AICharacterInterface")
 	APatrolPathActor* GetPatrolPath();
 };

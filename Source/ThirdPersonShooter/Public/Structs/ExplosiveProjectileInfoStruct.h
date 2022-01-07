@@ -5,7 +5,7 @@
 #include "Engine/DataTable.h"
 #include "ExplosiveProjectileInfoStruct.generated.h"
 
-// Projectile info that projectile class needs
+/** Projectile info that projectile class needs */
 USTRUCT(BlueprintType)
 struct FExplosiveProjectileInfo : public FTableRowBase
 {

@@ -20,7 +20,6 @@ enum class EPickupState : uint8
 	Remove	UMETA(DisplayName = "Remove")
 };
 
-// Pickup weapon enums
 UENUM(BlueprintType, Category = "PickupWeaponEnums")
 enum class EWeaponToDo : uint8
 {
@@ -57,7 +56,8 @@ enum class EWeaponType : uint8
 	Launcher	UMETA(DisplayName = "Launcher")
 };
 
-UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))	// For weapons use as supported ammo types and for pickup ammo use as ammo type
+/** Supported ammo and ammo type */
+UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EAmmoType
 {
 	None						= 0x000		UMETA(Hidden),

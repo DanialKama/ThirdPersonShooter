@@ -55,7 +55,6 @@ private:
 	UFUNCTION()
 	void RecoverHealth();
 
-	// Variables
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float LowHealth = 25.0f;
 	

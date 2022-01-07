@@ -45,7 +45,7 @@ AShooterAIController::AShooterAIController()
 	AISense_Damage->SetMaxAge(0.2f);
 	
 	AISense_Hearing->HearingRange = 5000.0;
-	AISense_Hearing->SetMaxAge(0.5);
+	AISense_Hearing->SetMaxAge(0.2);
 	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;

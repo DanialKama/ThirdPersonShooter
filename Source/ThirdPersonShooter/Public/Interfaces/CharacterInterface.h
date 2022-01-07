@@ -24,11 +24,9 @@ class THIRDPERSONSHOOTER_API ICharacterInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// With Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	EWeaponToDo CanPickupAmmo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType);
 	
-	// Without Output
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetMovementState(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne);
 

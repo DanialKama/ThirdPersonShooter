@@ -114,7 +114,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						{
 							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						}
-						else if (ActorPerceptionInfo.LastSensedStimuli[i].WasSuccessfullySensed() && !Attacker && !GetFocusActor() && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
+						else if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && !Attacker && !GetFocusActor() && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
 						{
 							ControlledPawn->UseWeapon(false, false);
 						}

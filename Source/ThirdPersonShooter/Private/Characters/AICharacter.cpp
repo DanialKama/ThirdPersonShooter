@@ -280,9 +280,12 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 void AAICharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
 	Super::HealingMontageHandler(AnimMontage, bInterrupted);
-	
-	AIController->SetAIState_Implementation(EAIState::LowHealth);
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	if (AIController)
+	{
+		AIController->SetAIState_Implementation(EAIState::LowHealth);
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
 }
 
 APatrolPathActor* AAICharacter::GetPatrolPath_Implementation()

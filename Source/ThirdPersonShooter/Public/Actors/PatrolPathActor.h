@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PatrolPathActor.generated.h"
 
+class UBillboardComponent;
+
 UCLASS()
 class THIRDPERSONSHOOTER_API APatrolPathActor : public AActor
 {

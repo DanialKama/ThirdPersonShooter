@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RespawnActor.generated.h"
 
+class UBillboardComponent;
 class AAICharacter;
 class USphereComponent;
 class UNavigationSystemV1;
@@ -16,7 +17,7 @@ struct FRespawnInfo
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, Category = "Defaults")
-	float SpawnTime;
+	float SpawnTime = 5.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Defaults")
 	TSubclassOf<AAICharacter> CharacterToSpawn;

@@ -22,31 +22,31 @@ struct FProjectileEffect
 	uint8 bIsExplosive : 1;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* FleshHitEmitter;
+	UParticleSystem* FleshHitEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* WoodHitEmitter;
+	UParticleSystem* WoodHitEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* MetalHitEmitter;
+	UParticleSystem* MetalHitEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* StoneHitEmitter;
+	UParticleSystem* StoneHitEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* DirtHitEmitter;
+	UParticleSystem* DirtHitEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* ExplosiveEmitter;
+	UParticleSystem* ExplosiveEmitter = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* FleshHitSound;
+	USoundCue* FleshHitSound = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ObjectHitSound;
+	USoundCue* ObjectHitSound = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* FleshDecal;
+	UMaterialInterface* FleshDecal = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
@@ -55,16 +55,16 @@ struct FProjectileEffect
 	float FleshDecalLifeSpan = 20.0f;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* WoodDecal;
+	UMaterialInterface* WoodDecal = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* MetalDecal;
+	UMaterialInterface* MetalDecal = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* StoneDecal;
+	UMaterialInterface* StoneDecal = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* DirtDecal;
+	UMaterialInterface* DirtDecal = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);

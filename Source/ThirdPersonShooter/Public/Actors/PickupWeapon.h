@@ -28,7 +28,7 @@ struct FWeaponDefaults
 	FVector MuzzleFlashScale = FVector::OneVector;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FName MagazineBoneName = TEXT("None");
+	FName MagazineBoneName = FName("None");
 	
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more intensity"))
 	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
@@ -46,13 +46,13 @@ struct FWeaponDefaults
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ReloadSound;
+	USoundCue* ReloadSound = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* RaiseSound;
+	USoundCue* RaiseSound = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* LowerSound;
+	USoundCue* LowerSound = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AProjectile>> Projectile;
@@ -109,7 +109,7 @@ public:
 	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
 	FWeaponInfo WeaponInfo;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults")

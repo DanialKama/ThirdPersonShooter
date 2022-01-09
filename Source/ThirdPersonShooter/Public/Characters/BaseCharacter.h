@@ -40,79 +40,79 @@ struct FBodyParts
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* Head;
+	USkeletalMesh* Head = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LegLeft;
+	USkeletalMesh* LegLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LegRight;
+	USkeletalMesh* LegRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighAndCalfLeft;
+	USkeletalMesh* ThighAndCalfLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighAndCalfRight;
+	USkeletalMesh* ThighAndCalfRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighLeft;
+	USkeletalMesh* ThighLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighRight;
+	USkeletalMesh* ThighRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfAndFootLeft;
+	USkeletalMesh* CalfAndFootLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfAndFootRight;
+	USkeletalMesh* CalfAndFootRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfLeft;
+	USkeletalMesh* CalfLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfRight;
+	USkeletalMesh* CalfRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootLeft;
+	USkeletalMesh* FootLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootRight;
+	USkeletalMesh* FootRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ArmLeft;
+	USkeletalMesh* ArmLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ArmRight;
+	USkeletalMesh* ArmRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmAndLowerArmLeft;
+	USkeletalMesh* UpperArmAndLowerArmLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmAndLowerArmRight;
+	USkeletalMesh* UpperArmAndLowerArmRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmLeft;
+	USkeletalMesh* UpperArmLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmRight;
+	USkeletalMesh* UpperArmRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmAndHandLeft;
+	USkeletalMesh* LowerArmAndHandLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmAndHandRight;
+	USkeletalMesh* LowerArmAndHandRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmLeft;
+	USkeletalMesh* LowerArmLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmRight;
+	USkeletalMesh* LowerArmRight = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* HandLeft;
+	USkeletalMesh* HandLeft = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* HandRight;
+	USkeletalMesh* HandRight = nullptr;
 };
 
 UCLASS()

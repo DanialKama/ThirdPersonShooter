@@ -9,12 +9,22 @@ UHealthComponent::UHealthComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// Initialize variables
+	DefaultHealth = MaxHealth = 100.0f;
+	LowHealth = 25.0f;
+	HealingAmount = 10.0f;
+	HealthRecoveryRate = 0.25f;
+	StartHealthRecoveryDelay = 3.0f;
+	CurrentHealth = 0.0f;
+	HitBoneName = FName("None");
+	ShotOrigin = FVector::ZeroVector;
 	bCanRecoverHealth = true;
+	bCommonInterface = false;
+	bCharacterInterface = false;
 }
 
-void UHealthComponent::SetupComponent()
+void UHealthComponent::Initialize()
 {
-	Super::SetupComponent();
+	Super::Initialize();
 	
 	if (Owner)
 	{

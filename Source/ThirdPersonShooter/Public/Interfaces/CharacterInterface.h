@@ -9,7 +9,6 @@
 #include "CharacterInterface.generated.h"
 
 class APickup;
-class ABaseCharacter;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)

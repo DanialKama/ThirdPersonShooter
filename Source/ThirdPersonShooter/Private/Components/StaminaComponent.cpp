@@ -8,12 +8,20 @@ UStaminaComponent::UStaminaComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// Initialize variables
+	DefaultStamina = MaxStamina = 100.0f;
+	RestoreStaminaAmount = 25.0f;
+	StaminaRestoreRate = 1.0f;
+	StartStaminaRecoveryDelay = 5.0f;
+	RunStaminaDrainAmount = 1.0f;
+	SprintStaminaDrainAmount = 3.0f;
+	CurrentStamina = 0.0f;
+	bCharacterInterface = false;
 	bDoOnce = true;
 }
 
-void UStaminaComponent::SetupComponent()
+void UStaminaComponent::Initialize()
 {
-	Super::SetupComponent();
+	Super::Initialize();
 
 	CurrentStamina = FMath::Clamp(DefaultStamina, 0.0f, MaxStamina);
 

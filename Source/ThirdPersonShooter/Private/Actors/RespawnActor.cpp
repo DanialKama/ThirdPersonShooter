@@ -11,23 +11,19 @@ ARespawnActor::ARespawnActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Create components
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
-	RespawnRadius = CreateDefaultSubobject<USphereComponent>(TEXT("Respawn Radius"));
-
-	// Attach components
 	SetRootComponent(Billboard);
-	RespawnRadius->SetupAttachment(Billboard);
-	
-	// Initialize components
 	Billboard->SetComponentTickEnabled(false);
 	Billboard->bIsScreenSizeScaled = true;
-
+	
+	RespawnRadius = CreateDefaultSubobject<USphereComponent>(TEXT("Respawn Radius"));
+	RespawnRadius->SetupAttachment(Billboard);
 	RespawnRadius->SetComponentTickEnabled(false);
 	RespawnRadius->SetSphereRadius(250.0f);
 	RespawnRadius->SetGenerateOverlapEvents(false);
 	RespawnRadius->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RespawnRadius->SetCollisionResponseToAllChannels(ECR_Ignore);
+	RespawnRadius->CanCharacterStepUpOn = ECB_No;
 }
 
 void ARespawnActor::BeginPlay()

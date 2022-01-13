@@ -6,10 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RespawnActor.generated.h"
 
-class UBillboardComponent;
 class AAICharacter;
-class USphereComponent;
-class UNavigationSystemV1;
 
 USTRUCT(BlueprintType)
 struct FRespawnInfo
@@ -17,10 +14,16 @@ struct FRespawnInfo
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, Category = "Defaults")
-	float SpawnTime = 5.0f;
+	float SpawnTime;
 	
 	UPROPERTY(EditAnywhere, Category = "Defaults")
 	TSubclassOf<AAICharacter> CharacterToSpawn;
+
+	// Default constructor
+	FRespawnInfo()
+	{
+		SpawnTime = 5.0f;
+	}
 };
 
 UCLASS()
@@ -28,20 +31,18 @@ class THIRDPERSONSHOOTER_API ARespawnActor : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	ARespawnActor();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UBillboardComponent* Billboard;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USphereComponent* RespawnRadius;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class USphereComponent* RespawnRadius;
+
+// Functions
+public:	
+	ARespawnActor();
 	
 	/** Enter the respawn queue and wait till respawning */
 	void EnterRespawnQueue(FRespawnInfo RespawnInfo);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
-	TArray<FRespawnInfo> RespawnList;
 
 protected:
 	virtual void BeginPlay() override;
@@ -52,8 +53,14 @@ private:
 	UFUNCTION()
 	void RespawnHandler();
 
+// Variables
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	TArray<FRespawnInfo> RespawnList;
+
+private:
 	UPROPERTY()
-	UNavigationSystemV1* NavigationSystem;
+	class UNavigationSystemV1* NavigationSystem;
 
 	FTimerHandle RespawnTimer;
 };

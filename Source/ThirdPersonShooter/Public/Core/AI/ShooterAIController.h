@@ -10,42 +10,33 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 
-class UBehaviorTreeComponent;
-class UAISenseConfig_Sight;
-class UAISenseConfig_Damage;
-class UAISenseConfig_Hearing;
-class UAISenseConfig_Prediction;
-class AAICharacter;
-class APatrolPathActor;
-
 UCLASS()
 class THIRDPERSONSHOOTER_API AShooterAIController : public AAIController, public IAIControllerInterface
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UAIPerceptionComponent* AIPerception;
 	
 	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UAISenseConfig_Damage* AISense_Damage;
+	class UAISenseConfig_Damage* AISense_Damage;
 	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UAISenseConfig_Sight* AISense_Sight;
+	class UAISenseConfig_Sight* AISense_Sight;
 	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UAISenseConfig_Hearing* AISense_Hearing;
+	class UAISenseConfig_Hearing* AISense_Hearing;
 	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UAISenseConfig_Prediction* AISense_Prediction;
-	
+	class UAISenseConfig_Prediction* AISense_Prediction;
+
+// Functions
 public:
 	AShooterAIController();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UAIPerceptionComponent* AIPerception;
-
 	void TryToUseWeapon();
+	
 	virtual void SetAIState_Implementation(EAIState NewAIState) override;
 	
 	/** Get current weapon state and react accordingly */
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
-
-	UPROPERTY()
-	AAICharacter* ControlledPawn;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -83,20 +74,26 @@ private:
 	
 	UFUNCTION()
 	void Surrender();
+
+// Variables
+public:
+	UPROPERTY()
+	class AAICharacter* ControlledPawn;
 	
+private:
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 	
 	UPROPERTY()
-	UBehaviorTreeComponent* BehaviorTreeComp;
+	class UBehaviorTreeComponent* BehaviorTreeComp;
 	
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 	
 	UPROPERTY()
-	APatrolPathActor* PatrolPath;
+	class APatrolPathActor* PatrolPath;
 	
 	EWeaponState WeaponState;
 	
@@ -105,5 +102,6 @@ private:
 	AActor* Attacker;
 	
 	EAIState AIState;
+	
 	FTimerHandle BackToRoutineTimer, AskForHelpTimer;
 };

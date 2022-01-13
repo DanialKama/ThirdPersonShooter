@@ -20,43 +20,46 @@
 
 AShooterAIController::AShooterAIController()
 {
-	// Create Components
-	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception"));
 	AISense_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Sence"));
-	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
-	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
-	AISense_Prediction = CreateDefaultSubobject<UAISenseConfig_Prediction>(TEXT("Prediction Sense"));
-	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Component"));
-	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
-	
-	// Initialize components
-	AIPerception->ConfigureSense(*AISense_Sight);
-	AIPerception->ConfigureSense(*AISense_Damage);
-	AIPerception->ConfigureSense(*AISense_Hearing);
-	AIPerception->ConfigureSense(*AISense_Prediction);
-	AIPerception->SetDominantSense(AISense_Damage->GetSenseImplementation());
-	
 	AISense_Sight->PeripheralVisionAngleDegrees = 45.0f;
 	AISense_Sight->PointOfViewBackwardOffset = 250.0f;
 	AISense_Sight->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Sight->DetectionByAffiliation.bDetectNeutrals = true;
-
+	
+	AISense_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Sense"));
 	AISense_Damage->SetMaxAge(0.2f);
 	
+	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
 	AISense_Hearing->HearingRange = 5000.0;
 	AISense_Hearing->SetMaxAge(0.2);
 	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;
-
+	
+	AISense_Prediction = CreateDefaultSubobject<UAISenseConfig_Prediction>(TEXT("Prediction Sense"));
 	AISense_Prediction->SetMaxAge(0.2f);
 
+	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception"));
+	AIPerception->ConfigureSense(*AISense_Sight);
+	AIPerception->ConfigureSense(*AISense_Damage);
+	AIPerception->ConfigureSense(*AISense_Hearing);
+	AIPerception->ConfigureSense(*AISense_Prediction);
+	AIPerception->SetDominantSense(AISense_Damage->GetSenseImplementation());
 	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
-
+	
+	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Component"));
+	
+	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
+	
 	// Initialize variables
+	WeaponState = EWeaponState::Idle;
+	AIState = EAIState::Idle;
+	bAICharacterInterface = false;
 	bDoOnceFight = true;
 	bDoOnceHelp = true;
+	bIsDisarm = false;
+	bHasPath = false;
 }
 
 void AShooterAIController::BeginPlay()
@@ -399,7 +402,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	{
 	case 0:
 		// Idle
-		if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == 0)
+		if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == 0)
 		{
 			SwitchWeapon();
 		}
@@ -421,7 +424,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	case 4:
 		// Reloading
 		// If AI is in combat and there is an attacker and half of the mag is already full then stop reloading and continue fighting
-		if (Attacker && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->AmmoComponent->MagazineSize / 2)
+		if (Attacker && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->GetAmmoComponent()->MagazineSize / 2)
 		{
 			Fight();
 		}
@@ -452,15 +455,15 @@ void AShooterAIController::SwitchWeapon()
 	{
 	case 0:
 		// No Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
@@ -472,11 +475,11 @@ void AShooterAIController::SwitchWeapon()
 		break;
 	case 1:
 		// Primary Weapon
-		if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
@@ -488,11 +491,11 @@ void AShooterAIController::SwitchWeapon()
 		break;
 	case 2:
 		// Secondary Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
+		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSidearm();
 		}
@@ -504,11 +507,11 @@ void AShooterAIController::SwitchWeapon()
 		break;
 	case 3:
 		// Sidearm Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToPrimary();
 		}
-		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
+		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
 		{
 			ControlledPawn->SwitchToSecondary();
 		}

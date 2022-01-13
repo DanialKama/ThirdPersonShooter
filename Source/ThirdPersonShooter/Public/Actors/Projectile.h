@@ -10,7 +10,6 @@
 #include "Projectile.generated.h"
 
 class USoundCue;
-class UProjectileMovementComponent;
 class AProjectileFieldSystemActor;
 
 USTRUCT(BlueprintType)
@@ -22,79 +21,97 @@ struct FProjectileEffect
 	uint8 bIsExplosive : 1;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* FleshHitEmitter = nullptr;
+	UParticleSystem* FleshHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* WoodHitEmitter = nullptr;
+	UParticleSystem* WoodHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* MetalHitEmitter = nullptr;
+	UParticleSystem* MetalHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* StoneHitEmitter = nullptr;
+	UParticleSystem* StoneHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* DirtHitEmitter = nullptr;
+	UParticleSystem* DirtHitEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* ExplosiveEmitter = nullptr;
+	UParticleSystem* ExplosiveEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* FleshHitSound = nullptr;
+	USoundCue* FleshHitSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ObjectHitSound = nullptr;
+	USoundCue* ObjectHitSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* FleshDecal = nullptr;
+	UMaterialInterface* FleshDecal;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FVector FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
+	FVector FleshDecalSize;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float FleshDecalLifeSpan = 20.0f;
+	float FleshDecalLifeSpan;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* WoodDecal = nullptr;
+	UMaterialInterface* WoodDecal;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* MetalDecal = nullptr;
+	UMaterialInterface* MetalDecal;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* StoneDecal = nullptr;
+	UMaterialInterface* StoneDecal;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* DirtDecal = nullptr;
+	UMaterialInterface* DirtDecal;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FVector ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
+	FVector ObjectDecalSize;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float ObjectDecalLifeSpan = 10.0f;
+	float ObjectDecalLifeSpan;
+
+	// Default constructor
+	FProjectileEffect()
+	{
+		bIsExplosive = false;
+		FleshHitEmitter = nullptr;
+		WoodHitEmitter = nullptr;
+		MetalHitEmitter = nullptr;
+		StoneHitEmitter = nullptr;
+		DirtHitEmitter = nullptr;
+		ExplosiveEmitter = nullptr;
+		FleshHitSound = nullptr;
+		ObjectHitSound = nullptr;
+		FleshDecal = nullptr;
+		FleshDecalSize = FVector(1.0f, 5.0f, 5.0f);
+		FleshDecalLifeSpan = 20.0f;
+		WoodDecal = nullptr;
+		MetalDecal = nullptr;
+		StoneDecal = nullptr;
+		DirtDecal = nullptr;
+		ObjectDecalSize = FVector(5.0f, 10.0f, 10.0f);
+		ObjectDecalLifeSpan = 10.0f;
+	}
 };
 
 UCLASS()
 class THIRDPERSONSHOOTER_API AProjectile : public AActor
 {
 	GENERATED_BODY()
-	
-public:
-	AProjectile();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* StaticMesh;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UParticleSystemComponent* TrailParticle;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UProjectileMovementComponent* ProjectileMovement;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	int32 NumberOfPellets = 1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UProjectileMovementComponent* ProjectileMovement;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	float PelletSpread = 0.0f;
+// Functions
+public:
+	AProjectile();
 
 private:
 	UFUNCTION()
@@ -105,8 +122,17 @@ private:
 	void CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
 	void SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const;
 
+// Variables
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	int32 NumberOfPellets;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	float PelletSpread;
+
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	EAmmoType AmmoType = EAmmoType::AssaultRifleNormal;
+	EAmmoType AmmoType;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UDataTable* ProjectileDataTable;
@@ -124,5 +150,5 @@ private:
 	FProjectileEffect ProjectileEffect;
 
 	/** For switch on surface types */
-	int32 SwitchExpression = 0;
+	int32 SwitchExpression;
 };

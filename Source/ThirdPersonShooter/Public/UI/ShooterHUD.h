@@ -10,7 +10,8 @@ UCLASS()
 class THIRDPERSONSHOOTER_API AShooterHUD : public AHUD
 {
 	GENERATED_BODY()
-	
+
+// Functions
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ShooterHUD")
 	void SetHealth(float CurrentHealth);

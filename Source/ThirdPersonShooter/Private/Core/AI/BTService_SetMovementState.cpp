@@ -11,6 +11,10 @@ UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitialize
 	bNotifyTick = false;
 	bTickIntervals = false;
 	bNotifyBecomeRelevant = true;
+
+	MovementState = EMovementState::Walk;
+	bRelatedToCrouch = false;
+	bRelatedToProne = false;
 }
 
 void UBTService_SetMovementState::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

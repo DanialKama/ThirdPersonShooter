@@ -11,9 +11,12 @@ class THIRDPERSONSHOOTER_API UHealthComponent : public UBaseComponent
 {
 	GENERATED_BODY()
 
+// Functions
 public:	
 	UHealthComponent();
 
+	virtual void Initialize() override;
+	
 	void Healing(float HealthDifference);
 
 	/** Only start when stamina is full */
@@ -22,23 +25,6 @@ public:
 	
 	/** Stop when stamina is not full */
 	void StopHealthRecovery();
-	
-	UPROPERTY(EditAnywhere, Category = "Defaults")
-	uint8 bCanRecoverHealth : 1;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float MaxHealth = 100.0f;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float DefaultHealth = 100.0f;
-	
-	FName HitBoneName = TEXT("None");
-	
-	/** Direction of the shot */
-	FVector ShotOrigin = FVector::ZeroVector;
-	
-protected:
-	virtual void SetupComponent() override;
 
 private:
 	UFUNCTION()
@@ -55,22 +41,39 @@ private:
 	UFUNCTION()
 	void RecoverHealth();
 
+// Variables
+public:
+	UPROPERTY(EditAnywhere, Category = "Defaults")
+	uint8 bCanRecoverHealth : 1;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float MaxHealth;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float DefaultHealth;
+	
+	FName HitBoneName;
+	
+	/** Direction of the shot */
+	FVector ShotOrigin;
+	
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float LowHealth = 25.0f;
+	float LowHealth;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float HealingAmount = 10.0f;
+	float HealingAmount;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float HealthRecoveryRate = 0.25f;
+	float HealthRecoveryRate;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float StartHealthRecoveryDelay = 3.0f;
+	float StartHealthRecoveryDelay;
 	
 	uint8 bCommonInterface : 1, bCharacterInterface : 1;
 
 	/** At begin play Current Health is equal to Default Health */
-	float CurrentHealth = 0.0f;
+	float CurrentHealth;
 	
 	FTimerHandle HealthRecoveryTimer;
 };

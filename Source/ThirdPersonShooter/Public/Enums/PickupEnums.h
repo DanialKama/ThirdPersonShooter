@@ -15,9 +15,9 @@ enum class EItemType : uint8
 UENUM(BlueprintType, Category = "PickupEnums")
 enum class EPickupState : uint8
 {
-	Drop	UMETA(DisplayName = "Drop"),
-	Pickup	UMETA(DisplayName = "Pickup"),
-	Remove	UMETA(DisplayName = "Remove")
+	Drop	UMETA(DisplayName = "Dropped"),
+	Pickup	UMETA(DisplayName = "Picked Up"),
+	Remove	UMETA(DisplayName = "Removed")
 };
 
 UENUM(BlueprintType, Category = "PickupWeaponEnums")

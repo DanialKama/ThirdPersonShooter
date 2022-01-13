@@ -12,22 +12,22 @@
 
 AAICharacter::AAICharacter()
 {
-	// Create components
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
-
-	// Attach components
 	Widget->SetupAttachment(GetRootComponent());
-
-	// Initialize components
 	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
-	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Widget->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Widget->CanCharacterStepUpOn = ECB_No;
 	Widget->SetVisibility(false);
 
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// Initialize variables
+	RespawnTime = 5.0f;
+	bAIControllerInterface = false;
+	bWidgetInterface = false;
 }
 
 void AAICharacter::BeginPlay()
@@ -50,7 +50,7 @@ void AAICharacter::PossessedBy(AController* NewController)
 		bAIControllerInterface = true;
 
 		AIBlackboard = AIController->GetBlackboardComponent();
-		const float Health = HealthComponent->DefaultHealth / HealthComponent->MaxHealth;
+		const float Health = GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth;
 		AIBlackboard->SetValueAsFloat(FName("Health"), Health);
 
 		Widget->InitWidget();

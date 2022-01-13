@@ -7,21 +7,17 @@
 #include "Interfaces/AICharacterInterface.h"
 #include "AICharacter.generated.h"
 
-class AShooterAIController;
-class UWidgetComponent;
-class UBlackboardComponent;
-class ARespawnActor;
-
 UCLASS()
 class THIRDPERSONSHOOTER_API AAICharacter : public ABaseCharacter, public IAICharacterInterface
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UWidgetComponent* Widget;
+
+// Functions
 public:
 	AAICharacter();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UWidgetComponent* Widget;
 
 	/** True to do it, false to stop it (to start fire weapon aim is necessary) */
 	void UseWeapon(bool bAim, bool bFire);
@@ -35,21 +31,15 @@ public:
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
 	virtual APatrolPathActor* GetPatrolPath_Implementation() override;
-
-	UPROPERTY()
-	ARespawnActor* RespawnHandler;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	UAnimMontage* SurrenderMontage;
 	
 protected:
 	virtual void BeginPlay() override;
-	
+	virtual void PossessedBy(AController* NewController) override;
+
 	virtual void SwitchIsEnded() override;
 	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const override;
 
 private:
-	virtual void PossessedBy(AController* NewController) override;
 	void SetPrimaryWeapon();
 	
 	UFUNCTION()
@@ -63,12 +53,16 @@ private:
 
 	UFUNCTION()
 	void TryToResetMovement() const;
-	
-	uint8 bAIControllerInterface : 1, bWidgetInterface : 1, bReloadGate : 1;
-	
+
+// Variables
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UAnimMontage* SurrenderMontage;
+
 	UPROPERTY()
-	AShooterAIController* AIController;
+	class ARespawnActor* RespawnHandler;
 	
+private:
 	UPROPERTY(EditInstanceOnly, Category = "Defaults")
 	APatrolPathActor* PatrolPath;
 	
@@ -79,10 +73,15 @@ private:
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	float RespawnTime = 5.0f;
+	float RespawnTime;
+
+	uint8 bAIControllerInterface : 1, bWidgetInterface : 1;
 	
 	UPROPERTY()
-	UBlackboardComponent* AIBlackboard;
+	class AShooterAIController* AIController;
+	
+	UPROPERTY()
+	class UBlackboardComponent* AIBlackboard;
 	
 	FTimerHandle WidgetTimerHandle;
 };

@@ -6,37 +6,30 @@
 #include "GameFramework/Actor.h"
 #include "EmptyShell.generated.h"
 
-class UProjectileMovementComponent;
-class USoundCue;
-
 UCLASS()
 class THIRDPERSONSHOOTER_API AEmptyShell : public AActor
 {
 	GENERATED_BODY()
-	
-public:
-	AEmptyShell();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* StaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UProjectileMovementComponent* ProjectileMovement;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UProjectileMovementComponent* ProjectileMovement;
 
-protected:
-	virtual void BeginPlay() override;
+// Functions
+public:
+	AEmptyShell();
 
 private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	/** Set simulate physics to true */
-	UFUNCTION()
-	void StartPhysics() const;
+// Variables
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* HitSound;
 
 	/** Play the sound of hitting the ground for once */
 	uint8 bDoOnce : 1;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	USoundCue* HitSound;
 };

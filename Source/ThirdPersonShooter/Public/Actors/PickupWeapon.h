@@ -8,13 +8,7 @@
 #include "Structs/WeaponInfoStruct.h"
 #include "PickupWeapon.generated.h"
 
-class UBoxComponent;
-class UWidgetComponent;
 class USoundCue;
-class UCameraComponent;
-class UAmmoComponent;
-class AAIController;
-class IAIControllerInterface;
 class AEmptyShell;
 class AProjectile;
 class AMagazine;
@@ -25,34 +19,34 @@ struct FWeaponDefaults
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector MuzzleFlashScale = FVector::OneVector;
+	FVector MuzzleFlashScale;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FName MagazineBoneName = FName("None");
+	FName MagazineBoneName;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more intensity"))
-	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
+	FRotator RotationIntensity;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = faster control"))
-	float ControlTime = 0.25f;
+	float ControlTime;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = more fedback"))
-	float CrosshairRecoil = 5.0f;
+	float CrosshairRecoil;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more fedback"))
-	float ControllerPitch = -0.5f;
+	float ControllerPitch;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ReloadSound = nullptr;
+	USoundCue* ReloadSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* RaiseSound = nullptr;
+	USoundCue* RaiseSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* LowerSound = nullptr;
+	USoundCue* LowerSound;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AProjectile>> Projectile;
@@ -62,6 +56,20 @@ struct FWeaponDefaults
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMagazine> Magazine;
+
+	// Default constructor
+	FWeaponDefaults()
+	{
+		MuzzleFlashScale = FVector::OneVector;
+		MagazineBoneName = FName("None");
+		RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
+		ControlTime  = 0.25f;
+		CrosshairRecoil = 5.0f;
+		ControllerPitch = -0.5f;
+		ReloadSound = nullptr;
+		RaiseSound = nullptr;
+		LowerSound = nullptr;
+	}
 };
 
 UCLASS()
@@ -69,26 +77,27 @@ class THIRDPERSONSHOOTER_API APickupWeapon : public APickup, public ICommonInter
 {
 	GENERATED_BODY()
 
-public:
-	APickupWeapon();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	USkeletalMeshComponent* SkeletalMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UBoxComponent* BoxCollision;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UBoxComponent* BoxCollision;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UParticleSystemComponent* MuzzleFlash;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UAudioComponent* FireSound;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UWidgetComponent* Widget;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UWidgetComponent* Widget;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UAmmoComponent* AmmoComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UAmmoComponent* AmmoComponent;
+
+// Functions
+public:
+	APickupWeapon();
 
 	/** Location use to adjust character left hand with IK in animation blueprint */
 	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
@@ -108,16 +117,9 @@ public:
 	virtual void SetPickupStatus(const EPickupState PickupState) override;
 	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
-	FWeaponInfo WeaponInfo;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	FWeaponDefaults WeaponDefaults;
-	
-	/** use for line trace if the owner is player */
-	UPROPERTY()
-	UCameraComponent* CameraComponent;
+
+	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() const { return SkeletalMesh; }
+	FORCEINLINE UAmmoComponent* GetAmmoComponent() const { return AmmoComponent; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -154,10 +156,23 @@ private:
 	UFUNCTION()
 	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
-
+// Variables
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	FWeaponInfo WeaponInfo;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	FWeaponDefaults WeaponDefaults;
+	
+	/** Use for line trace if the owner is player */
+	UPROPERTY()
+	class UCameraComponent* CameraComponent;
+	
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	uint8 bDrawDebugLineTrace : 1;
+	
+	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
 
 	UPROPERTY()
 	AProjectile* CurrentProjectile;
@@ -169,7 +184,7 @@ private:
 	AController* OwnerController;
 	
 	UPROPERTY()
-	AAIController* AIController;
+	class AAIController* AIController;
 
 	FTimerHandle FireWeaponTimer;
 };

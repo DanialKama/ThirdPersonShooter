@@ -12,9 +12,15 @@ class THIRDPERSONSHOOTER_API UBTService_SetMovementState : public UBTService_Bla
 {
 	GENERATED_BODY()
 
+// Functions
 public:
 	UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	
+
+protected:
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+// Variables
+public:
 	UPROPERTY(EditAnywhere, Category = "Node")
 	EMovementState MovementState;
 	
@@ -23,7 +29,4 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Node")
 	uint8 bRelatedToProne : 1;
-
-protected:
-	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

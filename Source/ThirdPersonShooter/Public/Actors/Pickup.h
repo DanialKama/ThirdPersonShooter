@@ -11,13 +11,15 @@ UCLASS()
 class THIRDPERSONSHOOTER_API APickup : public AActor
 {
 	GENERATED_BODY()
-	
+
+// Functions
 public:	
 	APickup();
 
 	virtual void SetPickupStatus(EPickupState PickupState);
 
+// Variables
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	EItemType PickupType = EItemType::Weapon;
+	EItemType PickupType;
 };

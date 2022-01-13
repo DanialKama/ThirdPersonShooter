@@ -7,13 +7,12 @@ APatrolPathActor::APatrolPathActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Create components
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
-
-	// Attach components
 	SetRootComponent(Billboard);
-
-	// Initialize components
 	Billboard->SetComponentTickEnabled(false);
 	Billboard->bIsScreenSizeScaled = true;
+
+	// Initialize variables
+	bIsLooping = true;
+	WaitTime = 2.0f;
 }

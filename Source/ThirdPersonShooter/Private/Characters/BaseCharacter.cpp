@@ -22,24 +22,24 @@ ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bUseControllerRotationYaw = false;
-
-	// Create components
+	
+	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
+	
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
+	FallCapsule->SetupAttachment(GetMesh());
+	FallCapsule->SetComponentTickEnabled(false);
+	FallCapsule->CanCharacterStepUpOn = ECB_No;
+	FallCapsule->SetCollisionProfileName("FallCapsule");
+	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
+	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
+	
 	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
-	// Attach components
-	FallCapsule->SetupAttachment(GetMesh());
-
-	// Initialize components
-	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
-
-	FallCapsule->SetComponentTickEnabled(false);
-	FallCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
-
 	GetCharacterMovement()->BrakingFriction = 0.1f;
 	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
@@ -55,12 +55,31 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	
 	// Initialize variables
+	CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
+	MovementState = PreviousMovementState = EMovementState::Walk;
+	FallDamageMultiplier = 0.025;
+	MinVelocityToApplyFallDamage = 1250.0f;
+	StandingDelay = 2.5;
+	DeathLifeSpan = 5.0f;
+	PickupType = EItemType::Weapon;
+	MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f);
+	PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	WeaponToGrab = EWeaponToDo::NoWeapon;
+	WeaponToSwitchType = WeaponToHolsterType = EWeaponType::Rifle;
+	DelayedFrames = 0;
+	bCharacterAnimationInterface = false;
 	bDoOnceStopped = true;
 	bDoOnceMoving = true;
 	bDoOnceReload = true;
+	bRagdollState = false;
 	bDoOnceDeath = true;
+	bCanHolster = false;
 	bCanReload = true;
 	bIsAlive = true;
+	bIsArmed = false;
+	bIsAimed = false;
 }
 
 void ABaseCharacter::BeginPlay()
@@ -382,8 +401,8 @@ APickupWeapon* ABaseCharacter::SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpaw
 	APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn->GetClass(), GetActorLocation(), FRotator::ZeroRotator, ActorSpawnParameters);
 
 	// Transfer important info to spawned weapon
-	NewWeapon->AmmoComponent->SetAmmoInfo(WeaponToSpawn->AmmoComponent->MaxAmmo, WeaponToSpawn->AmmoComponent->CurrentAmmo,
-		WeaponToSpawn->AmmoComponent->MagazineSize, WeaponToSpawn->AmmoComponent->CurrentMagazineAmmo);
+	NewWeapon->GetAmmoComponent()->SetAmmoInfo(WeaponToSpawn->GetAmmoComponent()->MaxAmmo, WeaponToSpawn->GetAmmoComponent()->CurrentAmmo,
+		WeaponToSpawn->GetAmmoComponent()->MagazineSize, WeaponToSpawn->GetAmmoComponent()->CurrentMagazineAmmo);
 
 	WeaponToSpawn->Destroy();
 	return NewWeapon;
@@ -473,15 +492,15 @@ void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 			break;
 		case 1:
 			// Primary Weapon
-			PrimaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			PrimaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
 			break;
 		case 2:
 			// Secondary Weapon
-			SecondaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			SecondaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
 			break;
 		case 3:
 			// Sidearm Weapon
-			SidearmWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
+			SidearmWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
 			break;
 		}
 
@@ -552,7 +571,7 @@ void ABaseCharacter::StopFireWeapon()
 
 void ABaseCharacter::ReloadWeapon()
 {
-	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->AmmoComponent->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
+	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->GetAmmoComponent()->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
 	{
 		bDoOnceReload = false;
 		UAnimMontage* MontageToPlay = nullptr;
@@ -637,17 +656,17 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			// Remove Mag
 			SpawnMagazine(CurrentWeapon, false);
 			CurrentWeapon->SetMagazineVisibility(false);
-			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
+			Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
 			break;
 		case 2:
 			// Drop Mag
-			Magazine->StaticMesh->SetSimulatePhysics(true);
+			Magazine->GetMesh()->SetSimulatePhysics(true);
 			break;
 		case 3:
 			// Pick Mag
 			SpawnMagazine(CurrentWeapon, true);
 			CurrentWeapon->SetMagazineVisibility(false);
-			Magazine->StaticMesh->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
+			Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
 			break;
 		case 4:
 			// Insert Mag
@@ -660,7 +679,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 			if (CurrentWeapon && bCanReload)
 			{
 				CurrentWeapon->ReloadWeapon();
-				if (CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == CurrentWeapon->AmmoComponent->MagazineSize)
+				if (CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == CurrentWeapon->GetAmmoComponent()->MagazineSize)
 				{
 					StopAnimMontage();
 				}
@@ -678,7 +697,7 @@ void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew)
 		Transform.SetLocation(GetMesh()->GetSocketLocation(FName("LeftHandHoldSocket")));
 		Magazine = GetWorld()->SpawnActorDeferred<AMagazine>(Weapon->WeaponDefaults.Magazine, Transform, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		// If spawned mag is the used mag then change mesh based on current magazine ammo
-		if (!bIsNew && CurrentWeapon->AmmoComponent->CurrentMagazineAmmo <= 0)
+		if (!bIsNew && CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo <= 0)
 		{
 			Magazine->bMagazineIsEmpty = true;
 		}
@@ -964,8 +983,8 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 {
 	if (WeaponToSwitch)
 	{
-		WeaponToSwitch->SkeletalMesh->SetSimulatePhysics(false);
-		WeaponToSwitch->SkeletalMesh->SetCollisionProfileName(FName("NoCollision"), false);
+		WeaponToSwitch->GetSkeletalMesh()->SetSimulatePhysics(false);
+		WeaponToSwitch->GetSkeletalMesh()->SetCollisionProfileName(FName("NoCollision"), false);
 
 		// If character try to switch, attach the current weapon to skeletal mesh socket and set target weapon as current weapon
 		if (bSwitchWeapon)

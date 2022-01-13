@@ -22,55 +22,56 @@
 
 APickupWeapon::APickupWeapon()
 {
-	// Create components
+	PrimaryActorTick.bCanEverTick = false;
+
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
-	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
-	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
-	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
-
-	// Attach components
 	SetRootComponent(SkeletalMesh);
-	BoxCollision->SetupAttachment(SkeletalMesh);
-	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
-	FireSound->SetupAttachment(SkeletalMesh);
-	Widget->SetupAttachment(SkeletalMesh);
-
-	// Initialize components
 	SkeletalMesh->SetComponentTickEnabled(false);
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
-	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
-	SkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SkeletalMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	SkeletalMesh->CanCharacterStepUpOn = ECB_No;
+	SkeletalMesh->SetCollisionProfileName("Weapon");
 	
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	BoxCollision->SetupAttachment(SkeletalMesh);
 	BoxCollision->SetComponentTickEnabled(false);
-	BoxCollision->SetBoxExtent(FVector (8.0f, 50.0f, 20.0f));
+	BoxCollision->SetBoxExtent(FVector(8.0f, 50.0f, 20.0f));
 	BoxCollision->bApplyImpulseOnDamage = false;
 	BoxCollision->SetGenerateOverlapEvents(true);
-	BoxCollision->CanCharacterStepUp(nullptr);
-	BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BoxCollision->CanCharacterStepUpOn = ECB_No;
+	BoxCollision->SetCollisionProfileName("CollisionBound");
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
 	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 	
+	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
+	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
 	MuzzleFlash->SetComponentTickEnabled(false);
 	MuzzleFlash->SetAutoActivate(false);
-
+	
+	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
+	FireSound->SetupAttachment(SkeletalMesh);
 	FireSound->SetComponentTickEnabled(false);
 	FireSound->SetAutoActivate(false);
-
+	
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	Widget->SetupAttachment(SkeletalMesh);
 	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
-	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Widget->CanCharacterStepUpOn = ECB_No;
 	Widget->SetVisibility(false);
+	
+	AmmoComponent = CreateDefaultSubobject<UAmmoComponent>(TEXT("Ammo Component"));
 
 	// Initialize variables
 	PickupType = EItemType::Weapon;
 	bDoOnceFire = true;
+	bOwnerIsAI = false;
 	bCanFire = true;
+	bCharacterInterface = false;
+	bPlayerControllerInterface = false;
+	bAIControllerInterface = false;
+	bDrawDebugLineTrace = false;
 }
 
 void APickupWeapon::BeginPlay()

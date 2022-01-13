@@ -7,28 +7,25 @@
 #include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
-class AShooterPlayerController;
-class AShooterHUD;
-class USpringArmComponent;
-
 UCLASS()
 class THIRDPERSONSHOOTER_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UCameraComponent* Camera;
+	
 	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
 	UTimelineComponent* AimTimeline;
-	
+
+// Functions
 public:
 	APlayerCharacter();
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USpringArmComponent* SpringArm;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UCameraComponent* TPP;
 
 	virtual void ResetAim() override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
@@ -39,9 +36,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
-	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot) override;
 	virtual void Destroyed() override;
+
+	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot) override;
 
 private:
 	/** Wait for one frame to access a valid player controller */
@@ -77,26 +74,28 @@ private:
 	
 	UFUNCTION()
 	void AimTimeLineFinished();
-	
-	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;
+
+// Variables
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	float BaseTurnRate;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	float BaseTurnRate = 45.0f;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	float BaseLookUpRate = 45.0f;
+	float BaseLookUpRate;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = "true"))
-	float TapThreshold = 0.2f;
+	float TapThreshold;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* AimFloatCurve;
+
+	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;
 	
 	UPROPERTY()
-	AShooterPlayerController* PlayerController;
+	class AShooterPlayerController* PlayerController;
 	
 	UPROPERTY()
-	AShooterHUD* HUDRef;
+	class AShooterHUD* HUDRef;
 	
 	uint8 TabNumber, PreviousTapNumber;
 	

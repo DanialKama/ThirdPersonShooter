@@ -6,11 +6,20 @@
 UAmmoComponent::UAmmoComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	// Initialize variables
+	MaxAmmo = 0;
+	DefaultAmmo = 0;
+	MagazineSize = 1;
+	CurrentMagazineAmmo = 0;
+	ReloadAmount = 1;
+	CurrentAmmo = 0;
+	bCommonInterface = false;
 }
 
-void UAmmoComponent::SetupComponent()
+void UAmmoComponent::Initialize()
 {
-	Super::SetupComponent();
+	Super::Initialize();
 	
 	CurrentAmmo = DefaultAmmo;
 
@@ -118,7 +127,7 @@ void UAmmoComponent::SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmm
 	DefaultAmmo = InDefaultAmmo;
 	MagazineSize = InMagazineSize;
 	CurrentMagazineAmmo = InCurrentMagazineAmmo;
-	SetupComponent();
+	Initialize();
 }
 
 bool UAmmoComponent::BetterToReload() const

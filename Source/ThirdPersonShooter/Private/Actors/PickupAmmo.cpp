@@ -10,37 +10,38 @@
 
 APickupAmmo::APickupAmmo()
 {
-	// Create components
+	PrimaryActorTick.bCanEverTick = false;
+	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
-	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-
-	// Attach components
 	SetRootComponent(StaticMesh);
-	SphereCollision->SetupAttachment(StaticMesh);
-	Widget->SetupAttachment(StaticMesh);
-
-	// Initialize components
 	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetGenerateOverlapEvents(false);
-	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	StaticMesh->SetCollisionObjectType(ECC_PhysicsBody);
-
+	StaticMesh->CanCharacterStepUpOn = ECB_No;
+	StaticMesh->SetCollisionProfileName("Ammo");
+	
+	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
+	SphereCollision->SetupAttachment(StaticMesh);
 	SphereCollision->SetComponentTickEnabled(false);
 	SphereCollision->bApplyImpulseOnDamage = false;
+	SphereCollision->CanCharacterStepUpOn = ECB_No;
+	SphereCollision->SetCollisionProfileName("CollisionBound");
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
 	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
-
+	
+	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	Widget->SetupAttachment(StaticMesh);
 	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
-	Widget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Widget->CanCharacterStepUpOn = ECB_No;
 	Widget->SetVisibility(false);
-
+	
 	// Initialize variables
 	PickupType = EItemType::Ammo;
+	AmmoType = static_cast<int32>(EAmmoType::None);
+	Amount = 1;
 }
 
 void APickupAmmo::BeginPlay()

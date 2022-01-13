@@ -10,9 +10,4 @@ UBaseComponent::UBaseComponent()
 void UBaseComponent::Initialize()
 {
 	Owner = GetOwner();
-	SetupComponent();
-}
-
-void UBaseComponent::SetupComponent()
-{
 }

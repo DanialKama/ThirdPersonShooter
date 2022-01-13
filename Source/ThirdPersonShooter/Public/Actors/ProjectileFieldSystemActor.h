@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SphereComponent.h"
 #include "Field/FieldSystemActor.h"
 #include "ProjectileFieldSystemActor.generated.h"
 
@@ -11,34 +10,37 @@ UCLASS()
 class THIRDPERSONSHOOTER_API AProjectileFieldSystemActor : public AFieldSystemActor
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class USphereComponent* Sphere;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	URadialFalloff* RadialFalloff;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UOperatorField* OperatorField;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	URadialVector* RadialVector;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	URandomVector* RandomVector;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UUniformVector* UniformVector;
+
+// Functions
 public:
 	AProjectileFieldSystemActor();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USphereComponent* Sphere;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	URadialFalloff* RadialFalloff;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UOperatorField* OperatorField;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	URadialVector* RadialVector;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	URandomVector* RandomVector;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UUniformVector* UniformVector;
-
+// Variables
+public:
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
-	float StrainMagnitude = 50000.0f;
+	float StrainMagnitude;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
-	float ForceMagnitude = 5000.0f;
+	float ForceMagnitude;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
-	float TorqueMagnitude = 1000000.0f;
+	float TorqueMagnitude;
 };

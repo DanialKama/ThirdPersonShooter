@@ -8,8 +8,6 @@
 #include "Enums/PickupEnums.h"
 #include "PlayerControllerInterface.generated.h"
 
-class AShooterPlayerController;
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
 class UPlayerControllerInterface : public UInterface

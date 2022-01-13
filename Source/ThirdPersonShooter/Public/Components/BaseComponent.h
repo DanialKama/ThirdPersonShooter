@@ -11,14 +11,15 @@ class THIRDPERSONSHOOTER_API UBaseComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+// Functions
 public:
 	UBaseComponent();
-	
-	void Initialize();
 
+	/** Setup component */
+	virtual void Initialize();
+
+// Variables
 protected:
-	virtual void SetupComponent();
-
 	UPROPERTY()
 	AActor* Owner;
 };

@@ -11,9 +11,12 @@ class THIRDPERSONSHOOTER_API UStaminaComponent : public UBaseComponent
 {
 	GENERATED_BODY()
 
+// Functions
 public:
 	UStaminaComponent();
 
+	virtual void Initialize() override;
+	
 	UFUNCTION(BlueprintCallable, Category = "StaminaComponent")
 	void StopStaminaDrain();
 
@@ -22,33 +25,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StaminaComponent")
 	void StartSprinting();
-
-	/** At begin play Current Stamina is equal to Default Stamina */
-	float CurrentStamina = 0.0f;
-	
-protected:
-	virtual void SetupComponent() override;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float MaxStamina = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float DefaultStamina = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float RestoreStaminaAmount = 25.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per second", ClampMin = "0.0", UIMin = "0.0"))
-	float StaminaRestoreRate = 1.0f;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float StartStaminaRecoveryDelay = 5.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float RunStaminaDrainAmount = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float SprintStaminaDrainAmount = 3.0f;
 
 private:
 	UFUNCTION()
@@ -59,7 +35,35 @@ private:
 	
 	UFUNCTION()
 	void SprintingDrainStamina();
+
+// Variables
+public:
+	/** At begin play Current Stamina is equal to Default Stamina */
+	float CurrentStamina;
+	
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float MaxStamina;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float DefaultStamina;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float RestoreStaminaAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float StaminaRestoreRate;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float StartStaminaRecoveryDelay;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float RunStaminaDrainAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float SprintStaminaDrainAmount;
 	
 	uint8 bCharacterInterface : 1, bDoOnce : 1;
+	
 	FTimerHandle RestoreTimer, RunningTimer, SprintingTimer;
 };

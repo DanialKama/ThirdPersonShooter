@@ -15,24 +15,28 @@ AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Create components
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
-	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Trail Particle"));
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
-
-	// Attach components
 	SetRootComponent(StaticMesh);
-	TrailParticle->SetupAttachment(StaticMesh, TEXT("TrailSocket"));
-
-	// Initialize components
 	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
+	StaticMesh->CanCharacterStepUpOn = ECB_No;
+	StaticMesh->SetCollisionProfileName("Projectile");
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->bReturnMaterialOnMove = true;
 	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-
+	
+	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Trail Particle"));
+	TrailParticle->SetupAttachment(StaticMesh, TEXT("TrailSocket"));
+	
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 	ProjectileMovement->InitialSpeed = 2000.0f;
 	ProjectileMovement->MaxSpeed = 2000.0f;
+
+	// Initialize variables
+	NumberOfPellets = 1;
+	PelletSpread = 0.0f;
+	AmmoType = EAmmoType::AssaultRifleNormal;
+	SwitchExpression = 0;
 
 	// Load data tables
 	static ConstructorHelpers::FObjectFinder<UDataTable> ProjectileDataObject(TEXT("DataTable'/Game/Blueprints/Projectiles/DT_ProjectileInfo.DT_ProjectileInfo'"));

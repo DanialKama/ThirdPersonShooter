@@ -6,19 +6,20 @@
 #include "GameFramework/Actor.h"
 #include "PatrolPathActor.generated.h"
 
-class UBillboardComponent;
-
 UCLASS()
 class THIRDPERSONSHOOTER_API APatrolPathActor : public AActor
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UBillboardComponent* Billboard;
 	
+// Functions
 public:
 	APatrolPathActor();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UBillboardComponent* Billboard;
-
+// Variables
+public:
 	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (MakeEditWidget = true))
 	TArray<FVector> PathPoints;
 	

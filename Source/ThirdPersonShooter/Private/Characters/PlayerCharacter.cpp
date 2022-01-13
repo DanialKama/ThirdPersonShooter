@@ -13,26 +13,30 @@
 
 APlayerCharacter::APlayerCharacter()
 {
-	// Create Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
-	TPP = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
-
-	// Attach components
 	SpringArm->SetupAttachment(GetRootComponent());
-	TPP->SetupAttachment(SpringArm);
-
-	// Initialize components
 	SpringArm->SetComponentTickEnabled(false);
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 75.0f));
 	SpringArm->ProbeSize = 10.0;
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bEnableCameraLag = true;
-
-	TPP->SetComponentTickEnabled(false);
-
+	
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Perspective"));
+	Camera->SetupAttachment(SpringArm);
+	Camera->SetComponentTickEnabled(false);
+	
+	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
+	
 	// Initialize variables
+	BaseLookUpRate = 45.0f;
+	BaseTurnRate = 45.0f;
+	TapThreshold = 0.2f;
+	PreviousTapNumber = TabNumber = 0;
+	Direction = ETimelineDirection::Forward;
+	bDoubleTabGate = false;
 	bDoOnceCrouch = true;
+	bTapHeld = false;
+	
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -42,28 +46,37 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Input Actions
 		InputComponent->BindAction("Jump", IE_Pressed, this, &ABaseCharacter::StartJump);
 		InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
+		
 		InputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprinting);
 		InputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprinting);
+		
 		InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::TryToToggleCrouch);
 		InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
+		
 		InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
 		InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
+		
 		InputComponent->BindAction("Shoot", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
 		InputComponent->BindAction("Shoot", IE_Released, this, &ABaseCharacter::StopFireWeapon);
+		
 		InputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
+		
 		InputComponent->BindAction("SwitchToPrimary", IE_Pressed, this, &ABaseCharacter::SwitchToPrimary);
 		InputComponent->BindAction("SwitchToSecondary", IE_Pressed, this, &ABaseCharacter::SwitchToSecondary);
 		InputComponent->BindAction("SwitchToSidearm", IE_Pressed, this, &ABaseCharacter::SwitchToSidearm);
 		InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
 		InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
+		
 		InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
 		
 		// Input Axis
 		InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
 		InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
+		
 		InputComponent->BindAxis("Turn", this, &APlayerCharacter::AddControllerYawInput);
-		InputComponent->BindAxis("LookUp", this, &APlayerCharacter::AddControllerPitchInput);
 		InputComponent->BindAxis("TurnRate", this, &APlayerCharacter::GamepadAddToYaw);
+
+		InputComponent->BindAxis("LookUp", this, &APlayerCharacter::AddControllerPitchInput);
 		InputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::GamepadAddToPitch);
 	}
 }
@@ -72,7 +85,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ChildCameraComponent = TPP;
+	ChildCameraComponent = Camera;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
 
@@ -98,7 +111,7 @@ void APlayerCharacter::NextFrameBeginPlay()
 	HUDRef = Cast<AShooterHUD>(PlayerController->GetHUD());
 	if (HUDRef)
 	{
-		HUDRef->SetHealth(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
+		HUDRef->SetHealth(GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth);
 		HUDRef->SetUIVisibility(ESlateVisibility::Visible);
 	}
 }
@@ -249,13 +262,13 @@ void APlayerCharacter::AimTimeLineUpdate(float Value)
 {
 	if (Direction == ETimelineDirection::Forward)
 	{
-		TPP->SetFieldOfView(FMath::Lerp(TPP->FieldOfView, 50.0f, Value));
+		Camera->SetFieldOfView(FMath::Lerp(Camera->FieldOfView, 50.0f, Value));
 		SpringArm->SocketOffset.Y = FMath::Lerp(SpringArm->SocketOffset.Y, 50.0f, Value);
 		SpringArm->TargetArmLength = FMath::Lerp(SpringArm->TargetArmLength, 150.0f, Value);
 	}
 	else
 	{
-		TPP->SetFieldOfView(FMath::Lerp(90.0f, TPP->FieldOfView, Value));
+		Camera->SetFieldOfView(FMath::Lerp(90.0f, Camera->FieldOfView, Value));
 		SpringArm->SocketOffset.Y = FMath::Lerp(0.0f, SpringArm->SocketOffset.Y, Value);
 		SpringArm->TargetArmLength = FMath::Lerp(300.0f, SpringArm->TargetArmLength, Value);
 	}

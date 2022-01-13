@@ -8,22 +8,19 @@ AMagazine::AMagazine()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
-	// Create components
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Magazine"));
-
-	// Attach components
 	SetRootComponent(StaticMesh);
-
-	// Initialize components
 	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetNotifyRigidBodyCollision(true);
+	StaticMesh->SetCollisionProfileName("Magazine");
+	StaticMesh->CanCharacterStepUpOn = ECB_No;
 	StaticMesh->SetGenerateOverlapEvents(false);
-	StaticMesh->SetCollisionObjectType(ECC_WorldStatic);
 	StaticMesh->OnComponentHit.AddDynamic(this, &AMagazine::OnHit);
 
 	// Initialize variables
 	bDoOnce = true;
+	bMagazineIsEmpty = false;
 }
 
 void AMagazine::BeginPlay()

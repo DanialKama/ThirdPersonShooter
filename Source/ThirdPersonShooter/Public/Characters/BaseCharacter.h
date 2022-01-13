@@ -8,15 +8,7 @@
 #include "Interfaces/CommonInterface.h"
 #include "BaseCharacter.generated.h"
 
-class UHealthComponent;
-class UStaminaComponent;
-class UAIPerceptionStimuliSourceComponent;
-class APickup;
 class APickupWeapon;
-class APickupAmmo;
-class AMagazine;
-class UCameraComponent;
-class UTimelineComponent;
 
 enum class EReloadState : uint8
 {
@@ -40,79 +32,109 @@ struct FBodyParts
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* Head = nullptr;
+	USkeletalMesh* Head;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LegLeft = nullptr;
+	USkeletalMesh* LegLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LegRight = nullptr;
+	USkeletalMesh* LegRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighAndCalfLeft = nullptr;
+	USkeletalMesh* ThighAndCalfLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighAndCalfRight = nullptr;
+	USkeletalMesh* ThighAndCalfRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighLeft = nullptr;
+	USkeletalMesh* ThighLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ThighRight = nullptr;
+	USkeletalMesh* ThighRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfAndFootLeft = nullptr;
+	USkeletalMesh* CalfAndFootLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfAndFootRight = nullptr;
+	USkeletalMesh* CalfAndFootRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfLeft = nullptr;
+	USkeletalMesh* CalfLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* CalfRight = nullptr;
+	USkeletalMesh* CalfRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootLeft = nullptr;
+	USkeletalMesh* FootLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* FootRight = nullptr;
+	USkeletalMesh* FootRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ArmLeft = nullptr;
+	USkeletalMesh* ArmLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* ArmRight = nullptr;
+	USkeletalMesh* ArmRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmAndLowerArmLeft = nullptr;
+	USkeletalMesh* UpperArmAndLowerArmLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmAndLowerArmRight = nullptr;
+	USkeletalMesh* UpperArmAndLowerArmRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmLeft = nullptr;
+	USkeletalMesh* UpperArmLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* UpperArmRight = nullptr;
+	USkeletalMesh* UpperArmRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmAndHandLeft = nullptr;
+	USkeletalMesh* LowerArmAndHandLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmAndHandRight = nullptr;
+	USkeletalMesh* LowerArmAndHandRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmLeft = nullptr;
+	USkeletalMesh* LowerArmLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* LowerArmRight = nullptr;
+	USkeletalMesh* LowerArmRight;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* HandLeft = nullptr;
+	USkeletalMesh* HandLeft;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USkeletalMesh* HandRight = nullptr;
+	USkeletalMesh* HandRight;
+
+	// Default Constructor
+	FBodyParts()
+	{
+		Head = nullptr;
+		LegLeft = nullptr;
+		LegRight = nullptr;
+		ThighAndCalfLeft = nullptr;
+		ThighAndCalfRight = nullptr;
+		ThighLeft = nullptr;
+		ThighRight = nullptr;
+		CalfAndFootLeft = nullptr;
+		CalfAndFootRight = nullptr;
+		CalfLeft = nullptr;
+		CalfRight = nullptr;
+		FootLeft = nullptr;
+		FootRight = nullptr;
+		ArmLeft = nullptr;
+		ArmRight = nullptr;
+		UpperArmAndLowerArmLeft = nullptr;
+		UpperArmAndLowerArmRight = nullptr;
+		UpperArmLeft = nullptr;
+		UpperArmRight = nullptr;
+		LowerArmAndHandLeft = nullptr;
+		LowerArmAndHandRight = nullptr;
+		LowerArmLeft = nullptr;
+		LowerArmRight = nullptr;
+		HandLeft = nullptr;
+		HandRight = nullptr;
+	}
 };
 
 UCLASS()
@@ -120,26 +142,24 @@ class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharact
 {
 	GENERATED_BODY()
 	
-	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UTimelineComponent* DeathTimeline;
-	
-public:
-	ABaseCharacter();
-	
-	virtual void Tick(float DeltaTime) override;
-	virtual void Landed(const FHitResult& Hit) override;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UCapsuleComponent* FallCapsule;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UHealthComponent* HealthComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaminaComponent* StaminaComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UStaminaComponent* StaminaComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UAIPerceptionStimuliSourceComponent* StimuliSource;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	class UAIPerceptionStimuliSourceComponent* StimuliSource;
+	
+	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
+	class UTimelineComponent* DeathTimeline;
+
+// Functions
+public:
+	ABaseCharacter();
 
 	void SetArmedState(bool bArmedState);
 	bool SetAimState(bool bIsAiming);
@@ -192,26 +212,14 @@ public:
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	virtual FGameplayTag GetTeamTag_Implementation() override;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	FGameplayTag TeamTag;
-	
-	UPROPERTY()
-	APickupWeapon* PrimaryWeapon;
-	
-	UPROPERTY()
-	APickupWeapon* SecondaryWeapon;
-	
-	UPROPERTY()
-	APickupWeapon* SidearmWeapon;
-	
-	UPROPERTY()
-	APickupWeapon* CurrentWeapon;
-	
-	EWeaponToDo CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
 
+	FORCEINLINE UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+	
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void Landed(const FHitResult& Hit) override;
+	virtual void Destroyed() override;
 	
 	void ToggleCrouch();
 	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot);
@@ -220,18 +228,6 @@ protected:
 	
 	UFUNCTION()
 	virtual void StartDestroy();
-	
-	virtual void Destroyed() override;
-	
-	UPROPERTY()
-	UAnimInstance* AnimInstance;
-	
-	UPROPERTY()
-	UCameraComponent* ChildCameraComponent;
-
-	uint8 bIsAlive : 1, bIsAimed : 1, bCharacterAnimationInterface : 1;
-	EMovementState MovementState = EMovementState::Walk;
-	EMovementState PreviousMovementState = EMovementState::Walk;
 
 private:
 	/** Use to perform two frame delay to cache the pose */
@@ -307,18 +303,37 @@ private:
 	/** Apply fall damage / Toggle ragdoll / Stand up the character */
 	UFUNCTION()
 	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1, bCanHolster : 1;
 
-	UPROPERTY()
-	TArray<UMaterialInstanceDynamic*> MaterialInstances;
+// Variables
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	FGameplayTag TeamTag;
 	
 	UPROPERTY()
-	APickup* Pickup;
+	APickupWeapon* PrimaryWeapon;
 	
 	UPROPERTY()
-	AActor* Interactable;
+	APickupWeapon* SecondaryWeapon;
 	
+	UPROPERTY()
+	APickupWeapon* SidearmWeapon;
+	
+	UPROPERTY()
+	APickupWeapon* CurrentWeapon;
+	
+	EWeaponToDo CurrentHoldingWeapon;
+	
+protected:
+	UPROPERTY()
+	UAnimInstance* AnimInstance;
+	
+	UPROPERTY()
+	class UCameraComponent* ChildCameraComponent;
+
+	uint8 bIsAlive : 1, bIsAimed : 1, bCharacterAnimationInterface : 1;
+	EMovementState MovementState, PreviousMovementState;
+	
+private:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> ArmedIdleMontages;
 	
@@ -356,37 +371,48 @@ private:
 	TArray<UAnimMontage*> ProneDeathMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
-	float FallDamageMultiplier = 0.025;
+	float FallDamageMultiplier;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
-	float MinVelocityToApplyFallDamage = 1250.0f;
+	float MinVelocityToApplyFallDamage;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
-	float StandingDelay = 2.5;
+	float StandingDelay;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
-	float DeathLifeSpan = 5.0f;
+	float DeathLifeSpan;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* FadeFloatCurve;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FBodyParts BodyParts;
+
+	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1, bCanHolster : 1;
+
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> MaterialInstances;
 	
-	EItemType PickupType = EItemType::Weapon;
+	UPROPERTY()
+	APickup* Pickup;
+	
+	UPROPERTY()
+	AActor* Interactable;
+	
+	EItemType PickupType;
 	
 	/** It sets when equipping a weapon and when changing the current weapon */
 	EWeaponType WeaponType;
 	
 	FGameplayTagContainer CharacterTagContainer;
-	FVector MeshLocation, MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f);
+	FVector MeshLocation, MeshLocationOffset;
 	
-	int32 PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
-	int32 SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
-	int32 SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
+	int32 PrimaryWeaponSupportedAmmo;
+	int32 SecondaryWeaponSupportedAmmo;
+	int32 SidearmWeaponSupportedAmmo;
 	
 	UPROPERTY()
-	AMagazine* Magazine;
+	class AMagazine* Magazine;
 	
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
@@ -402,7 +428,7 @@ private:
 	UAnimMontage* IdleMontage;
 	
 	/** Use for two frame delay */
-	uint8 DelayedFrames = 0;
+	uint8 DelayedFrames;
 	
 	FTimerHandle IdleTimer, CheckForFallingTimer;
 };

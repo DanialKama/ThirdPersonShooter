@@ -49,7 +49,7 @@ void ARespawnActor::EnterRespawnQueue(FRespawnInfo RespawnInfo)
 void ARespawnActor::StartRespawn()
 {
 	// If respawn timer is not started yet then start it
-	if (!RespawnTimer.IsValid())
+	if (RespawnTimer.IsValid() == false)
 	{
 		GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ARespawnActor::RespawnHandler, 0.5f, true);
 	}

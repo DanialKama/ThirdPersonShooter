@@ -8,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "UI/ShooterHUD.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -41,44 +40,43 @@ APlayerCharacter::APlayerCharacter()
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	if (InputComponent)
-	{
-		// Input Actions
-		InputComponent->BindAction("Jump", IE_Pressed, this, &ABaseCharacter::StartJump);
-		InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
+	// Set up gameplay key bindings
+	check(PlayerInputComponent);
+	// Input Actions
+	InputComponent->BindAction("Jump", IE_Pressed, this, &ABaseCharacter::StartJump);
+	InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
 		
-		InputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprinting);
-		InputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprinting);
+	InputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprinting);
+	InputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprinting);
 		
-		InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::TryToToggleCrouch);
-		InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
+	InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::TryToToggleCrouch);
+	InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
 		
-		InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
-		InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
+	InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
+	InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
 		
-		InputComponent->BindAction("Shoot", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
-		InputComponent->BindAction("Shoot", IE_Released, this, &ABaseCharacter::StopFireWeapon);
+	InputComponent->BindAction("FireWeapon", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
+	InputComponent->BindAction("FireWeapon", IE_Released, this, &ABaseCharacter::StopFireWeapon);
 		
-		InputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
+	InputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
 		
-		InputComponent->BindAction("SwitchToPrimary", IE_Pressed, this, &ABaseCharacter::SwitchToPrimary);
-		InputComponent->BindAction("SwitchToSecondary", IE_Pressed, this, &ABaseCharacter::SwitchToSecondary);
-		InputComponent->BindAction("SwitchToSidearm", IE_Pressed, this, &ABaseCharacter::SwitchToSidearm);
-		InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
-		InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
+	InputComponent->BindAction("SwitchToPrimary", IE_Pressed, this, &ABaseCharacter::SwitchToPrimary);
+	InputComponent->BindAction("SwitchToSecondary", IE_Pressed, this, &ABaseCharacter::SwitchToSecondary);
+	InputComponent->BindAction("SwitchToSidearm", IE_Pressed, this, &ABaseCharacter::SwitchToSidearm);
+	InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
+	InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
 		
-		InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
+	InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
 		
-		// Input Axis
-		InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
-		InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
+	// Input Axis
+	InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::AddToForwardMovement);
+	InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::AddToRightMovement);
 		
-		InputComponent->BindAxis("Turn", this, &APlayerCharacter::AddControllerYawInput);
-		InputComponent->BindAxis("TurnRate", this, &APlayerCharacter::GamepadAddToYaw);
+	InputComponent->BindAxis("Turn", this, &APlayerCharacter::AddControllerYawInput);
+	InputComponent->BindAxis("TurnRate", this, &APlayerCharacter::GamepadAddToYaw);
 
-		InputComponent->BindAxis("LookUp", this, &APlayerCharacter::AddControllerPitchInput);
-		InputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::GamepadAddToPitch);
-	}
+	InputComponent->BindAxis("LookUp", this, &APlayerCharacter::AddControllerPitchInput);
+	InputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::GamepadAddToPitch);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -289,6 +287,7 @@ void APlayerCharacter::AimTimeLineFinished()
 
 void APlayerCharacter::SwitchToNextWeapon()
 {
+	// Order of switch to next weapon: Holster -> Primary -> Secondary -> Sidearm -> Holster
 	switch (CurrentHoldingWeapon)
 	{
 	case 0:
@@ -345,13 +344,21 @@ void APlayerCharacter::SwitchToNextWeapon()
 
 void APlayerCharacter::SwitchToPreviousWeapon()
 {
+	// Order of switching to previous weapon: Holster -> Sidearm -> Secondary -> Primary -> Holster
 	switch (CurrentHoldingWeapon)
 	{
 	case 0:
-		// No Weapon
 		if (SidearmWeapon)
 		{
 			SwitchToSidearm();
+		}
+		else if (SecondaryWeapon)
+		{
+			SwitchToSecondary();
+		}
+		else if (PrimaryWeapon)
+		{
+			SwitchToPrimary();
 		}
 		else
 		{
@@ -364,21 +371,29 @@ void APlayerCharacter::SwitchToPreviousWeapon()
 		break;
 	case 2:
 		// Secondary Weapon
-		if (SecondaryWeapon)
+		if (PrimaryWeapon)
 		{
 			SwitchToPrimary();
 		}
-		else if (PrimaryWeapon)
+		else
 		{
-			SwitchToSecondary();
-		}
-		else if (SidearmWeapon)
-		{
-			
+			HolsterWeapon();
 		}
 		break;
 	case 3:
 		// Sidearm Weapon
+		if (SecondaryWeapon)
+		{
+			SwitchToSecondary();
+		}
+		else if (PrimaryWeapon)
+		{
+			SwitchToPrimary();
+		}
+		else
+		{
+			HolsterWeapon();
+		}
 		break;
 	}
 }
@@ -401,28 +416,39 @@ void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeapon
 
 void APlayerCharacter::AddToForwardMovement(float AxisValue)
 {
-	// Zero out pitch and roll, only move on plane
-	const FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-	AddMovementInput(UKismetMathLibrary::GetForwardVector(NewRotation), AxisValue);
+	if (Controller && AxisValue != 0.0f)
+	{
+		// Zero out pitch and roll, only move on plane, find out which way is forward
+		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
+		// Get forward vector
+		const FVector NewDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(NewDirection, AxisValue);
+	}
 }
 
 void APlayerCharacter::AddToRightMovement(float AxisValue)
 {
-	// Zero out pitch and roll, only move on plane
-	const FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-	AddMovementInput(UKismetMathLibrary::GetRightVector(NewRotation), AxisValue);
+	if (Controller && AxisValue != 0.0f)
+	{
+		// Zero out pitch and roll, only move on plane, find out which way is right
+		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
+		// Get right vector 
+		const FVector NewDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		// Add movement in that direction
+		AddMovementInput(NewDirection, AxisValue);
+	}
 }
 
 void APlayerCharacter::GamepadAddToYaw(float AxisValue)
 {
-	const float InputValue = AxisValue * BaseTurnRate * GetWorld()->GetDeltaSeconds();
-	AddControllerYawInput(InputValue);
+	// Calculate delta for this frame from the Axis Value information
+	AddControllerYawInput(AxisValue * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
 void APlayerCharacter::GamepadAddToPitch(float AxisValue)
 {
-	const float InputValue = AxisValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds();
-	AddControllerPitchInput(InputValue);
+	// Calculate delta for this frame from the Axis Value information
+	AddControllerPitchInput(AxisValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)

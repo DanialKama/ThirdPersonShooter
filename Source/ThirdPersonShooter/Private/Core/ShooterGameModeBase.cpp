@@ -7,7 +7,7 @@ void AShooterGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	// Bind player died delegate to the Game Mode's PlayerDied function.
-	if (!OnPlayerDied.IsBound())
+	if (OnPlayerDied.IsBound() == false)
 	{
 		OnPlayerDied.AddDynamic(this, &AShooterGameModeBase::PlayerDied);
 	}

@@ -48,14 +48,14 @@ void UAmmoComponent::ReduceAmmo()
 	{
 		if (CurrentMagazineAmmo <= 0)
 		{
-			if (!NoAmmoLeftToReload())
+			if (NoAmmoLeftToReload() == false)
 			{
 				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::NeedToReload);
 			}
 		}
 		else if (BetterToReload())
 		{
-			if (!NoAmmoLeftToReload())
+			if (NoAmmoLeftToReload() == false)
 			{
 				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::BetterToReload);
 			}

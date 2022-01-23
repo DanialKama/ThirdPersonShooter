@@ -44,11 +44,25 @@ private:
 	/** Wait for one frame to access a valid player controller */
 	UFUNCTION()
 	void NextFrameBeginPlay();
-	
-	void GamepadAddToYaw(float AxisValue);
-	void GamepadAddToPitch(float AxisValue);
+
+	/** Called for forwards/backward input */
 	void AddToForwardMovement(float AxisValue);
+
+	/** Called for side to side input */
 	void AddToRightMovement(float AxisValue);
+
+	/** 
+	 * Called via input to turn at a given rate. 
+	 * @param AxisValue	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void GamepadAddToYaw(float AxisValue);
+
+	/**
+	 * Called via input to turn look up/down at a given rate. 
+	 * @param AxisValue	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void GamepadAddToPitch(float AxisValue);
+	
 	void StartSprinting();
 	void StopSprinting();
 	void TryToToggleCrouch();

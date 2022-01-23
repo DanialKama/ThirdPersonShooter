@@ -115,7 +115,7 @@ void APickupWeapon::StartFireWeapon()
 	{
 		StopFireWeapon();
 		
-		if (AmmoComponent->CurrentMagazineAmmo <= 0 && !AmmoComponent->NoAmmoLeftToReload())
+		if (AmmoComponent->CurrentMagazineAmmo <= 0 && AmmoComponent->NoAmmoLeftToReload() == false)
 		{
 			SetWeaponState_Implementation(EWeaponState::NeedToReload);
 		}

@@ -467,7 +467,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot)
 {
 	CurrentHoldingWeapon = WeaponSlot;
-	if (!NewCurrentWeapon)
+	if (NewCurrentWeapon == nullptr)
 	{
 		SetAimState(false);
 		ResetAim();
@@ -697,7 +697,7 @@ void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew)
 		Transform.SetLocation(GetMesh()->GetSocketLocation(FName("LeftHandHoldSocket")));
 		Magazine = GetWorld()->SpawnActorDeferred<AMagazine>(Weapon->WeaponDefaults.Magazine, Transform, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		// If spawned mag is the used mag then change mesh based on current magazine ammo
-		if (!bIsNew && CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo <= 0)
+		if (bIsNew == false && CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo <= 0)
 		{
 			Magazine->bMagazineIsEmpty = true;
 		}
@@ -1080,7 +1080,7 @@ void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, 
 void ABaseCharacter::SetArmedState(bool bArmedState)
 {
 	bIsArmed = bArmedState;
-	if (!bArmedState)
+	if (bArmedState == false)
 	{
 		SetAimState(false);
 	}
@@ -1549,14 +1549,14 @@ void ABaseCharacter::PlayIdleAnimation()
 	// Play montage only when character is in walking state and standing
 	if (MovementState == EMovementState::Walk)
 	{
-		// If the character is holding a weapon but not aiming play idle montage based on weapon type
-		if (!bIsAimed && bIsArmed)
+		// If the character is holding a weapon but not aiming it, play idle montage based on weapon type
+		if (bIsAimed == false && bIsArmed)
 		{
 			const int32 Index = static_cast<int32>(WeaponType);
 			IdleMontage = ArmedIdleMontages[Index];
 		}
 		// If the character is not holding a weapon play a random idle animation
-		else if (!bIsAimed && !bIsArmed)
+		else if (bIsAimed == false && bIsArmed == false)
 		{
 			IdleMontage = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
 		}

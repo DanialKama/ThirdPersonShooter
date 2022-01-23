@@ -95,7 +95,7 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 
 void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
-	if (!bIsDisarm)
+	if (bIsDisarm == false)
 	{
 		const uint8 NumOfActors = UpdatedActors.Num();
 		for (uint8 i = 0; i < NumOfActors; ++i)
@@ -117,7 +117,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						{
 							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 						}
-						else if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && !Attacker && !GetFocusActor() && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
+						else if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr && GetFocusActor() == nullptr && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
 						{
 							ControlledPawn->UseWeapon(false, false);
 						}
@@ -131,14 +131,14 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 						break;
 					case 2:
 						// Hearing Sense, Handle hearing if not currently in a fight
-						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && !Attacker)
+						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr)
 						{
 							// If the sound is from a teammate that asking for help, move to its locations
 							if (ActorPerceptionInfo.LastSensedStimuli[j].Tag == "Help" && ControlledPawn->TeamTag == ActorTag)
 							{
 								HandleTeam(UpdatedActor);
 							}
-							else if (ControlledPawn->TeamTag != ActorTag || !GetFocusActor())
+							else if (ControlledPawn->TeamTag != ActorTag || GetFocusActor() == nullptr)
 							{
 								HandleHearing(ActorPerceptionInfo.LastSensedStimuli[j]);
 							}
@@ -199,7 +199,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		ClearFocus(EAIFocusPriority::Gameplay);
 		Attacker = nullptr;
 		
-		if (!bDoOnceFight)
+		if (bDoOnceFight == false)
 		{
 			bDoOnceFight = true;
 			BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
@@ -214,7 +214,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 		}
 
 		// Only predict if AI is not taking cover
-		if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
+		if (BlackboardComp->GetValueAsBool(FName("TakeCover")) == false)
 		{
 			UAISense_Prediction::RequestControllerPredictionEvent(this, UpdatedActor, 1.0f);
 		}
@@ -244,7 +244,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 	// Check if the updated actor is reachable
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
 	
-	if (NavPath && NavPath->IsValid() && !NavPath->IsPartial())
+	if (NavPath && NavPath->IsValid() && NavPath->IsPartial() == false)
 	{
 		AIState = EAIState::Search;
 		BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
@@ -282,7 +282,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 		}
 	}
 	// take cover if enemy is unreachable
-	else if (!BlackboardComp->GetValueAsBool(FName("TakeCover")))
+	else if (BlackboardComp->GetValueAsBool(FName("TakeCover")) == false)
 	{
 		AIState = EAIState::Idle;
 		BlackboardComp->SetValueAsBool(FName("Search"), false);

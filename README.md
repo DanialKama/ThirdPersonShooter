@@ -1,13 +1,13 @@
-# Third Person Shooter
+# Third-Person Shooter
 ## Introduction
-This project is a TPS sample project developed in Unreal Engine 5.
-This is not production-ready code but a starting point for learning TPS concepts.
+This project is a third-person shooter (single-player) sample project developed in Unreal Engine 5.
+This is not production-ready code but a starting point for learning and developing TPS concepts.
 If you have any questions or suggestions about this project, talk to me on [LinkedIn](https://www.linkedin.com/in/danialkamali/).
-You can also access the project launcher and pictures of the project [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
+You can also access the launcher and pictures of this project in [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
 
 ## Concepts covered
 - Pickup system for weapons and ammo
-- AI enemy and friend (based on Gameplay Tags) with sight, damage, hearing, and prediction senses and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigating to important places, search, retreat (on low health), take cover, and healing.
+- Enemy and friend AI (based on Gameplay Tags) with sight, damage, hearing and prediction senses, and abilities like a point to point patrolling, combat (aim, fire weapon, reload and switch to another weapon), navigating to important places, search, retreat (on low health), take cover, and healing.
 - Health component (reducing health based on damage type and health recovery based on stamina level)
 - Stamina component (reducing stamina based on movement states and stamina recovery)
 - Ammo component
@@ -25,6 +25,5 @@ You can also access the project launcher and pictures of the project [here](http
 The assets included are listed below, and some of them were made by myself.
 - [FPS Weapon Bundle](https://www.unrealengine.com/marketplace/en-US/product/fps-weapon-bundle)
 - [Military Weapons Dark](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-dark)
-- [Military Weapons Silver](https://www.unrealengine.com/marketplace/en-US/product/military-weapons-silver)
 - Some free 3D models from [cgtrader](https://www.cgtrader.com/)
 - Most animations are from [Mixamo](https://www.mixamo.com/), Icons from [FlatIcon](https://www.flaticon.com/), and sounds from [Freesound](https://freesound.org/)

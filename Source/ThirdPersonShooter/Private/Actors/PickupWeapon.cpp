@@ -181,7 +181,7 @@ void APickupWeapon::SpawnProjectile()
 {
 	if (CurrentProjectile)
 	{
-		for(int i = 0; i < CurrentProjectile->NumberOfPellets; ++i)
+		for(uint8 i = 0; i < CurrentProjectile->NumberOfPellets; ++i)
 		{
 			FVector Location;
 			FRotator Rotation;

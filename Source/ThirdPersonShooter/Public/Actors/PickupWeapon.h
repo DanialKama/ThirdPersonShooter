@@ -63,7 +63,7 @@ struct FWeaponDefaults
 		MuzzleFlashScale = FVector::OneVector;
 		MagazineBoneName = FName("None");
 		RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
-		ControlTime  = 0.25f;
+		ControlTime = 0.25f;
 		CrosshairRecoil = 5.0f;
 		ControllerPitch = -0.5f;
 		ReloadSound = nullptr;

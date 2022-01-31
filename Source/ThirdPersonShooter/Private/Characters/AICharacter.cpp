@@ -1,4 +1,4 @@
-// All Rights Reserved.
+// Copyright 2022 Danial Kamali. All Rights Reserved.
 
 #include "Characters/AICharacter.h"
 #include "Actors/PickupWeapon.h"

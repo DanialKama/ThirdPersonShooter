@@ -1,4 +1,4 @@
-// All Rights Reserved.
+// Copyright 2022 Danial Kamali. All Rights Reserved.
 
 #include "Animations/AnimNotify_Ragdoll.h"
 #include "Characters/BaseCharacter.h"

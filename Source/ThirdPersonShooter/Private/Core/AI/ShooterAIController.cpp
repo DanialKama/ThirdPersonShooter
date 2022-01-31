@@ -1,4 +1,4 @@
-// All Rights Reserved.
+// Copyright 2022 Danial Kamali. All Rights Reserved.
 
 #include "Core/AI/ShooterAIController.h"
 #include "NavigationPath.h"
@@ -32,7 +32,7 @@ AShooterAIController::AShooterAIController()
 	
 	AISense_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Sense"));
 	AISense_Hearing->HearingRange = 5000.0;
-	AISense_Hearing->SetMaxAge(0.2);
+	AISense_Hearing->SetMaxAge(0.2f);
 	AISense_Hearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectFriendlies = true;
 	AISense_Hearing->DetectionByAffiliation.bDetectNeutrals = true;
@@ -252,7 +252,6 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 		BlackboardComp->SetValueAsBool(FName("SearchForSound"), true);
 		BlackboardComp->SetValueAsBool(FName("Search"), true);
 		
-		const FAmmoComponentInfo AmmoComponentInfo;
 		switch (AIState)
 		{
 		case 0: case 1: case 2:
@@ -265,7 +264,10 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 				break;
 			case 3:
 				// Need To Reload
-				SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+				{
+					const FAmmoComponentInfo AmmoComponentInfo;
+					SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+				}
 				break;
 			case 4: case 9:
 				// Reloading, Overheat
@@ -370,7 +372,6 @@ void AShooterAIController::Fight()
 
 void AShooterAIController::TryToUseWeapon()
 {
-	const FAmmoComponentInfo AmmoComponentInfo;
 	switch (WeaponState)
 	{
 	case 0: case 2: case 5: case 6: case 7:
@@ -379,8 +380,11 @@ void AShooterAIController::TryToUseWeapon()
 		break;
 	case 3:
 		// Need To Reload
-		ControlledPawn->UseWeapon(false, false);
-		SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+		{
+			ControlledPawn->UseWeapon(false, false);
+			const FAmmoComponentInfo AmmoComponentInfo;
+			SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+		}
 		break;
 	case 4:
 		// Reloading

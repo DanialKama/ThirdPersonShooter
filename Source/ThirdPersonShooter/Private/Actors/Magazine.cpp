@@ -1,4 +1,4 @@
-// All Rights Reserved.
+// Copyright 2022 Danial Kamali. All Rights Reserved.
 
 #include "Actors/Magazine.h"
 #include "Kismet/GameplayStatics.h"

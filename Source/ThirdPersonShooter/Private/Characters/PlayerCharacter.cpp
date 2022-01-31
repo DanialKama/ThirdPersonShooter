@@ -1,4 +1,4 @@
-// All Rights Reserved.
+// Copyright 2022 Danial Kamali. All Rights Reserved.
 
 #include "Characters/PlayerCharacter.h"
 #include "Components/HealthComponent.h"
@@ -84,8 +84,8 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	ChildCameraComponent = Camera;
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
 
 	// Try to get the player controller in the next frame to access a valid reference
 	FTimerDelegate TimerDelegate;
@@ -236,8 +236,8 @@ void APlayerCharacter::TryToStartAiming()
 	const bool bAim = SetAimState(true);
 	if (bAim)
 	{
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -30.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -35.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 55.0f;
 
 		AimTimeline->Play();
 		Direction = ETimelineDirection::Forward;
@@ -280,8 +280,8 @@ void APlayerCharacter::AimTimeLineFinished()
 	}
 	else
 	{
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 80.0f;
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -80.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 50.0f;
 	}
 }
 

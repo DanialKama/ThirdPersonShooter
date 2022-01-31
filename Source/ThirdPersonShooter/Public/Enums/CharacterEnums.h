@@ -39,7 +39,7 @@ enum class EAIState : uint8
 	Fight		UMETA(DisplayNAme = "Fight"),
 	Search		UMETA(DisplayNAme = "Search"),
 	Reload		UMETA(DisplayNAme = "Reload"),
-	Switch		UMETA(DisplayNAme = "Switch"),
+	Switch		UMETA(DisplayNAme = "Switch Weaopn"),
 	LowHealth	UMETA(DisplayName = "Low Health"),
 	UseMed		UMETA(DisplayNAme = "Using Med")
 };

@@ -279,7 +279,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 			}
 			break;
 		case 3: case 4: case 5: case 6:
-			// Reload, Switch, Low Health, Use Med
+			// Reload, Switch Weapon, Low Health, Use Med
 			break;
 		}
 	}

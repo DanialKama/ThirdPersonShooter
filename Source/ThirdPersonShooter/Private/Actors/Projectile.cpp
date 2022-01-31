@@ -138,9 +138,6 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	// Switch on surface types to calculate the appropriate damage
 	switch (SwitchExpression)
 	{
-	case 0:
-		// Default
-		return ProjectileInfo->DefaultDamage;
 	case 1:
 		// Head Flesh
 		return ProjectileInfo->DamageToHead;
@@ -165,7 +162,8 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	case 8:
 		// Dirt
 		return ProjectileInfo->DamageToDirt;
-	default: return ProjectileInfo->DefaultDamage;
+	case 0: default:
+		return ProjectileInfo->DefaultDamage;
 	}
 }
 
@@ -174,40 +172,8 @@ void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCu
 	// Switch on surface types to calculate the appropriate effect
 	switch (SwitchExpression)
 	{
-	case 0:
-		// Default
-		Emitter			= ProjectileEffect.StoneHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.StoneDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
-		break;
-	case 1:
-		// Head Flesh
-		Emitter			= ProjectileEffect.FleshHitEmitter;
-		Sound			= ProjectileEffect.FleshHitSound;
-		Decal			= ProjectileEffect.FleshDecal;
-		DecalSize		= ProjectileEffect.FleshDecalSize;
-		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
-		break;
-	case 2:
-		// Body Flesh
-		Emitter			= ProjectileEffect.FleshHitEmitter;
-		Sound			= ProjectileEffect.FleshHitSound;
-		Decal			= ProjectileEffect.FleshDecal;
-		DecalSize		= ProjectileEffect.FleshDecalSize;
-		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
-		break;
-	case 3:
-		// Hand Flesh
-		Emitter			= ProjectileEffect.FleshHitEmitter;
-		Sound			= ProjectileEffect.FleshHitSound;
-		Decal			= ProjectileEffect.FleshDecal;
-		DecalSize		= ProjectileEffect.FleshDecalSize;
-		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
-		break;
-	case 4:
-		// Leg Flesh
+	case 1: case 2: case 3: case 4:
+		// Head Flesh, Body Flesh, Hand Flesh, Leg Flesh
 		Emitter			= ProjectileEffect.FleshHitEmitter;
 		Sound			= ProjectileEffect.FleshHitSound;
 		Decal			= ProjectileEffect.FleshDecal;
@@ -246,7 +212,7 @@ void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCu
 		DecalSize		= ProjectileEffect.ObjectDecalSize;
 		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
 		break;
-	default:
+	case 0: default:
 		Emitter			= ProjectileEffect.StoneHitEmitter;
 		Sound			= ProjectileEffect.ObjectHitSound;
 		Decal			= ProjectileEffect.StoneDecal;

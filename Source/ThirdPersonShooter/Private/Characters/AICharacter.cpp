@@ -242,8 +242,8 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case 0:
-		// Full
+	case 0: case 2: case 3:
+		// Full, Recovery Started, Recovery Ended
 		Super::SetHealthState_Implementation(HealthState);
 		break;
 	case 1:
@@ -253,14 +253,6 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 			// If health is low, report it to the controller to start taking cover and using meds
 			IAIControllerInterface::Execute_SetAIState(AIController, EAIState::LowHealth);
 		}
-		break;
-	case 2:
-		// Recovery Started
-		Super::SetHealthState_Implementation(HealthState);
-		break;
-	case 3:
-		// Recovery Ended
-		Super::SetHealthState_Implementation(HealthState);
 		break;
 	case 4:
 		// Death

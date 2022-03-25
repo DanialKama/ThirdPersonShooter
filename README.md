@@ -2,8 +2,8 @@
 ## Introduction
 This project is a third-person shooter (single-player) sample project developed in Unreal Engine 5.
 This is not production-ready code but a starting point for learning and developing TPS concepts.
-If you have any questions or suggestions about this project, talk to me on [LinkedIn](https://www.linkedin.com/in/danialkamali/).
-You can also access the launcher and pictures of this project in [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
+[DM](https://discord.com/users/810853382193545227) me if you have any questions or suggestions.
+You can also access the project demo and pictures [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
 
 ## Concepts covered
 - Pickup system for weapons and ammo

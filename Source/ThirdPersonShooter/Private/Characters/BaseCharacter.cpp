@@ -41,7 +41,7 @@ ABaseCharacter::ABaseCharacter()
 	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
 	GetCharacterMovement()->BrakingFriction = 0.1f;
-	GetCharacterMovement()->CrouchedHalfHeight = 65.0f;
+	GetCharacterMovement()->SetCrouchedHalfHeight(65.0f);
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
 	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
@@ -1740,7 +1740,7 @@ void ABaseCharacter::OneFrameDelay()
 
 void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ABaseCharacter::ResetAim()

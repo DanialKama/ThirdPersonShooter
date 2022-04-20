@@ -80,7 +80,7 @@ void UAmmoComponent::Reload()
 		
 			if (CurrentAmmo >= UsedAmmoFromMag)
 			{
-				const int32 CurrentReloadAmount= FMath::Clamp(ReloadAmount, 0, UsedAmmoFromMag);
+				const int32 CurrentReloadAmount = FMath::Clamp(ReloadAmount, 0, UsedAmmoFromMag);
 				CurrentAmmo = CurrentAmmo - CurrentReloadAmount;
 				CurrentMagazineAmmo = CurrentReloadAmount + CurrentMagazineAmmo;
 

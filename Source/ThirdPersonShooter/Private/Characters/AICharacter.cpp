@@ -20,6 +20,7 @@ AAICharacter::AAICharacter()
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->CanCharacterStepUpOn = ECB_No;
+	Widget->SetCollisionProfileName(FName("NoCollision"));
 	Widget->SetVisibility(false);
 
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);

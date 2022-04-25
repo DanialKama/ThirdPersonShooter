@@ -7,8 +7,7 @@ void UAnimNotify_RemoveMag::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->SetReloadNotify(EReloadState::RemoveMag);
 		}

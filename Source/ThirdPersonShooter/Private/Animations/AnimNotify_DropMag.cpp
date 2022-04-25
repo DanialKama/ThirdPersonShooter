@@ -7,8 +7,7 @@ void UAnimNotify_DropMag::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->SetReloadNotify(EReloadState::DropMag);
 		}

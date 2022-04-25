@@ -26,18 +26,18 @@ void UHealthComponent::Initialize()
 {
 	Super::Initialize();
 	
-	if (Owner)
+	if (GetOwner())
 	{
-		Owner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
-		Owner->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
-		Owner->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);
+		GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
+		GetOwner()->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
+		GetOwner()->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);
 
 		// Detected if the interfaces is present on owner
-		if (Owner->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+		if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 		{
 			bCommonInterface = true;
 		}
-		if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+		if (GetOwner()->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 		{
 			bCharacterInterface = true;
 		}
@@ -47,13 +47,13 @@ void UHealthComponent::Initialize()
 
 	if (bCharacterInterface)
 	{
-		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
+		ICharacterInterface::Execute_SetHealthLevel(GetOwner(), CurrentHealth / MaxHealth);
 	}
 }
 
 void UHealthComponent::TakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	UpdateHealthOnDamage(Damage, TEXT("None"), Owner->GetActorLocation());
+	UpdateHealthOnDamage(Damage, TEXT("None"), GetOwner()->GetActorLocation());
 }
 
 void UHealthComponent::TakePointDamage(AActor* DamagedActor, float Damage, AController* InstigatedBy, FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
@@ -78,7 +78,7 @@ void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVecto
 	// Update current health on character
 	if (bCharacterInterface)
 	{
-		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
+		ICharacterInterface::Execute_SetHealthLevel(GetOwner(), CurrentHealth / MaxHealth);
 	}
 
 	if (CurrentHealth <= 0.0f)
@@ -88,12 +88,12 @@ void UHealthComponent::UpdateHealthOnDamage(float Damage, FName BoneName, FVecto
 
 		if (bCommonInterface)
 		{
-			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Death);
+			ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::Death);
 		}
 	}
 	else if (CurrentHealth < LowHealth && bCommonInterface)
 	{
-		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
+		ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::RecoveryStarted);
 	}
 	
 	FTimerHandle StartHealthRecoveryTimer;
@@ -107,7 +107,7 @@ void UHealthComponent::StartHealthRecovery()
 		GetWorld()->GetTimerManager().SetTimer(HealthRecoveryTimer, this, &UHealthComponent::RecoverHealth, HealthRecoveryRate, true);
 		if (bCommonInterface)
 		{
-			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStarted);
+			ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::RecoveryStarted);
 		}
 	}
 }
@@ -117,7 +117,7 @@ void UHealthComponent::StopHealthRecovery()
 	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 	if (bCommonInterface)
 	{
-		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::RecoveryStopped);
+		ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::RecoveryStopped);
 	}
 }
 
@@ -127,7 +127,7 @@ void UHealthComponent::RecoverHealth()
 
 	if (bCharacterInterface)
 	{
-		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
+		ICharacterInterface::Execute_SetHealthLevel(GetOwner(), CurrentHealth / MaxHealth);
 	}
 
 	if (CurrentHealth >= MaxHealth)
@@ -135,7 +135,7 @@ void UHealthComponent::RecoverHealth()
 		GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 		if (bCommonInterface)
 		{
-			ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Full);
+			ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::Full);
 		}
 	}
 }
@@ -146,11 +146,11 @@ void UHealthComponent::Healing(float HealthDifference)
 
 	if (bCharacterInterface)
 	{
-		ICharacterInterface::Execute_SetHealthLevel(Owner, CurrentHealth / MaxHealth);
+		ICharacterInterface::Execute_SetHealthLevel(GetOwner(), CurrentHealth / MaxHealth);
 	}
 
 	if (CurrentHealth >= MaxHealth && bCommonInterface)
 	{
-		ICommonInterface::Execute_SetHealthState(Owner, EHealthState::Full);
+		ICommonInterface::Execute_SetHealthState(GetOwner(), EHealthState::Full);
 	}
 }

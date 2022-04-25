@@ -242,7 +242,7 @@ void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimul
 void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 {
 	// Check if the updated actor is reachable
-	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
+	const UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
 	
 	if (NavPath && NavPath->IsValid() && NavPath->IsPartial() == false)
 	{

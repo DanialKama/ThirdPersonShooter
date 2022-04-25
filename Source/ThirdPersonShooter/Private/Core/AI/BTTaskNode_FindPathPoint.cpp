@@ -13,8 +13,7 @@ EBTNodeResult::Type UBTTaskNode_FindPathPoint::ExecuteTask(UBehaviorTreeComponen
 	APawn* ControlledPawn = OwnerController->GetPawn();
 	if (ControlledPawn && ControlledPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 	{
-		APatrolPathActor* PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(ControlledPawn);
-		if (PatrolPath)
+		if (APatrolPathActor* PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(ControlledPawn))
 		{
 			const int32 PathIndex = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("PathIndex"));
 			const FVector PathLocation = UKismetMathLibrary::TransformLocation(PatrolPath->GetActorTransform(), PatrolPath->PathPoints[PathIndex]);

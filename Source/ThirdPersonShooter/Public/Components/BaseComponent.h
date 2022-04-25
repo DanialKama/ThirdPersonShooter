@@ -17,9 +17,4 @@ public:
 
 	/** Setup component */
 	virtual void Initialize();
-
-// Variables
-protected:
-	UPROPERTY()
-	AActor* Owner;
 };

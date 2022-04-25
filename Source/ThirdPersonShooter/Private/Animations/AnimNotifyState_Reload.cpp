@@ -7,8 +7,7 @@ void UAnimNotifyState_Reload::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->SetReloadNotify(EReloadState::StartReload);
 		}
@@ -19,8 +18,7 @@ void UAnimNotifyState_Reload::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->SetReloadNotify(EReloadState::EndReload);
 		}

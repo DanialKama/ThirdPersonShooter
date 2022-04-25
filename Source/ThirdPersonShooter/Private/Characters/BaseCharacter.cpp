@@ -257,8 +257,7 @@ void ABaseCharacter::Interact_Implementation()
 
 void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 {
-	APickupWeapon* Weapon = Cast<APickupWeapon>(NewWeapon);
-	if (Weapon)
+	if (APickupWeapon* Weapon = Cast<APickupWeapon>(NewWeapon))
 	{
 		switch (Weapon->WeaponInfo.WeaponType)
 		{
@@ -312,9 +311,8 @@ void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAsWeapon)
 {
 	APickupWeapon* NewWeapon;
-	AAIController* AIController = Cast<AAIController>(GetController());
 	// If the controller is AI do not spawn weapon (AI by default spawn weapon and does not pick up)
-	if (AIController)
+	if (Cast<AAIController>(GetController()))
 	{
 		NewWeapon = WeaponToEquip;
 	}
@@ -483,8 +481,7 @@ void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponTo
 
 void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 {
-	APickupAmmo* Ammo = Cast<APickupAmmo>(NewAmmo);
-	if (Ammo)
+	if (APickupAmmo* Ammo = Cast<APickupAmmo>(NewAmmo))
 	{
 		switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
 		{
@@ -1258,8 +1255,7 @@ void ABaseCharacter::Death()
 		StimuliSource->UnregisterFromPerceptionSystem();
 		
 		// If character is AI, detach it from controller
-		AAIController* AIController = Cast<AAIController>(GetController());
-		if (AIController)
+		if (Cast<AAIController>(GetController()))
 		{
 			DetachFromControllerPendingDestroy();
 		}
@@ -1696,9 +1692,9 @@ void ABaseCharacter::CalculateCapsuleLocation()
 	const FVector End = Start + FVector(0.0f, 0.0f, -1.0f) * 100.0f;
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(this);
-	
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
-	if (bHit)
+
+	// If a blocking hit is found
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams))
 	{
 		CapsuleLocation = HitResult.Location + MeshLocationOffset;
 	}

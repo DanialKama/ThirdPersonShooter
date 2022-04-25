@@ -10,12 +10,10 @@
 EBTNodeResult::Type UBTTaskNode_Healing::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AController* OwnerController = Cast<AController>(OwnerComp.GetOwner());
-	const ABaseCharacter* ControlledPawn = Cast<ABaseCharacter>(OwnerController->GetPawn());
-	if (ControlledPawn)
+	if (const ABaseCharacter* ControlledPawn = Cast<ABaseCharacter>(OwnerController->GetPawn()))
 	{
 		// If owner is AI
-		AShooterAIController* ShooterAIController = Cast<AShooterAIController>(OwnerController);
-		if (ShooterAIController)
+		if (AShooterAIController* ShooterAIController = Cast<AShooterAIController>(OwnerController))
 		{
 			ShooterAIController->SetAIState_Implementation(EAIState::UseMed);
 			ShooterAIController->ControlledPawn->GetCharacterMovement()->DisableMovement();

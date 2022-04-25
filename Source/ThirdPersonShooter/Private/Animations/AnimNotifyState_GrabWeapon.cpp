@@ -7,8 +7,7 @@ void UAnimNotifyState_GrabWeapon::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->UpdateGrabWeaponNotifyState(ENotifyState::Begin);
 		}
@@ -18,8 +17,7 @@ void UAnimNotifyState_GrabWeapon::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->UpdateGrabWeaponNotifyState(ENotifyState::End);
 		}

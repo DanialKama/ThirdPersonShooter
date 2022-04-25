@@ -23,9 +23,9 @@ void UAmmoComponent::Initialize()
 	
 	CurrentAmmo = DefaultAmmo;
 
-	if (Owner)
+	if (GetOwner())
 	{
-		if (Owner->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+		if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 		{
 			bCommonInterface = true;
 		}
@@ -35,7 +35,7 @@ void UAmmoComponent::Initialize()
 	{
 		if (bCommonInterface)
 		{
-			ICommonInterface::Execute_SetCanFire(Owner, false);
+			ICommonInterface::Execute_SetCanFire(GetOwner(), false);
 		}
 	}
 }
@@ -50,22 +50,22 @@ void UAmmoComponent::ReduceAmmo()
 		{
 			if (NoAmmoLeftToReload() == false)
 			{
-				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::NeedToReload);
+				ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::NeedToReload);
 			}
 		}
 		else if (BetterToReload())
 		{
 			if (NoAmmoLeftToReload() == false)
 			{
-				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::BetterToReload);
+				ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::BetterToReload);
 			}
 		}
 		
-		ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Firing);
+		ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Firing);
 		
 		if (IsCompletelyEmpty())
 		{
-			ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Empty);
+			ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Empty);
 		}
 	}
 }
@@ -86,23 +86,23 @@ void UAmmoComponent::Reload()
 
 				if (CurrentMagazineAmmo == MagazineSize)
 				{
-					ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
+					ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Reloaded);
 				}
 				else
 				{
-					ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloading);
+					ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Reloading);
 				}
 			}
 			else
 			{
 				CurrentMagazineAmmo =+ CurrentAmmo;
 				CurrentAmmo = 0;
-				ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Reloaded);
+				ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Reloaded);
 			}
 		}
 		else
 		{
-			ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::Empty);
+			ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::Empty);
 		}
 	}
 }
@@ -112,7 +112,7 @@ void UAmmoComponent::AddAmmo(int32 AmmoAmount)
 	CurrentAmmo = FMath::Clamp(AmmoAmount + CurrentAmmo, 0, MaxAmmo);
 	if (bCommonInterface)
 	{
-		ICommonInterface::Execute_SetWeaponState(Owner, EWeaponState::AmmoAdded);
+		ICommonInterface::Execute_SetWeaponState(GetOwner(), EWeaponState::AmmoAdded);
 	}
 }
 

@@ -19,8 +19,7 @@ UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitialize
 
 void UBTService_SetMovementState::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AShooterAIController* Owner = Cast<AShooterAIController>(OwnerComp.GetOwner());
-	if (Owner)
+	if (const AShooterAIController* Owner = Cast<AShooterAIController>(OwnerComp.GetOwner()))
 	{
 		Owner->ControlledPawn->SetMovementState_Implementation(MovementState, bRelatedToCrouch, bRelatedToProne);
 	}

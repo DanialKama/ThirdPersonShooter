@@ -7,8 +7,7 @@ void UAnimNotify_StandUp::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (const ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			// Set interrupt to true to character movement set to walk
 			Character->StanUpMontageHandler(nullptr, true);

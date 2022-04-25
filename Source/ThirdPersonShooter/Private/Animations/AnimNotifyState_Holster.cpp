@@ -7,8 +7,7 @@ void UAnimNotifyState_Holster::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->UpdateHolsterWeaponNotifyState(ENotifyState::Begin);
 		}
@@ -18,8 +17,7 @@ void UAnimNotifyState_Holster::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			Character->UpdateHolsterWeaponNotifyState(ENotifyState::End);
 		}

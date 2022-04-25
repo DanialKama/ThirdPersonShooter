@@ -233,8 +233,8 @@ void APlayerCharacter::ResetCrouch()
 
 void APlayerCharacter::TryToStartAiming()
 {
-	const bool bAim = SetAimState(true);
-	if (bAim)
+	// If the result is true
+	if (SetAimState(true))
 	{
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMin = -35.0f;
 		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewPitchMax = 55.0f;

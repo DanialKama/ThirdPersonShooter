@@ -11,8 +11,7 @@ void UAnimNotify_RestoreHealth::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 {
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
-		if (Character)
+		if (const ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 		{
 			// Set movement mode to walking if it was set to null
 			// During AI healing movement set to null to stop AI from moving and interrupt montage

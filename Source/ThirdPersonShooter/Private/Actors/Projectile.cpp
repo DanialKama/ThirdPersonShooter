@@ -67,8 +67,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	const FName AmmoName = StaticEnum<EAmmoType>()->GetValueAsName(AmmoType);
 	if (ProjectileEffect.bIsExplosive && ExplosiveProjectileDataTable)
 	{
-		const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
-		if (ExplosiveProjectileInfo)
+		// If row found
+		if (const FExplosiveProjectileInfo* ExplosiveProjectileInfo = ExplosiveProjectileDataTable->FindRow<FExplosiveProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true))
 		{
 			SpawnFieldSystem(ExplosiveProjectileInfo->StrainMagnitude, ExplosiveProjectileInfo->ForceMagnitude, ExplosiveProjectileInfo->TorqueMagnitude);
 
@@ -80,8 +80,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	}
 	else if (ProjectileDataTable)
 	{
-		const FProjectileInfo* ProjectileInfo = ProjectileDataTable->FindRow<FProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true);
-		if (ProjectileInfo)
+		// If row found
+		if (const FProjectileInfo* ProjectileInfo = ProjectileDataTable->FindRow<FProjectileInfo>(AmmoName, TEXT("Projectile Info Context"), true))
 		{
 			SpawnFieldSystem(ProjectileInfo->StrainMagnitude, ProjectileInfo->ForceMagnitude, ProjectileInfo->TorqueMagnitude);
 

@@ -15,8 +15,7 @@ EBTNodeResult::Type UBTTaskNode_IncrementPathIndex::ExecuteTask(UBehaviorTreeCom
 		APawn* ControlledPawn = OwnerController->GetPawn();
 		if (ControlledPawn && ControlledPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 		{
-			APatrolPathActor* PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(ControlledPawn);
-			if (PatrolPath)
+			if (const APatrolPathActor* PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(ControlledPawn))
 			{
 				const int32 PathIndex = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("PathIndex"));
 				if (PathIndex + 1 <= PatrolPath->PathPoints.Num() - 1)

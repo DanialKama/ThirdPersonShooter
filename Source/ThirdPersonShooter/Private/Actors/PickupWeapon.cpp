@@ -65,6 +65,7 @@ APickupWeapon::APickupWeapon()
 
 	// Initialize variables
 	PickupType = EItemType::Weapon;
+	CurrentWeaponState = EWeaponState::Idle;
 	bDoOnceFire = true;
 	bOwnerIsAI = false;
 	bCanFire = true;
@@ -168,6 +169,11 @@ void APickupWeapon::StopFireWeapon()
 	GetWorld()->GetTimerManager().ClearTimer(FireWeaponTimer);
 	// Play an empty animation to reset bones position
 	SkeletalMesh->PlayAnimation(nullptr, false);
+	
+	if (bAIControllerInterface && OwnerController)
+	{
+		IAIControllerInterface::Execute_SetWeaponState(OwnerController, AmmoComponent->GetAmmoComponentInfo(), EWeaponState::Idle);
+	}
 }
 
 void APickupWeapon::WeaponFireEffect() const
@@ -439,6 +445,7 @@ void APickupWeapon::SetCanFire_Implementation(bool bInCanFire)
 
 void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 {
+	CurrentWeaponState = WeaponState;
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();
 	
 	if (bAIControllerInterface)

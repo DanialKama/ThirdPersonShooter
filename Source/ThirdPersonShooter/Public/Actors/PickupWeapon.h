@@ -186,5 +186,7 @@ private:
 	UPROPERTY()
 	class AAIController* AIController;
 
+	EWeaponState CurrentWeaponState;
+
 	FTimerHandle FireWeaponTimer;
 };

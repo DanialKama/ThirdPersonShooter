@@ -112,7 +112,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 					switch (j)
 					{
 					case 0:
-						// Sight Sense, Check if the actor is not in the same team as the this AI
+						// Sight Sense, Check if the actor is not in the same team as this AI
 						if (ActorTag != ControlledPawn->TeamTag)
 						{
 							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
@@ -208,10 +208,10 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
 		}
 	
-		if (WeaponState != EWeaponState::Reloading)
-		{
-			ControlledPawn->UseWeapon(false, false);
-		}
+		// if (WeaponState != EWeaponState::Reloading)
+		// {
+		// 	ControlledPawn->UseWeapon(false, false);
+		// }
 
 		// Only predict if AI is not taking cover
 		if (BlackboardComp->GetValueAsBool(FName("TakeCover")) == false)
@@ -260,7 +260,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 			{
 			case 0: case 1: case 2: case 5: case 6: case 7:
 				// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
-				ControlledPawn->UseWeapon(true, false);
+				// ControlledPawn->UseWeapon(true, false);
 				break;
 			case 3:
 				// Need To Reload
@@ -376,7 +376,7 @@ void AShooterAIController::TryToUseWeapon()
 	{
 	case 0: case 2: case 5: case 6: case 7:
 		// Idle, Better To Reload, Cancel Reload, Reloaded, Ammo Added
-		ControlledPawn->UseWeapon(true, true);
+		// ControlledPawn->UseWeapon(true, true);
 		break;
 	case 3:
 		// Need To Reload

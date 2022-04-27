@@ -40,10 +40,10 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	virtual void OnPossess(APawn* InPawn) override;
-	
 	UFUNCTION()
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	
@@ -85,6 +85,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	float MaxFiringDistance;	// TODO - Add this to weapon class
 	
 	UPROPERTY()
 	class UBehaviorTreeComponent* BehaviorTreeComp;

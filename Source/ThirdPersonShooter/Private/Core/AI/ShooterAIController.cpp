@@ -10,7 +10,6 @@
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
@@ -53,6 +52,7 @@ AShooterAIController::AShooterAIController()
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	
 	// Initialize variables
+	MaxFiringDistance = 1500.0f;
 	WeaponState = EWeaponState::Idle;
 	AIState = EAIState::Idle;
 	bAICharacterInterface = false;
@@ -88,6 +88,22 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 				FTimerDelegate TimerDelegate;
 				TimerDelegate.BindUObject(this, &AShooterAIController::StartPatrolling);
 				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+		}
+	}
+}
+
+void AShooterAIController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (Attacker)
+	{
+		if (WeaponState == EWeaponState::Idle || WeaponState == EWeaponState::Reloaded)
+		{
+			if(MaxFiringDistance > FVector::Distance(ControlledPawn->GetActorLocation(), Attacker->GetActorLocation()))
+			{
+				Fight();
 			}
 		}
 	}
@@ -208,10 +224,10 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 			BlackboardComp->SetValueAsBool(FName("SearchForEnemy"), true);
 		}
 	
-		// if (WeaponState != EWeaponState::Reloading)
-		// {
-		// 	ControlledPawn->UseWeapon(false, false);
-		// }
+		if (WeaponState != EWeaponState::Reloading)
+		{
+			ControlledPawn->UseWeapon(false, false);
+		}
 
 		// Only predict if AI is not taking cover
 		if (BlackboardComp->GetValueAsBool(FName("TakeCover")) == false)
@@ -260,7 +276,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 			{
 			case 0: case 1: case 2: case 5: case 6: case 7:
 				// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
-				// ControlledPawn->UseWeapon(true, false);
+				ControlledPawn->UseWeapon(true, false);
 				break;
 			case 3:
 				// Need To Reload
@@ -303,7 +319,7 @@ void AShooterAIController::HandlePrediction(FAIStimulus Stimulus) const
 
 void AShooterAIController::HandleTeam(const AActor* UpdatedActor)
 {
-	AAIController* AIC = Cast<AAIController>(UpdatedActor->GetInstigatorController());
+	const AAIController* AIC = Cast<AAIController>(UpdatedActor->GetInstigatorController());
 	if (AIC && AIC->GetFocusActor())
 	{
 		BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
@@ -376,7 +392,7 @@ void AShooterAIController::TryToUseWeapon()
 	{
 	case 0: case 2: case 5: case 6: case 7:
 		// Idle, Better To Reload, Cancel Reload, Reloaded, Ammo Added
-		// ControlledPawn->UseWeapon(true, true);
+		ControlledPawn->UseWeapon(true, true);
 		break;
 	case 3:
 		// Need To Reload
@@ -566,10 +582,10 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 	float DistanceToActor;
 	if (Actor1)
 	{
-		DistanceToActor = UKismetMathLibrary::Vector_Distance(Actor1->GetActorLocation(), CurrentLocation);
+		DistanceToActor = FVector::Distance(Actor1->GetActorLocation(), CurrentLocation);
 		if (Actor2)
 		{
-			const float NewDistance = UKismetMathLibrary::Vector_Distance(Actor2->GetActorLocation(), CurrentLocation);
+			const float NewDistance = FVector::Distance(Actor2->GetActorLocation(), CurrentLocation);
 			if (NewDistance < DistanceToActor)
 			{
 				DistanceToActor = NewDistance;
@@ -584,7 +600,7 @@ float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2
 	
 	if (Actor2)
 	{
-		DistanceToActor = UKismetMathLibrary::Vector_Distance(Actor2->GetActorLocation(), CurrentLocation);
+		DistanceToActor = FVector::Distance(Actor2->GetActorLocation(), CurrentLocation);
 		CloserActor = Actor2;
 		return DistanceToActor;
 	}

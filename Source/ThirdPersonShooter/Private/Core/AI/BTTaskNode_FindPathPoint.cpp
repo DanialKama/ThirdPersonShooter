@@ -7,6 +7,11 @@
 #include "Interfaces/AICharacterInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 
+UBTTaskNode_FindPathPoint::UBTTaskNode_FindPathPoint(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	NodeName = "Find Path Point";
+}
+
 EBTNodeResult::Type UBTTaskNode_FindPathPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const AAIController* OwnerController = Cast<AAIController>(OwnerComp.GetOwner());

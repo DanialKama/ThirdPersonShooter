@@ -10,7 +10,12 @@ UCLASS()
 class THIRDPERSONSHOOTER_API UBTTaskNode_ToggleBoolState : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
+
+// Functions
+public:
+	UBTTaskNode_ToggleBoolState(const FObjectInitializer& ObjectInitializer);
+
+private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 // Variables

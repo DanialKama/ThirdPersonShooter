@@ -11,5 +11,10 @@ class THIRDPERSONSHOOTER_API UBTTaskNode_LoopPath : public UBTTaskNode
 {
 	GENERATED_BODY()
 
+// Functions
+public:
+	UBTTaskNode_LoopPath(const FObjectInitializer& ObjectInitializer);
+
+private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

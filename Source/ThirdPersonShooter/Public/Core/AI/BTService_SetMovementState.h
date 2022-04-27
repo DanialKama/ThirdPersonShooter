@@ -16,7 +16,7 @@ class THIRDPERSONSHOOTER_API UBTService_SetMovementState : public UBTService_Bla
 public:
 	UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-protected:
+private:
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 // Variables

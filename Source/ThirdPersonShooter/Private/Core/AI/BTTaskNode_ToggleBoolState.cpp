@@ -3,6 +3,11 @@
 #include "Core/AI/BTTaskNode_ToggleBoolState.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
+UBTTaskNode_ToggleBoolState::UBTTaskNode_ToggleBoolState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	NodeName = "Toggle Bool State";
+}
+
 EBTNodeResult::Type UBTTaskNode_ToggleBoolState::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const uint8 KeyID = OwnerComp.GetBlackboardComponent()->GetKeyID(KeyName);

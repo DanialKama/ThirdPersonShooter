@@ -12,6 +12,7 @@ UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitialize
 	bTickIntervals = false;
 	bNotifyBecomeRelevant = true;
 
+	// Initialize variables
 	MovementState = EMovementState::Walk;
 	bRelatedToCrouch = false;
 	bRelatedToProne = false;

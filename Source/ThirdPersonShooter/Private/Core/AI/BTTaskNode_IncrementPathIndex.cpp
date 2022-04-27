@@ -6,6 +6,11 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Interfaces/AICharacterInterface.h"
 
+UBTTaskNode_IncrementPathIndex::UBTTaskNode_IncrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	NodeName = "Increment Path Index";
+}
+
 EBTNodeResult::Type UBTTaskNode_IncrementPathIndex::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// True means moving to the next point, False means moving to the previous point

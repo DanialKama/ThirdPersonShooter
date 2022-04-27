@@ -7,6 +7,14 @@
 #include "Enums/CharacterEnums.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+UBTTaskNode_Healing::UBTTaskNode_Healing(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	NodeName = "Healing";
+
+	// Initialize variables
+	HealingMontage = nullptr;
+}
+
 EBTNodeResult::Type UBTTaskNode_Healing::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AController* OwnerController = Cast<AController>(OwnerComp.GetOwner());

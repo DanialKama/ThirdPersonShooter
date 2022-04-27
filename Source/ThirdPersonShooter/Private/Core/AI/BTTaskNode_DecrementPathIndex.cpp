@@ -3,6 +3,11 @@
 #include "Core/AI/BTTaskNode_DecrementPathIndex.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
+UBTTaskNode_DecrementPathIndex::UBTTaskNode_DecrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	NodeName = "Decrement Path Index";
+}
+
 EBTNodeResult::Type UBTTaskNode_DecrementPathIndex::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// True means moving to the next point, False means moving to the previous point

@@ -87,7 +87,7 @@ private:
 	UBehaviorTree* BehaviorTree;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
-	float MaxFiringDistance;	// TODO - Add this to weapon class
+	float MaxMeleeDistance;
 	
 	UPROPERTY()
 	class UBehaviorTreeComponent* BehaviorTreeComp;
@@ -99,6 +99,8 @@ private:
 	class APatrolPathActor* PatrolPath;
 	
 	EWeaponState WeaponState;
+
+	float MaxFiringDistance;
 	
 	/** Attacker is the current enemy that AI is fighting with */
 	UPROPERTY()

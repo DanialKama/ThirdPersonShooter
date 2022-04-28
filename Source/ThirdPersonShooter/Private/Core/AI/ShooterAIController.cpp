@@ -52,6 +52,7 @@ AShooterAIController::AShooterAIController()
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	
 	// Initialize variables
+	MaxMeleeDistance = 200.0f;
 	MaxFiringDistance = 1500.0f;
 	WeaponState = EWeaponState::Idle;
 	AIState = EAIState::Idle;
@@ -78,6 +79,8 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 	ControlledPawn = Cast<AAICharacter>(InPawn);
 	if (ControlledPawn)
 	{
+		MaxFiringDistance = ControlledPawn->CurrentWeapon->WeaponInfo.EffectiveRange;
+
 		if (InPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 		{
 			bAICharacterInterface = true;
@@ -542,6 +545,8 @@ void AShooterAIController::SwitchWeapon()
 		}
 		break;
 	}
+
+	MaxFiringDistance = ControlledPawn->CurrentWeapon->WeaponInfo.EffectiveRange;
 }
 
 void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)

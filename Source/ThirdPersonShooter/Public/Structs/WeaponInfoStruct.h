@@ -14,7 +14,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 
 	FORCEINLINE FWeaponInfo();
 
-	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, bool InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, int32 InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve);
+	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, float InEffectiveRange, bool InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, int32 InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	EWeaponType WeaponType = EWeaponType::Pistol;
@@ -24,6 +24,9 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float Range = 4000.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	float EffectiveRange = 1500.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	bool bIsAutomatic = false;
@@ -51,7 +54,7 @@ FORCEINLINE FWeaponInfo::FWeaponInfo()
 {
 }
 
-FORCEINLINE FWeaponInfo::FWeaponInfo(const EWeaponType InWeaponType, const FString InName, const float InRange, const bool InbIsAutomatic, const float InTimeBetweenShots, const float InCoolDownTime, const int32 InAmmoType, const float InMinFireOffset, const float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve)
-: WeaponType(InWeaponType), Name(InName), Range(InRange), bIsAutomatic(InbIsAutomatic), TimeBetweenShots(InTimeBetweenShots), CoolDownTime(InCoolDownTime), AmmoType(InAmmoType), MinFireOffset(InMinFireOffset), MaxFireOffset(InMaxFireOffset), WeaponSpreadCurve(InWeaponSpreadCurve)
+FORCEINLINE FWeaponInfo::FWeaponInfo(const EWeaponType InWeaponType, const FString InName, const float InRange, const float InEffectiveRange, const bool InbIsAutomatic, const float InTimeBetweenShots, const float InCoolDownTime, const int32 InAmmoType, const float InMinFireOffset, const float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve)
+: WeaponType(InWeaponType), Name(InName), Range(InRange), EffectiveRange(InEffectiveRange), bIsAutomatic(InbIsAutomatic), TimeBetweenShots(InTimeBetweenShots), CoolDownTime(InCoolDownTime), AmmoType(InAmmoType), MinFireOffset(InMinFireOffset), MaxFireOffset(InMaxFireOffset), WeaponSpreadCurve(InWeaponSpreadCurve)
 {
 }

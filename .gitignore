@@ -74,4 +74,7 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Rider user specific files
-.idea/
+.idea/*
+
+# Rider Link plugin
+Plugins/Developer/RiderLink/*

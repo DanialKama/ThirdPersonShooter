@@ -26,7 +26,7 @@ struct THIRDPERSONSHOOTER_API FWeaponInfo
 	float Range = 4000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
-	float EffectiveRange = 1500.0f;
+	float EffectiveRange = 2000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	bool bIsAutomatic = false;

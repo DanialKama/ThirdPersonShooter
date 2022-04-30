@@ -49,11 +49,11 @@ void AAICharacter::PossessedBy(AController* NewController)
 	if (AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{
 		bAIControllerInterface = true;
-
+		
 		AIBlackboard = AIController->GetBlackboardComponent();
 		const float Health = GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth;
 		AIBlackboard->SetValueAsFloat(FName("Health"), Health);
-
+		
 		Widget->InitWidget();
 		if (Widget->GetWidget() && Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 		{
@@ -74,9 +74,13 @@ void AAICharacter::SetPrimaryWeapon()
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters);
-		SetPickup_Implementation(EItemType::Weapon, NewWeapon);
-		Interact_Implementation();
+		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
+		{
+			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
+			Interact_Implementation();
+
+			AIController->MaxFiringDistance = NewWeapon->WeaponInfo.EffectiveRange;
+		}
 	}
 }
 
@@ -91,9 +95,16 @@ void AAICharacter::SetSidearmWeapon()
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters);
-		SetPickup_Implementation(EItemType::Weapon, NewWeapon);
-		Interact_Implementation();
+		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
+		{
+			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
+			Interact_Implementation();
+
+			if (AIController->MaxFiringDistance == -1.0f)
+			{
+				AIController->MaxFiringDistance = NewWeapon->WeaponInfo.EffectiveRange;
+			}
+		}
 	}
 }
 

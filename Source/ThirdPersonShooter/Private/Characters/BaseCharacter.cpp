@@ -586,7 +586,11 @@ void ABaseCharacter::ReloadWeapon()
 			break;
 		case 4:
 			// Prone
-			DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			if (APlayerController* LocalPC = Cast<APlayerController>(Controller))
+			{
+				DisableInput(LocalPC);
+			}
+			
 			MontageToPlay = ProneReloadMontages[Index];
 			break;
 		}
@@ -633,9 +637,12 @@ void ABaseCharacter::ReloadWeaponMontageHandler(UAnimMontage* AnimMontage, bool 
 	}
 	else
 	{
-		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		StopAnimMontage();
-		ResetReload();
+		if (APlayerController* LocalPC = Cast<APlayerController>(Controller))
+		{
+			EnableInput(LocalPC);
+			StopAnimMontage();
+			ResetReload();
+		}
 	}
 }
 

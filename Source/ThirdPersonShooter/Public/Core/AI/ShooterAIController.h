@@ -80,6 +80,8 @@ public:
 	UPROPERTY()
 	class AAICharacter* ControlledPawn;
 	
+	float MaxFiringDistance;
+	
 private:
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
 	
@@ -99,8 +101,6 @@ private:
 	class APatrolPathActor* PatrolPath;
 	
 	EWeaponState WeaponState;
-
-	float MaxFiringDistance;
 	
 	/** Attacker is the current enemy that AI is fighting with */
 	UPROPERTY()

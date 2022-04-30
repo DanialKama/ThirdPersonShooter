@@ -570,20 +570,10 @@ void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)
 void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 {
 	AIState = NewAIState;
-	switch (AIState)
+	if (NewAIState == EAIState::LowHealth)
 	{
-	case 0: case 1: case 2:
-		// Idle, Fight, Search
-		Fight();
-		break;
-	case 5:
-		// Low Health
 		ClearFocus(EAIFocusPriority::Gameplay);
 		ControlledPawn->UseWeapon(false, false);
-		break;
-	case 3: case 4: case 6:
-		// Reload, Switch, Use Med
-		break;
 	}
 }
 

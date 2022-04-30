@@ -53,7 +53,7 @@ AShooterAIController::AShooterAIController()
 	
 	// Initialize variables
 	MaxMeleeDistance = 200.0f;
-	MaxFiringDistance = 1500.0f;
+	MaxFiringDistance = -1.0f;
 	WeaponState = EWeaponState::Idle;
 	AIState = EAIState::Idle;
 	bAICharacterInterface = false;

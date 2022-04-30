@@ -79,8 +79,6 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 	ControlledPawn = Cast<AAICharacter>(InPawn);
 	if (ControlledPawn)
 	{
-		MaxFiringDistance = ControlledPawn->CurrentWeapon->WeaponInfo.EffectiveRange;
-
 		if (InPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
 		{
 			bAICharacterInterface = true;
@@ -197,7 +195,6 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 			SetFocus(UpdatedActor);
 			Attacker = UpdatedActor;
 			AIState = EAIState::Fight;
-			Fight();
 			
 			if (bDoOnceFight)
 			{
@@ -372,6 +369,7 @@ void AShooterAIController::StartPatrolling() const
 	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
+// TODO - Explain it
 void AShooterAIController::Fight()
 {
 	switch (AIState)
@@ -546,7 +544,14 @@ void AShooterAIController::SwitchWeapon()
 		break;
 	}
 
-	MaxFiringDistance = ControlledPawn->CurrentWeapon->WeaponInfo.EffectiveRange;
+	if (ControlledPawn->CurrentWeapon)
+	{
+		MaxFiringDistance = ControlledPawn->CurrentWeapon->WeaponInfo.EffectiveRange;
+	}
+	else
+	{
+		MaxFiringDistance = -1.0f;
+	}
 }
 
 void AShooterAIController::TryToReload(bool bNoAmmoLeftToReload)

@@ -24,13 +24,15 @@ ABaseCharacter::ABaseCharacter()
 	bUseControllerRotationYaw = false;
 	
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
+	GetMesh()->SetGenerateOverlapEvents(true);
 	
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
 	FallCapsule->SetupAttachment(GetMesh());
 	FallCapsule->SetComponentTickEnabled(false);
 	FallCapsule->CanCharacterStepUpOn = ECB_No;
 	FallCapsule->SetCollisionProfileName("FallCapsule");
-	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
+	FallCapsule->SetCanEverAffectNavigation(false);
+	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::FallCapsuleBeginOverlap);
 
 	KickCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Kick Collision"));
 	KickCollision->SetupAttachment(GetMesh(), FName("foot_r"));
@@ -39,6 +41,9 @@ ABaseCharacter::ABaseCharacter()
 	KickCollision->CanCharacterStepUpOn = ECB_No;
 	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
 	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	KickCollision->bTraceComplexOnMove = true;
+	KickCollision->SetCanEverAffectNavigation(false);
+	KickCollision->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::KickCollisionBeginOverlap);
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	
@@ -1167,6 +1172,7 @@ void ABaseCharacter::MeleeAttack()
 	if (MontageLength > 0.0f)
 	{
 		GetCharacterMovement()->DisableMovement();
+		KickCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		
 		FOnMontageEnded EndedDelegate;
 		EndedDelegate.BindUObject(this, &ABaseCharacter::MeleeMontageHandler);
@@ -1177,6 +1183,16 @@ void ABaseCharacter::MeleeAttack()
 void ABaseCharacter::MeleeMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ABaseCharacter::KickCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (bIsAlive && OtherActor != this)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap with: %s"), *OtherActor->GetName());
+	}
 }
 
 void ABaseCharacter::SetHealthState_Implementation(EHealthState HealthState)
@@ -1637,7 +1653,7 @@ void ABaseCharacter::ToggleCrouch()
 	}
 }
 
-void ABaseCharacter::OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+void ABaseCharacter::FallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (bIsAlive)

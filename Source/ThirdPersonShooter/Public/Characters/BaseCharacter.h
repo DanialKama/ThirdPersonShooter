@@ -308,9 +308,12 @@ private:
 	UFUNCTION()
 	void HolsterWeaponMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 
+	UFUNCTION()
+	void KickCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	/** Apply fall damage / Toggle ragdoll / Stand up the character */
 	UFUNCTION()
-	void OnFallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void FallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 // Variables
 public:

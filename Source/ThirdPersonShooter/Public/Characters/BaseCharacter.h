@@ -341,9 +341,6 @@ protected:
 	
 private:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> MeleeAttackMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> IdleMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
@@ -363,6 +360,9 @@ private:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> GrabWeaponMontages;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> MeleeAttackMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> StandUpFromFrontMontages;

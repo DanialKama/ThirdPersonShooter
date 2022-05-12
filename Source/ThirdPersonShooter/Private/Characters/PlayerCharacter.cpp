@@ -65,6 +65,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	InputComponent->BindAction("SwitchToSidearm", IE_Pressed, this, &ABaseCharacter::SwitchToSidearm);
 	InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
 	InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
+
+	InputComponent->BindAction("MeleeAttack", IE_Pressed, this, &ABaseCharacter::MeleeAttack);
 		
 	InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
 		

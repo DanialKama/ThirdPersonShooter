@@ -182,7 +182,6 @@ public:
 	void StartJump();
 	void DropCurrentObject();
 	
-	UFUNCTION()
 	void MeleeAttack();
 
 	/** Call from anim notify */

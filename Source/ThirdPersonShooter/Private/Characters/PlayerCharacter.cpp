@@ -7,6 +7,7 @@
 #include "Core/ShooterPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/ShooterHUD.h"
 
@@ -66,7 +67,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	InputComponent->BindAction("SwitchToNext", IE_Pressed, this, &APlayerCharacter::SwitchToNextWeapon);
 	InputComponent->BindAction("SwitchToPrevious", IE_Pressed, this, &APlayerCharacter::SwitchToPreviousWeapon);
 
-	InputComponent->BindAction("MeleeAttack", IE_Pressed, this, &ABaseCharacter::MeleeAttack);
+	InputComponent->BindAction("MeleeAttack", IE_Pressed, this, &APlayerCharacter::TryToMeleeAttack);
 		
 	InputComponent->BindAction("DropItem", IE_Pressed, this, &ABaseCharacter::DropCurrentObject);
 		
@@ -231,6 +232,14 @@ void APlayerCharacter::ResetCrouchByDelay()
 void APlayerCharacter::ResetCrouch()
 {
 	bDoOnceCrouch = true;
+}
+
+void APlayerCharacter::TryToMeleeAttack()
+{
+	if (GetCharacterMovement()->IsFalling() == false && GetCharacterMovement()->MovementMode == MOVE_Walking)
+	{
+		MeleeAttack();
+	}
 }
 
 void APlayerCharacter::TryToStartAiming()

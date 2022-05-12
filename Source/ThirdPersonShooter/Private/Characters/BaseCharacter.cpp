@@ -1154,8 +1154,7 @@ void ABaseCharacter::DropCurrentObject()
 
 void ABaseCharacter::MeleeAttack()
 {
-	UAnimMontage* MontageToPlay = MeleeAttackMontages[FMath::RandRange(0, ProneDeathMontages.Num() - 1)];
-	
+	UAnimMontage* MontageToPlay = MeleeAttackMontages[FMath::RandRange(0, MeleeAttackMontages.Num() - 1)];
 	const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
 	if (MontageLength > 0.0f)
 	{

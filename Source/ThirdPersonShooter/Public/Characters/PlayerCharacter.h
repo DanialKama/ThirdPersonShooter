@@ -72,6 +72,9 @@ private:
 
 	UFUNCTION()
 	void ResetCrouch();
+
+	UFUNCTION()
+	void TryToMeleeAttack();
 	
 	void TryToStartAiming();
 	void SwitchToNextWeapon();

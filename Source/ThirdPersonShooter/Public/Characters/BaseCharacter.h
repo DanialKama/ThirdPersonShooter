@@ -144,6 +144,9 @@ class THIRDPERSONSHOOTER_API ABaseCharacter : public ACharacter, public ICharact
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	UCapsuleComponent* FallCapsule;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UCapsuleComponent* KickCollision;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	class UHealthComponent* HealthComponent;

@@ -31,6 +31,14 @@ ABaseCharacter::ABaseCharacter()
 	FallCapsule->CanCharacterStepUpOn = ECB_No;
 	FallCapsule->SetCollisionProfileName("FallCapsule");
 	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnFallCapsuleBeginOverlap);
+
+	KickCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Kick Collision"));
+	KickCollision->SetupAttachment(GetMesh(), FName("foot_r"));
+	KickCollision->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
+	KickCollision->SetComponentTickEnabled(false);
+	KickCollision->CanCharacterStepUpOn = ECB_No;
+	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
+	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	

@@ -1152,6 +1152,26 @@ void ABaseCharacter::DropCurrentObject()
 	SetArmedState(false);
 }
 
+void ABaseCharacter::MeleeAttack()
+{
+	UAnimMontage* MontageToPlay = MeleeAttackMontages[FMath::RandRange(0, ProneDeathMontages.Num() - 1)];
+	
+	const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+	if (MontageLength > 0.0f)
+	{
+		GetCharacterMovement()->DisableMovement();
+		
+		FOnMontageEnded EndedDelegate;
+		EndedDelegate.BindUObject(this, &ABaseCharacter::MeleeMontageHandler);
+		AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
+	}
+}
+
+void ABaseCharacter::MeleeMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+
 void ABaseCharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)

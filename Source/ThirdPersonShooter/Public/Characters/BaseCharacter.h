@@ -181,6 +181,9 @@ public:
 	void StopFireWeapon();
 	void StartJump();
 	void DropCurrentObject();
+	
+	UFUNCTION()
+	void MeleeAttack();
 
 	/** Call from anim notify */
 	void SetReloadNotify(EReloadState ReloadState);
@@ -190,6 +193,9 @@ public:
 	
 	/** Call from anim notify */
 	void UpdateGrabWeaponNotifyState(ENotifyState NotifyState);
+
+	UFUNCTION()
+	void MeleeMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted);
 	
 	/** Call from anim notify and montage delegate*/
 	UFUNCTION()
@@ -334,11 +340,14 @@ protected:
 	EMovementState MovementState, PreviousMovementState;
 	
 private:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
-	TArray<UAnimMontage*> ArmedIdleMontages;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> MeleeAttackMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> IdleMontages;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> ArmedIdleMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
 	TArray<UAnimMontage*> StandUpReloadMontages;

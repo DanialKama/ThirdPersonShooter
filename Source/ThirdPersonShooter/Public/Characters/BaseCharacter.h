@@ -27,6 +27,24 @@ enum class ENotifyState : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FMeleeInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	float KickDamage;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageType> KickDamageType;
+
+	// Default Constructor
+	FMeleeInfo()
+	{
+		KickDamage = 75.0f;
+		KickDamageType = nullptr;
+	}
+};
+USTRUCT(BlueprintType)
 struct FBodyParts
 {
 	GENERATED_BODY()
@@ -398,6 +416,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* FadeFloatCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Melee attack info", AllowPrivateAccess = "true"))
+	FMeleeInfo MeleeInfo;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	FBodyParts BodyParts;

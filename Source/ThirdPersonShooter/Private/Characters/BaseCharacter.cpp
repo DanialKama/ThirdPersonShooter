@@ -41,7 +41,6 @@ ABaseCharacter::ABaseCharacter()
 	KickCollision->CanCharacterStepUpOn = ECB_No;
 	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
 	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	KickCollision->bTraceComplexOnMove = true;
 	KickCollision->SetCanEverAffectNavigation(false);
 	KickCollision->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::KickCollisionBeginOverlap);
 	
@@ -50,6 +49,7 @@ ABaseCharacter::ABaseCharacter()
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
 	
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
+	StimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
 	
 	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
@@ -1191,7 +1191,7 @@ void ABaseCharacter::KickCollisionBeginOverlap(UPrimitiveComponent* OverlappedCo
 {
 	if (bIsAlive && OtherActor != this)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap with: %s"), *OtherActor->GetName());
+		UGameplayStatics::ApplyDamage(OtherActor, MeleeInfo.KickDamage, GetInstigatorController(), this, MeleeInfo.KickDamageType);
 	}
 }
 

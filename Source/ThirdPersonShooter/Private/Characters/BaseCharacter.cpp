@@ -28,6 +28,8 @@ ABaseCharacter::ABaseCharacter()
 	
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
 	FallCapsule->SetupAttachment(GetMesh());
+	FallCapsule->SetCapsuleHalfHeight(110.0f);
+	FallCapsule->SetCapsuleRadius(55.0f);
 	FallCapsule->SetComponentTickEnabled(false);
 	FallCapsule->CanCharacterStepUpOn = ECB_No;
 	FallCapsule->SetCollisionProfileName("FallCapsule");

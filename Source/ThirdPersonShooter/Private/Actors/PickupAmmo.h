@@ -40,7 +40,7 @@ private:
 // Variables
 public:
 	/** Bitmask / Bitflag Enum */
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = EAmmoType))
 	int32 AmmoType;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults")

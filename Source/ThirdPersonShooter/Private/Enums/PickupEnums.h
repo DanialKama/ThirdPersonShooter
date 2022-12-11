@@ -58,7 +58,7 @@ enum class EWeaponType : uint8
 
 /** Supported ammo and ammo type */
 UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EAmmoType
+enum class EAmmoType : uint32
 {
 	None						= 0x000		UMETA(Hidden),
 	AssaultRifleNormal			= 0x001		UMETA(DisplayName = "Assault Rifle Normal"),
@@ -74,5 +74,4 @@ enum class EAmmoType
 	GrenadeLauncherSmoke		= 0x400		UMETA(DisplayName = "Grenade Launcher Smoke"),
 	RocketLauncher				= 0x800		UMETA(DisplayName = "Rocket Launcher")
 };
-
 ENUM_CLASS_FLAGS(EAmmoType);

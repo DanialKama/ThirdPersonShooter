@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/EmptyShell.h"
+#include "EmptyShell.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"

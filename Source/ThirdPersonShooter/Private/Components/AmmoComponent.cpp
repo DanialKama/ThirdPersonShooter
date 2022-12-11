@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Components/AmmoComponent.h"
+#include "AmmoComponent.h"
 #include "Interfaces/CommonInterface.h"
 
 UAmmoComponent::UAmmoComponent()

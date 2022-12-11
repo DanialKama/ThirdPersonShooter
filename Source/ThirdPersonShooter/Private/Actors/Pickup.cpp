@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/Pickup.h"
+#include "Pickup.h"
 
 APickup::APickup()
 {

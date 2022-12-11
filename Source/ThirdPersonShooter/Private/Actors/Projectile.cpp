@@ -1,7 +1,7 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/Projectile.h"
-#include "Actors/ProjectileFieldSystemActor.h"
+#include "Projectile.h"
+#include "ProjectileFieldSystemActor.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"

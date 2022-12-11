@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/BTTaskNode_LoopPath.h"
+#include "BTTaskNode_LoopPath.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTaskNode_LoopPath::UBTTaskNode_LoopPath(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

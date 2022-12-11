@@ -1,8 +1,8 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/BTService_SetMovementState.h"
+#include "BTService_SetMovementState.h"
 #include "Characters/AICharacter.h"
-#include "Core/AI/ShooterAIController.h"
+#include "ShooterAIController.h"
 
 UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer) 
 : Super(ObjectInitializer)

@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "UI/ShooterHUD.h"
+#include "ShooterHUD.h"
 
 void AShooterHUD::SetHealth_Implementation(float CurrentHealth)
 {

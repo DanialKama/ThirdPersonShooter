@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/Magazine.h"
+#include "Magazine.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 

@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Characters/AICharacter.h"
+#include "AICharacter.h"
 #include "Actors/PickupWeapon.h"
 #include "Actors/RespawnActor.h"
 #include "BehaviorTree/BlackboardComponent.h"

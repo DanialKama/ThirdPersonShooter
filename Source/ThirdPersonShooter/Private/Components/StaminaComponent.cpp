@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Components/StaminaComponent.h"
+#include "StaminaComponent.h"
 #include "Interfaces/CharacterInterface.h"
 
 UStaminaComponent::UStaminaComponent()

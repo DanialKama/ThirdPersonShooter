@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/BTTaskNode_DecrementPathIndex.h"
+#include "BTTaskNode_DecrementPathIndex.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTaskNode_DecrementPathIndex::UBTTaskNode_DecrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Characters/BaseCharacter.h"
+#include "BaseCharacter.h"
 #include "Actors/Magazine.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/HealthComponent.h"

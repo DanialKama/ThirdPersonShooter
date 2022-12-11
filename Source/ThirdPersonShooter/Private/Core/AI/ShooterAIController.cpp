@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/ShooterAIController.h"
+#include "ShooterAIController.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "Actors/PatrolPathActor.h"
@@ -19,7 +19,7 @@
 
 AShooterAIController::AShooterAIController()
 {
-	AISense_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Sence"));
+	AISense_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Sense"));
 	AISense_Sight->PeripheralVisionAngleDegrees = 45.0f;
 	AISense_Sight->PointOfViewBackwardOffset = 250.0f;
 	AISense_Sight->DetectionByAffiliation.bDetectEnemies = true;

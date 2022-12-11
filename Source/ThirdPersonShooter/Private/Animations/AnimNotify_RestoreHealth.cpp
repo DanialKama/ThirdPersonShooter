@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Animations/AnimNotify_RestoreHealth.h"
+#include "AnimNotify_RestoreHealth.h"
 #include "AIController.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/HealthComponent.h"

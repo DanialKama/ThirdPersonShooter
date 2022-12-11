@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/PickupAmmo.h"
+#include "PickupAmmo.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Sound/SoundCue.h"

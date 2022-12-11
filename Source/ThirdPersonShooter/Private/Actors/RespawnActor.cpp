@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/RespawnActor.h"
+#include "RespawnActor.h"
 #include "NavigationSystem.h"
 #include "Characters/AICharacter.h"
 #include "Components/BillboardComponent.h"

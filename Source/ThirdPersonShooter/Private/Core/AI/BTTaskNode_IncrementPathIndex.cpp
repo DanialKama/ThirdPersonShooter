@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/BTTaskNode_IncrementPathIndex.h"
+#include "BTTaskNode_IncrementPathIndex.h"
 #include "AIController.h"
 #include "Actors/PatrolPathActor.h"
 #include "BehaviorTree/BlackboardComponent.h"

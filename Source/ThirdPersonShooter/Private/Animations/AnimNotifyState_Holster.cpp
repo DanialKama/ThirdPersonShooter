@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Animations/AnimNotifyState_Holster.h"
+#include "AnimNotifyState_Holster.h"
 #include "Characters/BaseCharacter.h"
 
 void UAnimNotifyState_Holster::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)

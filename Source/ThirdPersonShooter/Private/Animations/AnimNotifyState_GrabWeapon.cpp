@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Animations/AnimNotifyState_GrabWeapon.h"
+#include "AnimNotifyState_GrabWeapon.h"
 #include "Characters/BaseCharacter.h"
 
 void UAnimNotifyState_GrabWeapon::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)

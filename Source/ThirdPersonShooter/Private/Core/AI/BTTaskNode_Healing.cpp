@@ -1,9 +1,9 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Core/AI/BTTaskNode_Healing.h"
+#include "BTTaskNode_Healing.h"
 #include "Characters/AICharacter.h"
 #include "Characters/BaseCharacter.h"
-#include "Core/AI/ShooterAIController.h"
+#include "ShooterAIController.h"
 #include "Enums/CharacterEnums.h"
 #include "GameFramework/CharacterMovementComponent.h"
 

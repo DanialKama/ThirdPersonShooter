@@ -1,14 +1,14 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Actors/PickupWeapon.h"
+#include "PickupWeapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "AIController.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
-#include "Actors/EmptyShell.h"
-#include "Actors/Projectile.h"
+#include "EmptyShell.h"
+#include "Projectile.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"

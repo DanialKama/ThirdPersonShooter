@@ -1,6 +1,6 @@
 // Copyright 2022 Danial Kamali. All Rights Reserved.
 
-#include "Characters/PlayerCharacter.h"
+#include "PlayerCharacter.h"
 #include "Components/HealthComponent.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Core/ShooterGameModeBase.h"

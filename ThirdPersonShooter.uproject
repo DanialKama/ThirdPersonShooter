@@ -28,17 +28,9 @@
 		{
 			"Name": "FieldSystemPlugin",
 			"Enabled": true
-		},
-		{
-			"Name": "PythonScriptPlugin",
-			"Enabled": true
-		},
-		{
-			"Name": "Volumetrics",
-			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
-		"Windows"
+		"Win64"
 	]
 }

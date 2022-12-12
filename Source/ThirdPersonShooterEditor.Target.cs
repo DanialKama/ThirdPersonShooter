@@ -8,10 +8,9 @@ public class ThirdPersonShooterEditorTarget : TargetRules
 	public ThirdPersonShooterEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "ThirdPersonShooter" } );
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 		
-		bCompileChaos = true;
-		bUseChaos = true;
+		ExtraModuleNames.AddRange( new string[] { "ThirdPersonShooter" } );
 	}
 }

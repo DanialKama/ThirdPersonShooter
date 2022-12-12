@@ -24,7 +24,7 @@ class ICharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
-	EWeaponToDo CanPickupAmmo(UPARAM(meta = (Bitmask, BitmaskEnum = EAmmoType)) int32 AmmoType);
+	EWeaponToDo CanPickupAmmo(int32 AmmoType);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CharacterInterface")
 	void SetMovementState(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne);

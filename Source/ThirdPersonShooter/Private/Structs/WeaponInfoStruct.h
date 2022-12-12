@@ -37,7 +37,7 @@ struct FWeaponInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
 	float CoolDownTime = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (Bitmask, BitmaskEnum = "EAmmoType"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (Bitmask, BitmaskEnum = EAmmoType))
 	int32 AmmoType = static_cast<int32>(EAmmoType::None);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Min Fire Offset is only for AI"))

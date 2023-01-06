@@ -1,8 +1,7 @@
 # Third-Person Shooter
 ## Introduction
-This is a third-person shooter (single-player) sample project developed in Unreal Engine.
+This is a third-person shooter (single-player) sample project developed in Unreal Engine.  
 This is not production-ready code but a starting point for learning and developing TPS concepts.
-You can access the project demo and pictures [here](https://mega.nz/folder/ePBzRAiR#9p42rAnO-mbLILq2aViTpg).
 
 ## Concepts covered
 - Pickup system for weapons and ammo

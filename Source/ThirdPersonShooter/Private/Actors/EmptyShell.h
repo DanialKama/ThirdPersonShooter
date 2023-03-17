@@ -33,5 +33,5 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USoundBase> HitSound;
 
-	uint8 bDoOnce : 1;
+	uint8 bDoOnceHit : 1;
 };

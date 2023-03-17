@@ -30,7 +30,7 @@ AEmptyShell::AEmptyShell()
 	ProjectileMovement->Velocity = FVector(-1.0f, 0.0f, 0.0f);
 	
 	// Initialize variables
-	bDoOnce = true;
+	bDoOnceHit = true;
 }
 
 void AEmptyShell::BeginPlay()
@@ -42,9 +42,9 @@ void AEmptyShell::BeginPlay()
 
 void AEmptyShell::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (bDoOnce)
+	if (bDoOnceHit)
 	{
-		bDoOnce = false;
+		bDoOnceHit = false;
 		StaticMesh->SetNotifyRigidBodyCollision(false);
 
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, StaticMesh->GetComponentLocation());

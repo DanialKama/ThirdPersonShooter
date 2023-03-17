@@ -374,7 +374,7 @@ FVector APickupWeapon::GetLeftHandAimLocation() const
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
 }
 
-void APickupWeapon::SetPickupStatus(const EPickupState PickupState)
+void APickupWeapon::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)
 	{

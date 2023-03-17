@@ -342,7 +342,7 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAs
 		NewWeapon->CameraComponent = ChildCameraComponent;
 		NewWeapon->SetInstigator(this);
 		NewWeapon->SetOwner(this);
-		NewWeapon->SetPickupStatus(EPickupState::Pickup);
+		NewWeapon->SetPickUpState(EPickupState::PickUp);
 	
 		if (CurrentWeapon)
 		{
@@ -436,7 +436,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 		{
 			PrimaryWeapon->LowerWeapon();
 			PrimaryWeapon->DetachFromActor(DetachmentTransformRules);
-			PrimaryWeapon->SetPickupStatus(EPickupState::Drop);
+			PrimaryWeapon->SetPickUpState(EPickupState::Drop);
 			if (CurrentWeapon == PrimaryWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
@@ -451,7 +451,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 		{
 			SecondaryWeapon->LowerWeapon();
 			SecondaryWeapon->DetachFromActor(DetachmentTransformRules);
-			SecondaryWeapon->SetPickupStatus(EPickupState::Drop);
+			SecondaryWeapon->SetPickUpState(EPickupState::Drop);
 			if (CurrentWeapon == SecondaryWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
@@ -466,7 +466,7 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 		{
 			SidearmWeapon->LowerWeapon();
 			SidearmWeapon->DetachFromActor(DetachmentTransformRules);
-			SidearmWeapon->SetPickupStatus(EPickupState::Drop);
+			SidearmWeapon->SetPickUpState(EPickupState::Drop);
 			if (CurrentWeapon == SidearmWeapon)
 			{
 				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
@@ -517,7 +517,7 @@ void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 			break;
 		}
 
-		Ammo->SetPickupStatus(EPickupState::Remove);
+		Ammo->SetPickUpState(EPickupState::Remove);
 	}
 }
 

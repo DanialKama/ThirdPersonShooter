@@ -15,9 +15,14 @@ enum class EItemType : uint8
 UENUM(BlueprintType, Category = "PickupEnums")
 enum class EPickupState : uint8
 {
-	Drop	UMETA(DisplayName = "Dropped"),
-	Pickup	UMETA(DisplayName = "Picked Up"),
-	Remove	UMETA(DisplayName = "Removed")
+	/** Dropped */
+	Drop,
+
+	/** Picked up */
+	PickUp,
+
+	/** Removed from the level or used */
+	Remove
 };
 
 UENUM(BlueprintType, Category = "PickupWeaponEnums")
@@ -56,6 +61,7 @@ enum class EWeaponType : uint8
 	Launcher	UMETA(DisplayName = "Launcher")
 };
 
+// TODO: Improve it
 /** Supported ammo and ammo type */
 UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EAmmoType : uint32

@@ -114,7 +114,7 @@ public:
 	void SetMagazineVisibility(bool bVisible) const;
 	void ReloadWeapon() const;
 	bool CanPickupAmmo() const;
-	virtual void SetPickupStatus(const EPickupState PickupState) override;
+	virtual void SetPickUpState(const EPickupState PickupState) override;
 	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
 

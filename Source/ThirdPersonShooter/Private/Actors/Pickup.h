@@ -7,7 +7,8 @@
 #include "Enums/PickupEnums.h"
 #include "Pickup.generated.h"
 
-UCLASS()
+// TODO: Rename to APickUp
+UCLASS(Abstract, meta = (DisplayName = "Pick Up Actor"))
 class APickup : public AActor
 {
 	GENERATED_BODY()
@@ -16,10 +17,10 @@ class APickup : public AActor
 public:	
 	APickup();
 
-	virtual void SetPickupStatus(EPickupState PickupState);
+	virtual void SetPickUpState(const EPickupState PickupState) {}
 
 // Variables
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
-	EItemType PickupType;
+	EItemType PickupType = EItemType::Weapon;
 };

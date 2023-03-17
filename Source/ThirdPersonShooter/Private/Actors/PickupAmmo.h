@@ -24,7 +24,7 @@ class APickupAmmo : public APickup
 public:
 	APickupAmmo();
 
-	virtual void SetPickupStatus(EPickupState PickupState) override;
+	virtual void SetPickUpState(const EPickupState PickupState) override;
 
 protected:
 	virtual void BeginPlay() override;

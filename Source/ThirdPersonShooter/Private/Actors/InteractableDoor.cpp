@@ -2,9 +2,10 @@
 
 #include "Actors/InteractableDoor.h"
 
-// Sets default values
 AInteractableDoor::AInteractableDoor()
 {
+	SetCanBeDamaged(false);
+	
 	// Initialize variables
 	bIsEnable = false;
 }

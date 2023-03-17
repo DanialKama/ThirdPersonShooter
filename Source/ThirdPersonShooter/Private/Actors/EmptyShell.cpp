@@ -20,6 +20,7 @@ AEmptyShell::AEmptyShell()
 	StaticMesh->SetCollisionProfileName("EmptyShell");
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->SetGenerateOverlapEvents(false);
+	StaticMesh->SetCanEverAffectNavigation(false);
 
 	// TODO: Use impulse instead of projectile movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));

@@ -1,4 +1,4 @@
-// Copyright 2022 Danial Kamali. All Rights Reserved.
+// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #pragma once
 
@@ -12,10 +12,10 @@ class AEmptyShell : public AActor
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* StaticMesh;
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UProjectileMovementComponent* ProjectileMovement;
+	TObjectPtr<class UProjectileMovementComponent> ProjectileMovement;
 
 // Functions
 public:

@@ -1,4 +1,4 @@
-// Copyright 2022 Danial Kamali. All Rights Reserved.
+// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "StaminaComponent.h"
 #include "Interfaces/CharacterInterface.h"

@@ -1,4 +1,4 @@
-// Copyright 2022 Danial Kamali. All Rights Reserved.
+// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "BTService_SetMovementState.h"
 #include "Characters/AICharacter.h"

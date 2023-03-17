@@ -6,7 +6,7 @@
 #include "Interactable.h"
 #include "InteractableDoor.generated.h"
 
-UCLASS(meta = (DisplayName = "Interactable Door"))
+UCLASS(meta = (DisplayName = "Interactable Door Actor"))
 class AInteractableDoor : public AInteractable
 {
 	GENERATED_BODY()

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "EmptyShell.generated.h"
 
-UCLASS(meta = (DisplayName = "Empty Shell"))
+UCLASS(meta = (DisplayName = "Empty Shell Actor"))
 class AEmptyShell : public AActor
 {
 	GENERATED_BODY()

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Interactable.generated.h"
 
-UCLASS(Abstract, meta = (DisplayName = "Interactable"))
+UCLASS(Abstract, meta = (DisplayName = "Interactable Actor"))
 class AInteractable : public AActor
 {
 	GENERATED_BODY()

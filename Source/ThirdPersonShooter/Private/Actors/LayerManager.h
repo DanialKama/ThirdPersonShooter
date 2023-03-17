@@ -11,7 +11,7 @@ class UBoxComponent;
 /**
  * Used to load and unload a data layer
  */
-UCLASS(meta = (DisplayName = "Layer Manager"))
+UCLASS(meta = (DisplayName = "Layer Manager Actor"))
 class ALayerManager : public AActor
 {
 	GENERATED_BODY()

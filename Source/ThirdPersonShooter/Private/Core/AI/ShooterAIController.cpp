@@ -363,7 +363,7 @@ void AShooterAIController::BackToRoutine()
 
 void AShooterAIController::StartPatrolling() const
 {
-	BlackboardComp->SetValueAsBool(FName("LoopPath"), PatrolPath->bIsLooping);
+	BlackboardComp->SetValueAsBool(FName("LoopPath"), PatrolPath->bIsLoop);
 	BlackboardComp->SetValueAsBool(FName("Direction"), true);
 	BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
 	BlackboardComp->SetValueAsBool(FName("Patrol"), true);

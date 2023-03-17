@@ -6,13 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "PatrolPathActor.generated.h"
 
-UCLASS()
+// TODO: Rename to APatrolPath
+UCLASS(meta = (DisplayName = "Patrol Path Actor"))
 class APatrolPathActor : public AActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UBillboardComponent* Billboard;
+	TObjectPtr<USceneComponent> SceneComp;
 	
 // Functions
 public:
@@ -22,10 +23,13 @@ public:
 public:
 	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (MakeEditWidget = true))
 	TArray<FVector> PathPoints;
-	
-	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (ToolTip = "If set to true AI directly move to the first point otherwise AI move back to previous points until reaching the first point"))
-	uint8 bIsLooping : 1;
-	
-	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (ToolTip = "Waiting time after reaching every patrol point", ClampMin = "0.0", UIMin = "0.0"))
-	float WaitTime;
+
+	// TODO: Test if and write a better comment
+	/** If set to true AI directly move to the first point otherwise AI move back to previous points until reaching the first point */
+	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (MakeEditWidget = true))
+	uint8 bIsLoop : 1;
+
+	/** Waiting time after reaching every point */
+	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	float WaitTime = 2.0f;
 };

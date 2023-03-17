@@ -21,6 +21,9 @@ class AEmptyShell : public AActor
 public:
 	AEmptyShell();
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -28,8 +31,7 @@ private:
 // Variables
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
-	class USoundCue* HitSound;
+	TObjectPtr<USoundBase> HitSound;
 
-	/** Play the sound of hitting the ground for once */
 	uint8 bDoOnce : 1;
 };

@@ -1,18 +1,18 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
-#include "Actors/LevelManager.h"
+#include "LayerManager.h"
+
 #include "Characters/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "InteractableDoor.h"
-#include "WorldPartition/DataLayer/DataLayerAsset.h"
 #include "WorldPartition/DataLayer/DataLayerSubsystem.h"
 
-ALevelManager::ALevelManager()
+ALayerManager::ALayerManager()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	SetHidden(true);
-	bIsSpatiallyLoaded = false;
+	SetCanBeDamaged(false);
 
 	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = SceneComp;
@@ -26,28 +26,29 @@ ALevelManager::ALevelManager()
 	Loader->CanCharacterStepUpOn = ECB_No;
 	Loader->SetCollisionProfileName(FName("OverlapOnlyPawn"));
 	Loader->SetCanEverAffectNavigation(false);
-	Loader->OnComponentBeginOverlap.AddDynamic(this, &ALevelManager::BeginOverlap);
 
 	Unloader = CreateDefaultSubobject<UBoxComponent>(TEXT("Unloader"));
 	Unloader->SetupAttachment(SceneComp);
 	Unloader->Mobility = EComponentMobility::Static;
 	Unloader->SetLineThickness(2.0f);
-	Unloader->ShapeColor = FColor::Green;
+	Unloader->ShapeColor = FColor::Blue;
 	Unloader->CanCharacterStepUpOn = ECB_No;
 	Unloader->SetCollisionProfileName(FName("OverlapOnlyPawn"));
 	Unloader->SetCanEverAffectNavigation(false);
-	Unloader->OnComponentBeginOverlap.AddDynamic(this, &ALevelManager::BeginOverlap);
 }
 
-void ALevelManager::BeginPlay()
+void ALayerManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Loader->OnComponentBeginOverlap.AddDynamic(this, &ALayerManager::BeginOverlap);
+	Unloader->OnComponentBeginOverlap.AddDynamic(this, &ALayerManager::BeginOverlap);
+
 	UDataLayerSubsystem* DataLayerSubsystem = GetWorld()->GetSubsystem<UDataLayerSubsystem>();
-	DataLayerSubsystem->OnDataLayerRuntimeStateChanged.AddDynamic(this, &ALevelManager::DataLayerStateChanged);
+	DataLayerSubsystem->OnDataLayerRuntimeStateChanged.AddDynamic(this, &ALayerManager::DataLayerStateChanged);
 }
 
-void ALevelManager::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+void ALayerManager::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (Cast<APlayerCharacter>(OtherActor))
@@ -57,20 +58,22 @@ void ALevelManager::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		// Load the data layer
 		if (Loader == OverlappedComponent)
 		{
-			DataLayerSubsystem->SetDataLayerInstanceRuntimeState(DataLayerAsset.LoadSynchronous(), EDataLayerRuntimeState::Activated);
+			DataLayerSubsystem->SetDataLayerInstanceRuntimeState(DataLayerAsset, EDataLayerRuntimeState::Activated);
 		}
 		// Unload the data layer
 		else
 		{
-			DataLayerSubsystem->SetDataLayerInstanceRuntimeState(DataLayerAsset.LoadSynchronous(), EDataLayerRuntimeState::Unloaded);
+			DataLayerSubsystem->SetDataLayerInstanceRuntimeState(DataLayerAsset, EDataLayerRuntimeState::Unloaded);
 		}
 	}
 }
 
-void ALevelManager::DataLayerStateChanged(const UDataLayerInstance* DataLayer, EDataLayerRuntimeState State)
+void ALayerManager::DataLayerStateChanged(const UDataLayerInstance* DataLayer, EDataLayerRuntimeState State)
 {
 	// Updating the door based on the data layer state
-	if (DataLayerAsset == DataLayer)
+	const UDataLayerSubsystem* DataLayerSubsystem = GetWorld()->GetSubsystem<UDataLayerSubsystem>();
+
+	if (DataLayerSubsystem->GetDataLayerInstanceFromAsset(DataLayerAsset) == DataLayer)
 	{
 		Door->bIsEnable = State == EDataLayerRuntimeState::Activated;
 	}

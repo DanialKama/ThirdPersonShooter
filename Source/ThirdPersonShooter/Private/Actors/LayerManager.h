@@ -4,33 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LevelManager.generated.h"
+#include "LayerManager.generated.h"
 
 class UBoxComponent;
 
 /**
  * Used to load and unload a data layer
  */
-UCLASS()
-class ALevelManager : public AActor
+UCLASS(meta = (DisplayName = "Layer Manager"))
+class ALayerManager : public AActor
 {
 	GENERATED_BODY()
-
-	/** Root component */
-	UPROPERTY()
-	USceneComponent* SceneComp;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USceneComponent> SceneComp;
 
 	/** Overlapping with this box will load the data layer */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UBoxComponent* Loader;
+	TObjectPtr<UBoxComponent> Loader;
 
 	/** Overlapping with this box will unload the data layer */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UBoxComponent* Unloader;
+	TObjectPtr<UBoxComponent> Unloader;
 
 // Functions
 public:
-	ALevelManager();
+	ALayerManager();
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,10 +45,10 @@ private:
 // Variables
 private:
 	/** The data layer asset that should be controlled by this level manager */
-	UPROPERTY(EditInstanceOnly, Category = "Defaults")
-	TSoftObjectPtr<UDataLayerAsset> DataLayerAsset;
+	UPROPERTY(EditInstanceOnly, Category = "Default")
+	TObjectPtr<UDataLayerAsset> DataLayerAsset;
 
 	/** The door actor that is related to the data layer controlled by this level manager */
-	UPROPERTY(EditInstanceOnly, Category = "Defaults")
-	class AInteractableDoor* Door;
+	UPROPERTY(EditInstanceOnly, Category = "Default")
+	TObjectPtr<class AInteractableDoor> Door;
 };

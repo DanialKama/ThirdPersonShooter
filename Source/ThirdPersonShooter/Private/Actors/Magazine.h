@@ -6,13 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Magazine.generated.h"
 
-UCLASS()
+UCLASS(meta = (DisplayName = "Magazine Actor"))
 class AMagazine : public AActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* StaticMesh;
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
 // Functions
 public:	
@@ -29,19 +29,19 @@ private:
 
 // Variables
 public:
-	/** Set it to true if the old magazine is empty */
-	uint8 bMagazineIsEmpty : 1;
+	uint8 bIsEmpty : 1;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (TooltTip = "If the remaining bullets in the magazine is 0 then this static mesh will be displayed", AllowPrivateAccess = true))
-	UStaticMesh* EmptyMagazine;
+	/** If the remaining bullets in the magazine are 0, then this static mesh will be used. */
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UStaticMesh> EmptyMagazine;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (TooltTip = "If the remaining bullets in the magazine is more than 0 then this static mesh will be displayed", AllowPrivateAccess = true))
-	UStaticMesh* FullMagazine;
+	/** If the remaining bullets in the magazine are more than 0, then this static mesh will be used. */
+	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UStaticMesh> FullMagazine;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
-	class USoundCue* HitSound;
+	TObjectPtr<USoundBase> HitSound;
 
-	/** Play the sound of hitting the ground for once */
-	uint8 bDoOnce : 1;
+	uint8 bDoOnceHit : 1;
 };

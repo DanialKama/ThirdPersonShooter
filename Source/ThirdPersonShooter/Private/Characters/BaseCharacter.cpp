@@ -719,7 +719,7 @@ void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew)
 		// If spawned mag is the used mag then change mesh based on current magazine ammo
 		if (bIsNew == false && CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo <= 0)
 		{
-			Magazine->bMagazineIsEmpty = true;
+			Magazine->bIsEmpty = true;
 		}
 		UGameplayStatics::FinishSpawningActor(Magazine, Transform);
 	}

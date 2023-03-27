@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Interfaces/PlayerControllerInterface.h"
+#include "Core/Interfaces/PlayerControllerInterface.h"
 #include "ShooterPlayerController.generated.h"
 
 UCLASS()

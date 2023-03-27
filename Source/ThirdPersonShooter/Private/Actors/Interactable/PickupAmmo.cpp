@@ -6,8 +6,8 @@
 #include "Components/WidgetComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
-#include "Interfaces/CharacterInterface.h"
-#include "Interfaces/WidgetInterface.h"
+#include "Core/Interfaces/CharacterInterface.h"
+#include "Core/Interfaces/WidgetInterface.h"
 
 APickupAmmo::APickupAmmo()
 {

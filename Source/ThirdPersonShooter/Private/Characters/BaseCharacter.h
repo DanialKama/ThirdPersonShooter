@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/CharacterInterface.h"
-#include "Interfaces/CommonInterface.h"
+#include "Core/Interfaces/CharacterInterface.h"
+#include "Core/Interfaces/CommonInterface.h"
 #include "BaseCharacter.generated.h"
 
 class APickupWeapon;

@@ -1,24 +1,25 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "PickupWeapon.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "AIController.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
-#include "EmptyShell.h"
 #include "Projectile.h"
+#include "Actors/NonInteractive/EmptyShell.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/AmmoComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Interfaces/CharacterInterface.h"
-#include "Interfaces/AIControllerInterface.h"
-#include "Interfaces/PlayerControllerInterface.h"
-#include "Interfaces/WidgetInterface.h"
+#include "Core/Interfaces/CharacterInterface.h"
+#include "Core/Interfaces/AIControllerInterface.h"
+#include "Core/Interfaces/PlayerControllerInterface.h"
+#include "Core/Interfaces/WidgetInterface.h"
 
 APickupWeapon::APickupWeapon()
 {

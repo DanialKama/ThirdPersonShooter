@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "Enums/PickupEnums.h"
-#include "Enums/CharacterEnums.h"
-#include "Interfaces/AIControllerInterface.h"
+#include "Core/Enumerations/PickupEnums.h"
+#include "Core/Enumerations/CharacterEnums.h"
+#include "Core/Interfaces/AIControllerInterface.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 

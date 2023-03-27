@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enums/CharacterEnums.h"
+#include "Core/Enumerations/CharacterEnums.h"
 #include "UObject/Interface.h"
-#include "Enums/PickupEnums.h"
+#include "Core/Enumerations/PickupEnums.h"
 #include "CharacterInterface.generated.h"
 
 class APickup;

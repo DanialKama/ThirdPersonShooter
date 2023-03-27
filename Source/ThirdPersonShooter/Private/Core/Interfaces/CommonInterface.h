@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Enums/PickupEnums.h"
+#include "Core/Enumerations/PickupEnums.h"
 #include "GameplayTagContainer.h"
-#include "Enums/CharacterEnums.h"
+#include "Core/Enumerations/CharacterEnums.h"
 #include "CommonInterface.generated.h"
 
 // This class does not need to be modified.

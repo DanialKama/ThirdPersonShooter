@@ -5,7 +5,7 @@
 #include "Characters/BaseCharacter.h"
 #include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Interfaces/AIControllerInterface.h"
+#include "Core/Interfaces/AIControllerInterface.h"
 
 void UAnimNotify_RestoreHealth::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {

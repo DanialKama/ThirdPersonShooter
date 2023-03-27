@@ -1,8 +1,8 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "HealthComponent.h"
-#include "Interfaces/CharacterInterface.h"
-#include "Interfaces/CommonInterface.h"
+#include "Core/Interfaces/CharacterInterface.h"
+#include "Core/Interfaces/CommonInterface.h"
 
 UHealthComponent::UHealthComponent()
 {

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Structs/AmmoComponentInfoStruct.h"
-#include "Enums/PickupEnums.h"
+#include "Core/Structures/AmmoComponentInfoStruct.h"
+#include "Core/Enumerations/PickupEnums.h"
 #include "PlayerControllerInterface.generated.h"
 
 // This class does not need to be modified.

@@ -1,10 +1,11 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "BTTaskNode_IncrementPathIndex.h"
+
 #include "AIController.h"
-#include "Actors/PatrolPathActor.h"
+#include "Actors/NonInteractive/PatrolPathActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Interfaces/AICharacterInterface.h"
+#include "Core/Interfaces/AICharacterInterface.h"
 
 UBTTaskNode_IncrementPathIndex::UBTTaskNode_IncrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {

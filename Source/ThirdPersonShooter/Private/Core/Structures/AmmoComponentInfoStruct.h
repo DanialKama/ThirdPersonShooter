@@ -14,16 +14,16 @@ struct FAmmoComponentInfo
 
 	explicit FORCEINLINE FAmmoComponentInfo(bool InbNoAmmoLeftToReload, int32 InCurrentAmmo, int32 InMagazineSize, int32 InCurrentMagazineAmmo);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	bool bNoAmmoLeftToReload = false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	int32 CurrentAmmo = 0;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	int32 MagazineSize = 0;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	int32 CurrentMagazineAmmo = 0;
 
 	// Operators

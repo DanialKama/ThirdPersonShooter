@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UObject/NoExportTypes.h"
-#include "Enums/PickupEnums.h"
+#include "Core/Enumerations/PickupEnums.h"
 #include "WeaponInfoStruct.generated.h"
 
 /** Ammo component info that owner needs */
@@ -16,37 +16,37 @@ struct FWeaponInfo
 
 	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, float InEffectiveRange, bool InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, int32 InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	EWeaponType WeaponType = EWeaponType::Pistol;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	FString Name = TEXT("Weapon");
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float Range = 4000.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float EffectiveRange = 2000.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	bool bIsAutomatic = false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float TimeBetweenShots = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float CoolDownTime = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (Bitmask, BitmaskEnum = EAmmoType))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (Bitmask, BitmaskEnum = EAmmoType))
 	int32 AmmoType = static_cast<int32>(EAmmoType::None);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Min Fire Offset is only for AI"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (ToolTip = "Min Fire Offset is only for AI"))
 	float MinFireOffset = -10.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", meta = (ToolTip = "Max Fire Offset is only for AI"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (ToolTip = "Max Fire Offset is only for AI"))
 	float MaxFireOffset = 10.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	UCurveFloat* WeaponSpreadCurve = nullptr;
 };
 

@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
-#include "Enums/PickupEnums.h"
-#include "Structs/ProjectileInfoStruct.h"
+#include "Core/Enumerations/PickupEnums.h"
+#include "Core/Structures/ProjectileInfoStruct.h"
 #include "Projectile.generated.h"
 
 class USoundCue;

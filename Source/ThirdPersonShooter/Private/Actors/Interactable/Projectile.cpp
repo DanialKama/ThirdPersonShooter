@@ -1,7 +1,8 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "Projectile.h"
-#include "ProjectileFieldSystemActor.h"
+
+#include "Actors/NonInteractive/ProjectileFieldSystemActor.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -9,7 +10,7 @@
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Perception/AISense_Damage.h"
-#include "Structs/ExplosiveProjectileInfoStruct.h"
+#include "Core/Structures/ExplosiveProjectileInfoStruct.h"
 
 AProjectile::AProjectile()
 {
@@ -95,6 +96,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	Destroy();
 }
 
+// TODO: Test the destruction without field system
 void AProjectile::SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const
 {
 	const FTransform Transform = GetActorTransform();

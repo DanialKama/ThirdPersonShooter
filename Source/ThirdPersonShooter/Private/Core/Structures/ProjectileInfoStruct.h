@@ -17,40 +17,40 @@ struct FProjectileInfo : public FTableRowBase
 		float InDamageToLeg, float InDamageToWood, float InDamageToMetal, float InDamageToStone, float InDamageToDirt,
 		float InStrainMagnitude, float InForceMagnitude, float InTorqueMagnitude);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DefaultDamage = 75.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToHead = 100.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToBody = 50.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToHand = 25.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToLeg = 25.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToWood = 70.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToMetal = 50.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToStone = 60.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float DamageToDirt = 65.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", Meta = (ToolTip = "Only for destructible objects"))
 	float StrainMagnitude = 1000.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", Meta = (ToolTip = "Only for destructible objects"))
 	float ForceMagnitude = 250.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Structs", Meta = (ToolTip = "Only for destructible objects"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", Meta = (ToolTip = "Only for destructible objects"))
 	float TorqueMagnitude = 100.0f;
 };
 

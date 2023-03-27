@@ -1,14 +1,16 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "BTTaskNode_FindPathPoint.h"
+
 #include "AIController.h"
-#include "Actors/PatrolPathActor.h"
+#include "Actors/NonInteractive/PatrolPathActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Interfaces/AICharacterInterface.h"
+#include "Core/Interfaces/AICharacterInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UBTTaskNode_FindPathPoint::UBTTaskNode_FindPathPoint(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	// TODO: Editor only?
 	NodeName = "Find Path Point";
 }
 

@@ -4,7 +4,7 @@
 #include "Characters/AICharacter.h"
 #include "Characters/BaseCharacter.h"
 #include "ShooterAIController.h"
-#include "Enums/CharacterEnums.h"
+#include "Core/Enumerations/CharacterEnums.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UBTTaskNode_Healing::UBTTaskNode_Healing(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)

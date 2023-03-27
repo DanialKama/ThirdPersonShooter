@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
-#include "Interfaces/AICharacterInterface.h"
+#include "Core/Interfaces/AICharacterInterface.h"
 #include "AICharacter.generated.h"
 
 UCLASS()

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "Interfaces/CommonInterface.h"
-#include "Structs/WeaponInfoStruct.h"
+#include "Core/Interfaces/CommonInterface.h"
+#include "Core/Structures/WeaponInfoStruct.h"
 #include "PickupWeapon.generated.h"
 
 class USoundCue;

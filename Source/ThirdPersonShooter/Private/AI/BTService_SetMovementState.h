@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Services/BTService_BlackboardBase.h"
-#include "Enums/CharacterEnums.h"
+#include "Core/Enumerations/CharacterEnums.h"
 #include "BTService_SetMovementState.generated.h"
 
 UCLASS()

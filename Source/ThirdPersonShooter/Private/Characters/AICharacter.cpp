@@ -1,14 +1,15 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "AICharacter.h"
-#include "Actors/PickupWeapon.h"
-#include "Actors/RespawnActor.h"
+
+#include "Actors/Interactable/PickupWeapon.h"
+#include "Actors/NonInteractive/RespawnActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Core/AI/ShooterAIController.h"
+#include "AI/ShooterAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Interfaces/WidgetInterface.h"
+#include "Core/Interfaces/WidgetInterface.h"
 
 AAICharacter::AAICharacter()
 {

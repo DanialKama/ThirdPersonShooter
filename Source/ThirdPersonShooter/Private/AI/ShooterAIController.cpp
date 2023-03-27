@@ -1,10 +1,11 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "ShooterAIController.h"
+
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
-#include "Actors/PatrolPathActor.h"
-#include "Actors/PickupWeapon.h"
+#include "Actors/Interactable/PickupWeapon.h"
+#include "Actors/NonInteractive/PatrolPathActor.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Characters/AICharacter.h"

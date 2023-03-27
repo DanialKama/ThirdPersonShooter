@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Enums/PickupEnums.h"
+#include "Core/Enumerations/PickupEnums.h"
 #include "Pickup.generated.h"
 
 // TODO: Rename to APickUp

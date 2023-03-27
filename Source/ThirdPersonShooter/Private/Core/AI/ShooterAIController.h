@@ -88,10 +88,10 @@ public:
 private:
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	float MaxMeleeDistance;
 	
 	UPROPERTY()

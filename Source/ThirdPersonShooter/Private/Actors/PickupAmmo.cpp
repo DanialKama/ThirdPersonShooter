@@ -1,6 +1,7 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "PickupAmmo.h"
+
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Sound/SoundCue.h"
@@ -10,8 +11,6 @@
 
 APickupAmmo::APickupAmmo()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(StaticMesh);
 	StaticMesh->SetComponentTickEnabled(false);
@@ -26,7 +25,7 @@ APickupAmmo::APickupAmmo()
 	SphereCollision->SetComponentTickEnabled(false);
 	SphereCollision->bApplyImpulseOnDamage = false;
 	SphereCollision->CanCharacterStepUpOn = ECB_No;
-	SphereCollision->SetCollisionProfileName("CollisionBound");
+	SphereCollision->SetCollisionProfileName("CollisionBound");	// TODO: Use Trigger profile
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
 	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 	

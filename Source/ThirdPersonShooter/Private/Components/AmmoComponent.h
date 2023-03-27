@@ -32,22 +32,22 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MaxAmmo;
 	
-	UPROPERTY(EditAnywhere, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditAnywhere, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
 	int32 DefaultAmmo;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MagazineSize;
 	
-	UPROPERTY(EditAnywhere, Category = "Defaults", meta = (ToolTip = "If value set to something greater than zero then in initial value dose not change"))
+	UPROPERTY(EditAnywhere, Category = "Default", meta = (ToolTip = "If value set to something greater than zero then in initial value dose not change"))
 	int32 CurrentMagazineAmmo;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
 	int32 ReloadAmount;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, Category = "Default")
 	int32 CurrentAmmo;
 	
 private:

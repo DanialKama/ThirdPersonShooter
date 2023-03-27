@@ -30,7 +30,7 @@ private:
 
 // Variables
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TObjectPtr<USoundBase> HitSound;
 
 	uint8 bDoOnceHit : 1;

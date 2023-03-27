@@ -35,12 +35,12 @@ public:
 
 // Variables
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, Category = "Default")
 	float StrainMagnitude;
 	
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, Category = "Default")
 	float ForceMagnitude;
 	
-	UPROPERTY(BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(BlueprintReadOnly, Category = "Default")
 	float TorqueMagnitude;
 };

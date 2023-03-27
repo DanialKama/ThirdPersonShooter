@@ -336,7 +336,7 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	FGameplayTag TeamTag;
 	
 	UPROPERTY()
@@ -364,64 +364,64 @@ protected:
 	EMovementState MovementState, PreviousMovementState;
 	
 private:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> IdleMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> ArmedIdleMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> StandUpReloadMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> CrouchReloadMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> ProneReloadMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> HolsterWeaponMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
 	TArray<UAnimMontage*> GrabWeaponMontages;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> MeleeAttackMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> StandUpFromFrontMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> StandUpFromBackMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> StandUpDeathMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> CrouchDeathMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<UAnimMontage*> ProneDeathMontages;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float FallDamageMultiplier;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float MinVelocityToApplyFallDamage;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float StandingDelay;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float DeathLifeSpan;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UCurveFloat* FadeFloatCurve;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Melee attack info", AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Melee attack info", AllowPrivateAccess = true))
 	FMeleeInfo MeleeInfo;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	FBodyParts BodyParts;
 
 	uint8 bDoOnceStopped : 1, bDoOnceMoving : 1, bRagdollState : 1, bIsArmed : 1, bDoOnceReload : 1, bDoOnceDeath : 1, bCanReload : 1, bCanHolster : 1;

@@ -33,14 +33,14 @@ public:
 	
 private:
 	/** If the remaining bullets in the magazine are 0, then this static mesh will be used. */
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMesh> EmptyMagazine;
 	
 	/** If the remaining bullets in the magazine are more than 0, then this static mesh will be used. */
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMesh> FullMagazine;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TObjectPtr<USoundBase> HitSound;
 
 	uint8 bDoOnceHit : 1;

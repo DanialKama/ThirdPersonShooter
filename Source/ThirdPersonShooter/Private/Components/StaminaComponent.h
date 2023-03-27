@@ -42,25 +42,25 @@ public:
 	float CurrentStamina;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float MaxStamina;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float DefaultStamina;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float RestoreStaminaAmount;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Per second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float StaminaRestoreRate;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float StartStaminaRecoveryDelay;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float RunStaminaDrainAmount;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float SprintStaminaDrainAmount;
 	
 	uint8 bCharacterInterface : 1, bDoOnce : 1;

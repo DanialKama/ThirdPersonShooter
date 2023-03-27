@@ -40,13 +40,13 @@ private:
 // Variables
 public:
 	/** Bitmask / Bitflag Enum */
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (Bitmask, BitmaskEnum = EAmmoType))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (Bitmask, BitmaskEnum = EAmmoType))
 	int32 AmmoType;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	int32 Amount;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	class USoundCue* PickupSound;
 };

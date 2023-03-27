@@ -43,13 +43,13 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditAnywhere, Category = "Defaults")
+	UPROPERTY(EditAnywhere, Category = "Default")
 	uint8 bCanRecoverHealth : 1;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float MaxHealth;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float DefaultHealth;
 	
 	FName HitBoneName;
@@ -58,16 +58,16 @@ public:
 	FVector ShotOrigin;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float LowHealth;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float HealingAmount;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float HealthRecoveryRate;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
 	float StartHealthRecoveryDelay;
 	
 	uint8 bCommonInterface : 1, bCharacterInterface : 1;

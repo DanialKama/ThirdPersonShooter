@@ -56,23 +56,23 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	UAnimMontage* SurrenderMontage;
 
 	UPROPERTY()
 	class ARespawnActor* RespawnHandler;
 	
 private:
-	UPROPERTY(EditInstanceOnly, Category = "Defaults")
+	UPROPERTY(EditInstanceOnly, Category = "Default")
 	APatrolPathActor* PatrolPath;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> PrimaryWeapons;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Sidearm weapons to spawn and attach", AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Sidearm weapons to spawn and attach", AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	float RespawnTime;
 
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1;

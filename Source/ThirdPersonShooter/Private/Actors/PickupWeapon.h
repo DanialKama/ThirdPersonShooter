@@ -158,10 +158,10 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Default")
 	FWeaponInfo WeaponInfo;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	FWeaponDefaults WeaponDefaults;
 	
 	/** Use for line trace if the owner is player */
@@ -169,7 +169,7 @@ public:
 	class UCameraComponent* CameraComponent;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	uint8 bDrawDebugLineTrace : 1;
 	
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;

@@ -21,6 +21,6 @@ public:
 
 // Variables
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults")
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	EItemType PickupType = EItemType::Weapon;
 };

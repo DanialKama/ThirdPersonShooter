@@ -94,16 +94,16 @@ private:
 
 // Variables
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	float BaseTurnRate;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	float BaseLookUpRate;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = true))
 	float TapThreshold;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Defaults", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UCurveFloat* AimFloatCurve;
 
 	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;

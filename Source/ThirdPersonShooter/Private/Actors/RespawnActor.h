@@ -13,10 +13,10 @@ struct FRespawnInfo
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, Category = "Defaults")
+	UPROPERTY(EditAnywhere, Category = "Default")
 	float SpawnTime;
 	
-	UPROPERTY(EditAnywhere, Category = "Defaults")
+	UPROPERTY(EditAnywhere, Category = "Default")
 	TSubclassOf<AAICharacter> CharacterToSpawn;
 
 	// Default constructor
@@ -55,7 +55,7 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defaults")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default")
 	TArray<FRespawnInfo> RespawnList;
 
 private:

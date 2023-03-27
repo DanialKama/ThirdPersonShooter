@@ -21,15 +21,15 @@ public:
 
 // Variables
 public:
-	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (MakeEditWidget = true))
+	UPROPERTY(EditInstanceOnly, Category = "Default", meta = (MakeEditWidget = true))
 	TArray<FVector> PathPoints;
 
 	// TODO: Test if and write a better comment
 	/** If set to true AI directly move to the first point otherwise AI move back to previous points until reaching the first point */
-	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (MakeEditWidget = true))
+	UPROPERTY(EditInstanceOnly, Category = "Default")
 	uint8 bIsLoop : 1;
 
 	/** Waiting time after reaching every point */
-	UPROPERTY(EditInstanceOnly, Category = "Defaults", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(EditInstanceOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float WaitTime = 2.0f;
 };

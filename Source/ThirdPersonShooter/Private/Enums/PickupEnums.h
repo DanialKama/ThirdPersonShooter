@@ -63,7 +63,7 @@ enum class EWeaponType : uint8
 
 // TODO: Improve it
 /** Supported ammo and ammo type */
-UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = true))
 enum class EAmmoType : uint32
 {
 	None						= 0x00000000	UMETA(Hidden),

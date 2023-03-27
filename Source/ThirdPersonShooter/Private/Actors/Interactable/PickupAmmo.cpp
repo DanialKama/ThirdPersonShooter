@@ -26,8 +26,6 @@ APickupAmmo::APickupAmmo()
 	SphereCollision->bApplyImpulseOnDamage = false;
 	SphereCollision->CanCharacterStepUpOn = ECB_No;
 	SphereCollision->SetCollisionProfileName("CollisionBound");	// TODO: Use Trigger profile
-	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
-	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	Widget->SetupAttachment(StaticMesh);
@@ -51,6 +49,9 @@ void APickupAmmo::BeginPlay()
 	{
 		IWidgetInterface::Execute_SetAmmoInfo(Widget->GetWidget(), AmmoType, Amount);
 	}
+	
+	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupAmmo::OnBoxBeginOverlap);
+	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &APickupAmmo::OnBoxEndOverlap);
 }
 
 void APickupAmmo::SetPickUpState(const EPickupState PickupState)

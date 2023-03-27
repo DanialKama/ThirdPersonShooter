@@ -28,6 +28,7 @@ void UHealthComponent::Initialize()
 	
 	if (GetOwner())
 	{
+		// TODO: Really Dan :/
 		GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
 		GetOwner()->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
 		GetOwner()->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);

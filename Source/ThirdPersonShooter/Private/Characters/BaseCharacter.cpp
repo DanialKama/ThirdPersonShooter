@@ -26,7 +26,8 @@ ABaseCharacter::ABaseCharacter()
 	
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
 	GetMesh()->SetGenerateOverlapEvents(true);
-	
+
+	// TODO: Delete this
 	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
 	FallCapsule->SetupAttachment(GetMesh());
 	FallCapsule->SetCapsuleHalfHeight(110.0f);
@@ -35,8 +36,8 @@ ABaseCharacter::ABaseCharacter()
 	FallCapsule->CanCharacterStepUpOn = ECB_No;
 	FallCapsule->SetCollisionProfileName("FallCapsule");
 	FallCapsule->SetCanEverAffectNavigation(false);
-	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::FallCapsuleBeginOverlap);
 
+	// TODO: Use sphere trace
 	KickCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Kick Collision"));
 	KickCollision->SetupAttachment(GetMesh(), FName("foot_r"));
 	KickCollision->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
@@ -45,7 +46,6 @@ ABaseCharacter::ABaseCharacter()
 	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
 	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	KickCollision->SetCanEverAffectNavigation(false);
-	KickCollision->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::KickCollisionBeginOverlap);
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	
@@ -121,6 +121,10 @@ void ABaseCharacter::BeginPlay()
 
 	HealthComponent->Initialize();
 	StaminaComponent->Initialize();
+	
+	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::FallCapsuleBeginOverlap);
+	
+	KickCollision->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::KickCollisionBeginOverlap);
 }
 
 void ABaseCharacter::Tick(float DeltaTime)

@@ -46,7 +46,6 @@ AShooterAIController::AShooterAIController()
 	AIPerception->ConfigureSense(*AISense_Hearing);
 	AIPerception->ConfigureSense(*AISense_Prediction);
 	AIPerception->SetDominantSense(AISense_Damage->GetSenseImplementation());
-	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
 	
 	BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Component"));
 	
@@ -71,6 +70,8 @@ void AShooterAIController::BeginPlay()
 	RunBehaviorTree(BehaviorTree);
 	BehaviorTreeComp->StartTree(*BehaviorTree);
 	BlackboardComp->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+
+	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AShooterAIController::PerceptionUpdated);
 }
 
 void AShooterAIController::OnPossess(APawn* InPawn)

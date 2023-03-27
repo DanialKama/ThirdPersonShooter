@@ -24,7 +24,6 @@ AProjectile::AProjectile()
 	StaticMesh->SetCollisionProfileName("Projectile");
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->bReturnMaterialOnMove = true;
-	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	
 	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Trail Particle"));
 	TrailParticle->SetupAttachment(StaticMesh, TEXT("TrailSocket"));
@@ -39,6 +38,7 @@ AProjectile::AProjectile()
 	AmmoType = EAmmoType::AssaultRifleNormal;
 	SwitchExpression = 0;
 
+	// TODO: Use the blueprint instead of loading them like this
 	// Load data tables
 	static ConstructorHelpers::FObjectFinder<UDataTable> ProjectileDataObject(TEXT("DataTable'/Game/Blueprints/Projectiles/DT_ProjectileInfo.DT_ProjectileInfo'"));
 	if (ProjectileDataObject.Succeeded())
@@ -51,6 +51,13 @@ AProjectile::AProjectile()
 	{
 		ExplosiveProjectileDataTable = ExplosiveProjectileDataObject.Object;
 	}
+}
+
+void AProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 }
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

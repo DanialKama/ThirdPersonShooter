@@ -41,8 +41,6 @@ APickupWeapon::APickupWeapon()
 	BoxCollision->SetGenerateOverlapEvents(true);
 	BoxCollision->CanCharacterStepUpOn = ECB_No;
 	BoxCollision->SetCollisionProfileName("CollisionBound");
-	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
-	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 	
 	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
@@ -93,6 +91,9 @@ void APickupWeapon::BeginPlay()
 	{
 		CurrentProjectile = WeaponDefaults.Projectile[0].GetDefaultObject();
 	}
+	
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APickupWeapon::OnBoxBeginOverlap);
+	BoxCollision->OnComponentEndOverlap.AddDynamic(this, &APickupWeapon::OnBoxEndOverlap);
 }
 
 void APickupWeapon::StartFireWeapon()

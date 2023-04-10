@@ -6,13 +6,10 @@ void AShooterGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Bind player died delegate to the Game Mode's PlayerDied function.
-	if (OnPlayerDied.IsBound() == false)
-	{
-		OnPlayerDied.AddDynamic(this, &AShooterGameModeBase::PlayerDied);
-	}
+	OnPlayerDied.AddDynamic(this, &AShooterGameModeBase::PlayerDied);
 }
 
+// TODO: Player controller should call this
 void AShooterGameModeBase::PlayerDied(AController* PlayerController)
 {
 	RestartPlayer(PlayerController);

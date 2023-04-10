@@ -6,8 +6,10 @@
 #include "GameFramework/GameModeBase.h"
 #include "ShooterGameModeBase.generated.h"
 
+// TODO: don't use dynamic
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerDiedSignature, AController*, PlayerController);
 
+// TODO: Rename
 UCLASS()
 class AShooterGameModeBase : public AGameModeBase
 {

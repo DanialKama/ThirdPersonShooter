@@ -7,6 +7,7 @@
 #include "Core/Interfaces/PlayerControllerInterface.h"
 #include "ShooterPlayerController.generated.h"
 
+// TODO: Rename
 UCLASS()
 class AShooterPlayerController : public APlayerController, public IPlayerControllerInterface
 {

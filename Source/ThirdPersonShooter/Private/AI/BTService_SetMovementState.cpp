@@ -1,19 +1,17 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "BTService_SetMovementState.h"
+
 #include "Characters/AICharacter.h"
 #include "ShooterAIController.h"
 
-UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer) 
-: Super(ObjectInitializer)
+UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	NodeName = "Set Movement State";
-	bNotifyTick = false;
-	bTickIntervals = false;
+	
 	bNotifyBecomeRelevant = true;
 
 	// Initialize variables
-	MovementState = EMovementState::Walk;
 	bRelatedToCrouch = false;
 	bRelatedToProne = false;
 }

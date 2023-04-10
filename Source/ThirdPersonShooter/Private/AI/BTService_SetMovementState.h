@@ -8,21 +8,17 @@
 #include "BTService_SetMovementState.generated.h"
 
 UCLASS()
-class UBTService_SetMovementState : public UBTService_BlackboardBase
+class UBTService_SetMovementState : public UBTService
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 
-// Functions
-public:
-	UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-private:
+protected:
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 // Variables
 public:
 	UPROPERTY(EditAnywhere, Category = "Node")
-	EMovementState MovementState;
+	EMovementState MovementState = EMovementState::Walk;
 	
 	UPROPERTY(EditAnywhere, Category = "Node")
 	uint8 bRelatedToCrouch : 1;

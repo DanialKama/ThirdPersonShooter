@@ -10,8 +10,7 @@ enum class EMovementState : uint8
 	Walk	UMETA(DisplayName = "Walk"),
 	Run		UMETA(DisplayName = "Run"),
 	Sprint	UMETA(DisplayName = "Sprint"),
-	Crouch	UMETA(DisplayName = "Crouch"),
-	Prone	UMETA(DisplayName = "Prone")
+	Crouch	UMETA(DisplayName = "Crouch")
 };
 
 UENUM(BlueprintType, Category = "CharacterEnums")

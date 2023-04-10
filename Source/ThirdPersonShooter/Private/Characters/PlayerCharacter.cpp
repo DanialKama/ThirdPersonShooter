@@ -505,9 +505,9 @@ void APlayerCharacter::Destroyed()
 	Super::Destroyed();
 
 	// Get the World and GameMode in the world to invoke its restart player function.
-	if (const UWorld* World = GetWorld())
+	if (GetWorld()->HasBegunPlay())
 	{
-		if (const AShooterGameModeBase* GameMode = Cast<AShooterGameModeBase>(World->GetAuthGameMode()))
+		if (const AShooterGameModeBase* GameMode = Cast<AShooterGameModeBase>(GetWorld()->GetAuthGameMode()))
 		{
 			GameMode->OnPlayerDied.Broadcast(ControllerRef);
 		}

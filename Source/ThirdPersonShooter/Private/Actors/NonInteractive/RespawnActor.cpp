@@ -1,15 +1,17 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "RespawnActor.h"
-#include "NavigationSystem.h"
+
 #include "Characters/AICharacter.h"
 #include "Components/BillboardComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NavigationSystem.h"
 
 ARespawnActor::ARespawnActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
 	SetRootComponent(Billboard);
@@ -47,9 +49,9 @@ void ARespawnActor::EnterRespawnQueue(FRespawnInfo RespawnInfo)
 void ARespawnActor::StartRespawn()
 {
 	// If respawn timer is not started yet then start it
-	if (RespawnTimer.IsValid() == false)
+	if (SpawnTimer.IsValid() == false)	// TODO: Need Improvement
 	{
-		GetWorld()->GetTimerManager().SetTimer(RespawnTimer, this, &ARespawnActor::RespawnHandler, 0.5f, true);
+		GetWorld()->GetTimerManager().SetTimer(SpawnTimer, this, &ARespawnActor::RespawnHandler, 0.5f, true);
 	}
 }
 
@@ -92,6 +94,6 @@ void ARespawnActor::RespawnHandler()
 	
 	if (RespawnList.IsEmpty())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(RespawnTimer);
+		GetWorld()->GetTimerManager().ClearTimer(SpawnTimer);
 	}
 }

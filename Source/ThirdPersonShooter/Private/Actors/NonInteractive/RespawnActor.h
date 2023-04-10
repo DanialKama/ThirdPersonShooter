@@ -8,6 +8,7 @@
 
 class AAICharacter;
 
+// TODO: Delete this
 USTRUCT(BlueprintType)
 struct FRespawnInfo
 {
@@ -26,20 +27,25 @@ struct FRespawnInfo
 	}
 };
 
-UCLASS()
+// TODO: Rename to AAISpawner
+UCLASS(meta = (DisplayName = "AI Spawner"))
 class ARespawnActor : public AActor
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UBillboardComponent* Billboard;
 
+	// TODO: Use Scene component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class USphereComponent* RespawnRadius;
+	TObjectPtr<UBillboardComponent> Billboard;
+
+	// TODO: Use random location in box
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	TObjectPtr<class USphereComponent> RespawnRadius;
 
 // Functions
 public:	
 	ARespawnActor();
+
+	// TODO: Rename Respawn to Spawn
 	
 	/** Enter the respawn queue and wait till respawning */
 	void EnterRespawnQueue(FRespawnInfo RespawnInfo);
@@ -59,8 +65,15 @@ public:
 	TArray<FRespawnInfo> RespawnList;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float SpawnDelay = 5.0f;
+
+	/** AI character to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TSubclassOf<AAICharacter> CharacterToSpawn;
+	
 	UPROPERTY()
 	class UNavigationSystemV1* NavigationSystem;
 
-	FTimerHandle RespawnTimer;
+	FTimerHandle SpawnTimer;
 };

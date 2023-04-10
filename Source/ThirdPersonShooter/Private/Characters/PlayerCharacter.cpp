@@ -1,14 +1,15 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "PlayerCharacter.h"
+
 #include "Components/HealthComponent.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Core/ShooterGameModeBase.h"
 #include "Core/ShooterPlayerController.h"
-#include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/ShooterHUD.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -26,11 +27,6 @@ APlayerCharacter::APlayerCharacter()
 	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
 	
 	// Initialize variables
-	BaseLookUpRate = 45.0f;
-	BaseTurnRate = 45.0f;
-	TapThreshold = 0.2f;
-	PreviousTapNumber = TabNumber = 0;
-	Direction = ETimelineDirection::Forward;
 	bDoubleTabGate = false;
 	bDoOnceCrouch = true;
 	bTapHeld = false;
@@ -41,6 +37,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
+	
 	// Input Actions
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ABaseCharacter::StartJump);
 	InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
@@ -93,11 +90,11 @@ void APlayerCharacter::BeginPlay()
 	TimerDelegate.BindUObject(this, &APlayerCharacter::NextFrameBeginPlay);
 	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
 
-	if (AimFloatCurve)
+	if (UCurveFloat* Curve = AimFloatCurve.LoadSynchronous())
 	{
 		FOnTimelineFloat AimTimeLineProgress{};
 		AimTimeLineProgress.BindUFunction(this, FName("AimTimeLineUpdate"));
-		AimTimeline->AddInterpFloat(AimFloatCurve, AimTimeLineProgress, FName("Alpha"));
+		AimTimeline->AddInterpFloat(Curve, AimTimeLineProgress, FName("Alpha"));
 		FOnTimelineEvent AimTimelineFinishEvent{};
 		AimTimelineFinishEvent.BindUFunction(this, FName("AimTimeLineFinished"));
 		AimTimeline->SetTimelineFinishedFunc(AimTimelineFinishEvent);
@@ -504,7 +501,6 @@ void APlayerCharacter::Destroyed()
 	
 	Super::Destroyed();
 
-	// Get the World and GameMode in the world to invoke its restart player function.
 	if (GetWorld()->HasBegunPlay())
 	{
 		if (const AShooterGameModeBase* GameMode = Cast<AShooterGameModeBase>(GetWorld()->GetAuthGameMode()))
@@ -520,9 +516,4 @@ void APlayerCharacter::AddRecoil_Implementation(const FRotator RotationIntensity
 	
 	AddControllerPitchInput(ControllerPitch);
 	HUDRef->AddRecoil(CrosshairRecoil, ControlTime);
-}
-
-bool APlayerCharacter::IsPlayer_Implementation()
-{
-	return true;	
 }

@@ -7,19 +7,19 @@
 #include "Components/TimelineComponent.h"
 #include "PlayerCharacter.generated.h"
 
-UCLASS()
+UCLASS(meta = (DisplayName = "Player Character"))
 class APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class USpringArmComponent* SpringArm;
+	TObjectPtr<class USpringArmComponent> SpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UCameraComponent* Camera;
+	TObjectPtr<UCameraComponent> Camera;
 	
-	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	UTimelineComponent* AimTimeline;
+	UPROPERTY()
+	TObjectPtr<UTimelineComponent> AimTimeline;
 
 // Functions
 public:
@@ -32,7 +32,7 @@ public:
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetStaminaLevel_Implementation(float Stamina, bool bIsFull) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
-	virtual bool IsPlayer_Implementation() override;
+	virtual bool IsPlayer_Implementation() override { return true; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -94,17 +94,20 @@ private:
 
 // Variables
 private:
+	// TODO: Delete when start using enhanced input system
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float BaseTurnRate;
+	float BaseTurnRate = 45.0f;
+	
+	// TODO: Delete when start using enhanced input system
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float BaseLookUpRate = 45.0f;
+
+	/** Use for double tab function to set movement state to run and sprint */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float TapThreshold = 0.2f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float BaseLookUpRate;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Use for double tab function to set movement state to run and sprint", AllowPrivateAccess = true))
-	float TapThreshold;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	UCurveFloat* AimFloatCurve;
+	TSoftObjectPtr<UCurveFloat> AimFloatCurve;
 
 	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;
 	
@@ -114,10 +117,10 @@ private:
 	UPROPERTY()
 	class AShooterHUD* HUDRef;
 	
-	uint8 TabNumber, PreviousTapNumber;
+	uint8 TabNumber = 0, PreviousTapNumber = 0;
 	
 	/** Enum data indicating the direction the Timeline is playing */
-	TEnumAsByte<ETimelineDirection::Type> Direction;
+	ETimelineDirection::Type Direction = ETimelineDirection::Forward;
 	
 	FTimerHandle StartSprintingTimer;
 };

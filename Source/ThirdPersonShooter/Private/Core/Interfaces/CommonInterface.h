@@ -24,7 +24,8 @@ class ICommonInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	FGameplayTag GetTeamTag();
-	
+
+	// TODO: Use pawn controller
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	bool IsPlayer();
 	

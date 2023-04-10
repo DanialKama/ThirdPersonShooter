@@ -45,6 +45,7 @@ struct FMeleeInfo
 	}
 };
 
+// TODO: Simplify it
 USTRUCT(BlueprintType)
 struct FBodyParts
 {
@@ -156,28 +157,29 @@ struct FBodyParts
 	}
 };
 
-UCLASS()
+/** Character base class */
+UCLASS(Abstract, meta = (DisplayName = "Base Character"))
 class ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
 {
 	GENERATED_BODY()
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UCapsuleComponent* FallCapsule;
+	TObjectPtr<UCapsuleComponent> FallCapsule;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UCapsuleComponent* KickCollision;
+	TObjectPtr<UCapsuleComponent> KickCollision;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UHealthComponent* HealthComponent;
+	TObjectPtr<class UHealthComponent> HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UStaminaComponent* StaminaComponent;
+	TObjectPtr<class UStaminaComponent> StaminaComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UAIPerceptionStimuliSourceComponent* StimuliSource;
+	TObjectPtr<class UAIPerceptionStimuliSourceComponent> StimuliSource;
 	
-	// ReSharper disable once CppUE4ProbableMemoryIssuesWithUObject
-	class UTimelineComponent* DeathTimeline;
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> DeathTimeline;
 
 // Functions
 public:
@@ -187,7 +189,7 @@ public:
 	bool SetAimState(bool bIsAiming);
 	
 	/** Call from Set Current Weapon and use in player character to exit aim mode */
-	virtual void ResetAim();
+	virtual void ResetAim() {}
 	
 	 /** Reload Weapon based on movement state and weapon type */
 	virtual void ReloadWeapon();
@@ -220,7 +222,7 @@ public:
 	
 	/** Call from anim notify and montage delegate*/
 	UFUNCTION()
-	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const;
+	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const {}
 	
 	UFUNCTION()
 	void StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const;
@@ -238,7 +240,7 @@ public:
 	virtual void SetPickup_Implementation(EItemType NewPickupType, APickup* NewPickup) override;
 	virtual EWeaponToDo CanPickupAmmo_Implementation(int32 AmmoType) override;
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
-	virtual FGameplayTag GetTeamTag_Implementation() override;
+	virtual FGameplayTag GetTeamTag_Implementation() override { return TeamTag; }
 
 	FORCEINLINE UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 	
@@ -265,7 +267,8 @@ private:
 	void CharacterIsOnMove();
 	void PickupWeapon(APickup* NewWeapon);
 	void AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo TargetSlot);
-	
+
+	// TODO: Delete it, We don't need it anymore
 	/** Replace the input weapon with a similar weapon
 	 * to be persistence between level streaming.
 	 * (all-important information will be transferred to the new weapon)
@@ -351,9 +354,10 @@ public:
 	UPROPERTY()
 	APickupWeapon* CurrentWeapon;
 	
-	EWeaponToDo CurrentHoldingWeapon;
+	EWeaponToDo CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
 	
 protected:
+	// TODO: Use the default function to access it every time
 	UPROPERTY()
 	UAnimInstance* AnimInstance;
 	
@@ -361,64 +365,69 @@ protected:
 	class UCameraComponent* ChildCameraComponent;
 
 	uint8 bIsAlive : 1, bIsAimed : 1, bCharacterAnimationInterface : 1;
-	EMovementState MovementState, PreviousMovementState;
+
+	// TODO: Use CMC to get these data
+	EMovementState MovementState = EMovementState::Walk, PreviousMovementState = EMovementState::Walk;
 	
 private:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> IdleMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> ArmedIdleMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> StandUpReloadMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> CrouchReloadMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> ProneReloadMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> HolsterWeaponMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Lenght of this array should be equal to weapon types", AllowPrivateAccess = true))
-	TArray<UAnimMontage*> GrabWeaponMontages;
+	TArray<TObjectPtr<UAnimMontage>> IdleMontages;
+
+	// TODO: Play IdleMontages on the lower body when armed
+	/** Length of this array should be equal to weapon types */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> ArmedIdleMontages;
+
+	// TODO: Store weapon related montages on the weapon actor
+	/** Length of this array should be equal to weapon types */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> StandUpReloadMontages;
+
+	/** Length of this array should be equal to weapon types */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> CrouchReloadMontages;
+
+	/** Length of this array should be equal to weapon types */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> ProneReloadMontages;
+
+	/** Length of this array should be equal to weapon types */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> HolsterWeaponMontages;
+
+	/** Length of this array should be equal to weapon types*/
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UAnimMontage>> GrabWeaponMontages;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> MeleeAttackMontages;
+	TArray<TObjectPtr<UAnimMontage>> MeleeAttackMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> StandUpFromFrontMontages;
+	TArray<TSoftObjectPtr<UAnimMontage>> StandUpDeathMontages;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> StandUpFromBackMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> StandUpDeathMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> CrouchDeathMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TArray<UAnimMontage*> ProneDeathMontages;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Bigger value = more damage apply to character when fall", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float FallDamageMultiplier;
+	TArray<TSoftObjectPtr<UAnimMontage>> CrouchDeathMontages;
+
+	/** Bigger value = more damage apply to character when fall */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float FallDamageMultiplier = 0.025f;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float MinVelocityToApplyFallDamage;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "After falling how long should wait until standing up", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float StandingDelay;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ToolTip = "After death how long take to destroy the character + 5 second dither", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float DeathLifeSpan;
+	float MinVelocityToApplyFallDamage = 1250.0f;
+
+	/** After falling how long should wait until standing up */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float StandingDelay = 2.5f;
+
+	/** After death how long take to destroy the character + 5 second dither */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float DeathLifeSpan = 5.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	UCurveFloat* FadeFloatCurve;
+	TSoftObjectPtr<UCurveFloat> FadeFloatCurve;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Melee attack info", AllowPrivateAccess = true))
+	/** Melee attack info */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	FMeleeInfo MeleeInfo;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
@@ -435,17 +444,19 @@ private:
 	UPROPERTY()
 	AActor* Interactable;
 	
-	EItemType PickupType;
+	EItemType PickupType = EItemType::Weapon;
 	
 	/** It sets when equipping a weapon and when changing the current weapon */
 	EWeaponType WeaponType;
 	
 	FGameplayTagContainer CharacterTagContainer;
-	FVector MeshLocation, MeshLocationOffset;
+
+	// TODO: Delete if useless
+	FVector MeshLocation, MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f);
 	
-	int32 PrimaryWeaponSupportedAmmo;
-	int32 SecondaryWeaponSupportedAmmo;
-	int32 SidearmWeaponSupportedAmmo;
+	int32 PrimaryWeaponSupportedAmmo = 0;
+	int32 SecondaryWeaponSupportedAmmo = 0;
+	int32 SidearmWeaponSupportedAmmo = 0;
 	
 	UPROPERTY()
 	class AMagazine* Magazine;
@@ -453,9 +464,8 @@ private:
 	UPROPERTY()
 	APickupWeapon* GrabbedWeapon;
 	
-	EWeaponToDo WeaponToGrab;
-	EWeaponType WeaponToHolsterType;
-	EWeaponType WeaponToSwitchType;
+	EWeaponToDo WeaponToGrab = EWeaponToDo::NoWeapon;
+	EWeaponType WeaponToHolsterType = EWeaponType::Rifle, WeaponToSwitchType = EWeaponType::Rifle;
 	
 	UPROPERTY()
 	UAnimMontage* StandUpMontage;
@@ -464,7 +474,7 @@ private:
 	UAnimMontage* IdleMontage;
 	
 	/** Use for two frame delay */
-	uint8 DelayedFrames;
+	uint8 DelayedFrames = 0;
 	
 	FTimerHandle IdleTimer, CheckForFallingTimer;
 };

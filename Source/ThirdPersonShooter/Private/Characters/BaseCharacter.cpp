@@ -5,17 +5,17 @@
 #include "Actors/Interactable/PickupAmmo.h"
 #include "Actors/Interactable/PickupWeapon.h"
 #include "Actors/NonInteractive/Magazine.h"
+#include "AIModule/Classes/AIController.h"
+#include "Components/AmmoComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
-#include "Core/Interfaces/CommonInterface.h"
+#include "Components/TimelineComponent.h"
 #include "Core/Interfaces/CharacterAnimationInterface.h"
+#include "Core/Interfaces/CommonInterface.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "AIModule/Classes/AIController.h"
-#include "Components/AmmoComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Components/TimelineComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
@@ -69,20 +69,6 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	
 	// Initialize variables
-	CurrentHoldingWeapon = EWeaponToDo::NoWeapon;
-	MovementState = PreviousMovementState = EMovementState::Walk;
-	FallDamageMultiplier = 0.025;
-	MinVelocityToApplyFallDamage = 1250.0f;
-	StandingDelay = 2.5;
-	DeathLifeSpan = 5.0f;
-	PickupType = EItemType::Weapon;
-	MeshLocationOffset = FVector(0.0f, 0.0f, 90.0f);
-	PrimaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
-	SecondaryWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
-	SidearmWeaponSupportedAmmo = static_cast<int32>(EAmmoType::None);
-	WeaponToGrab = EWeaponToDo::NoWeapon;
-	WeaponToSwitchType = WeaponToHolsterType = EWeaponType::Rifle;
-	DelayedFrames = 0;
 	bCharacterAnimationInterface = false;
 	bDoOnceStopped = true;
 	bDoOnceMoving = true;
@@ -1136,15 +1122,12 @@ bool ABaseCharacter::SetAimState(bool bIsAiming)
 		
 		switch (MovementState)
 		{
-		case 0: case 1: case 2:
+		case EMovementState::Walk: case EMovementState::Run: case EMovementState::Sprint:
 			// Set character movement state to walk and stop the character from running or sprinting while aiming
 			SetMovementState_Implementation(EMovementState::Walk, false, false);
 			break;
-		case 3:
+		case EMovementState::Crouch:
 			SetMovementState_Implementation(EMovementState::Crouch, false, false);
-			break;
-		case 4:
-			SetMovementState_Implementation(EMovementState::Prone, false, false);
 			break;
 		}
 		
@@ -1280,24 +1263,19 @@ void ABaseCharacter::Death()
 		else
 		{
 			UAnimMontage* MontageToPlay = nullptr;
+			
 			// Select a random montage based on current movement state
 			switch (MovementState)
 			{
-			case 0: case 1: case 2:
-				// Walk, Run, Sprint
-				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, StandUpDeathMontages.Num() - 1)];
+			case EMovementState::Walk: case EMovementState::Run: case EMovementState::Sprint:
+				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, StandUpDeathMontages.Num() - 1)].LoadSynchronous();
 				break;
-			case 3:
-				// Crouch
-				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, CrouchDeathMontages.Num() - 1)];
-				break;
-			case 4:
-				// Prone
-				MontageToPlay = ProneDeathMontages[FMath::RandRange(0, ProneDeathMontages.Num() - 1)];
+			case EMovementState::Crouch:
+				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, CrouchDeathMontages.Num() - 1)].LoadSynchronous();
 				break;
 			}
-			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLength > 0.0f)
+			
+			if (AnimInstance->Montage_Play(MontageToPlay) > 0.0f)
 			{
 				FOnMontageEnded EndedDelegate;
 				EndedDelegate.BindUObject(this, &ABaseCharacter::DeathMontageHandler);
@@ -1556,13 +1534,14 @@ void ABaseCharacter::DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterr
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StartDeathLifeSpan, DeathLifeSpan);
 }
 
+// TODO: Switch to a translucent material when fading
 void ABaseCharacter::StartDeathLifeSpan()
 {
-	if (FadeFloatCurve)
+	if (UCurveFloat* FloatCurve = FadeFloatCurve.LoadSynchronous())
 	{
 		FOnTimelineFloat DeathTimeLineProgress{};
 		DeathTimeLineProgress.BindUFunction(this, FName("DeathTimeLineUpdate"));
-		DeathTimeline->AddInterpFloat(FadeFloatCurve, DeathTimeLineProgress, FName("Fade"));
+		DeathTimeline->AddInterpFloat(FloatCurve, DeathTimeLineProgress, FName("Fade"));
 		FOnTimelineEvent DeathTimelineEvent{};
 		DeathTimelineEvent.BindUFunction(this, FName("StartDestroy"));
 		DeathTimeline->SetTimelineFinishedFunc(DeathTimelineEvent);
@@ -1587,11 +1566,14 @@ void ABaseCharacter::StartDestroy()
 
 void ABaseCharacter::Destroyed()
 {
-	// Death handler does not call and weapons never detach if character get killed by world
-	// Call drop weapon again in case if character killed by the world
-	DropWeapon(EWeaponToDo::PrimaryWeapon);
-	DropWeapon(EWeaponToDo::SecondaryWeapon);
-	DropWeapon(EWeaponToDo::SidearmWeapon);
+	if (GetWorld()->HasBegunPlay())
+	{
+		// Death handler does not call and weapons never detach if character get killed by world
+		// Call drop weapon again in case if character killed by the world
+		DropWeapon(EWeaponToDo::PrimaryWeapon);
+		DropWeapon(EWeaponToDo::SecondaryWeapon);
+		DropWeapon(EWeaponToDo::SidearmWeapon);
+	}
 	
 	Super::Destroyed();
 }
@@ -1623,7 +1605,7 @@ void ABaseCharacter::PlayIdleAnimation()
 
 void ABaseCharacter::StartJump()
 {
-	if (MovementState != EMovementState::Crouch && MovementState != EMovementState::Prone)
+	if (MovementState != EMovementState::Crouch)
 	{
 		Jump();
 	}
@@ -1631,6 +1613,7 @@ void ABaseCharacter::StartJump()
 
 void ABaseCharacter::Landed(const FHitResult& Hit)
 {
+	// TODO: Use CMC crouch
 	if (MovementState == EMovementState::Crouch)
 	{
 		Crouch();
@@ -1697,7 +1680,8 @@ void ABaseCharacter::CheckForFalling()
 
 void ABaseCharacter::CachePose()
 {
-	SetGetupOrientation();
+	// TODO: Delete
+	/*SetGetupOrientation();
 	if (CalculateFacingDirection())
 	{
 		// Character is facing down
@@ -1712,7 +1696,7 @@ void ABaseCharacter::CachePose()
 	// Two frame delay for caching the pose
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &ABaseCharacter::OneFrameDelay);
-	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);*/
 }
 
 void ABaseCharacter::SetGetupOrientation()
@@ -1724,6 +1708,7 @@ void ABaseCharacter::SetGetupOrientation()
 	const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
 	const FVector X = CalculateFacingDirection() ? NeckLocation - PelvisLocation : PelvisLocation - NeckLocation;
 	NewTransform.SetRotation(UKismetMathLibrary::MakeRotFromZX(Z, X).Quaternion());
+	
 	SetActorTransform(NewTransform);
 }
 
@@ -1731,6 +1716,7 @@ void ABaseCharacter::StandUp()
 {
 	ToggleRagdoll(false);
 	const float MontageLength = AnimInstance->Montage_Play(StandUpMontage);
+	
 	if (MontageLength > 0.0f)
 	{
 		FOnMontageEnded EndedDelegate;
@@ -1769,6 +1755,7 @@ bool ABaseCharacter::CalculateFacingDirection() const
 	{
 		return false;
 	}
+	
 	return true;
 }
 
@@ -1794,20 +1781,7 @@ void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInter
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
-void ABaseCharacter::ResetAim()
-{
-}
-
-void ABaseCharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
-{
-}
-
 void ABaseCharacter::SwitchIsEnded()
 {
 	bCanReload = true;
-}
-
-FGameplayTag ABaseCharacter::GetTeamTag_Implementation()
-{
-	return TeamTag;	
 }

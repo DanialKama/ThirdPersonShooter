@@ -6,28 +6,29 @@
 #include "Field/FieldSystemActor.h"
 #include "ProjectileFieldSystemActor.generated.h"
 
-UCLASS()
+// TODO: Rename to AProjectileFieldSystem
+UCLASS(meta = (DisplayName = "Projectile Field System"))
 class AProjectileFieldSystemActor : public AFieldSystemActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class USphereComponent* Sphere;
+	TObjectPtr<class USphereComponent> Sphere;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	URadialFalloff* RadialFalloff;
+	TObjectPtr<URadialFalloff> RadialFalloff;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UOperatorField* OperatorField;
+	TObjectPtr<UOperatorField> OperatorField;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	URadialVector* RadialVector;
+	TObjectPtr<URadialVector> RadialVector;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	URandomVector* RandomVector;
+	TObjectPtr<URandomVector> RandomVector;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UUniformVector* UniformVector;
+	TObjectPtr<UUniformVector> UniformVector;
 
 // Functions
 public:
@@ -36,11 +37,11 @@ public:
 // Variables
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Default")
-	float StrainMagnitude;
+	float StrainMagnitude = 50000.0f;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Default")
-	float ForceMagnitude;
+	float ForceMagnitude = 5000.0f;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Default")
-	float TorqueMagnitude;
+	float TorqueMagnitude = 1000000.0f;
 };

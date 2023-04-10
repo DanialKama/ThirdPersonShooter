@@ -1,16 +1,18 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "ProjectileFieldSystemActor.h"
+
 #include "Components/SphereComponent.h"
 
 AProjectileFieldSystemActor::AProjectileFieldSystemActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	SetCanBeDamaged(false);
-	InitialLifeSpan = 0.2f;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	
-	FieldSystemComponent->SetEnableGravity(false);
-	FieldSystemComponent->bApplyImpulseOnDamage = false;
+	SetCanBeDamaged(false);
+
+	// TODO: Destroy it after applying the effect
+	InitialLifeSpan = 0.2f;
 	
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Component"));
 	Sphere->SetupAttachment(GetRootComponent());
@@ -28,9 +30,4 @@ AProjectileFieldSystemActor::AProjectileFieldSystemActor()
 	RandomVector = CreateDefaultSubobject<URandomVector>(TEXT("Random Vector"));
 	
 	UniformVector = CreateDefaultSubobject<UUniformVector>(TEXT("Uniform Vector"));
-
-	// Initialize variables
-	StrainMagnitude = 50000.0f;
-	ForceMagnitude = 5000.0f;
-	TorqueMagnitude = 1000000.0f;
 }

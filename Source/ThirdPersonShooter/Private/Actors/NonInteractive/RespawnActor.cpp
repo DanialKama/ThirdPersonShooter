@@ -13,12 +13,10 @@ ARespawnActor::ARespawnActor()
 
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
 	SetRootComponent(Billboard);
-	Billboard->SetComponentTickEnabled(false);
 	Billboard->bIsScreenSizeScaled = true;
 	
 	RespawnRadius = CreateDefaultSubobject<USphereComponent>(TEXT("Respawn Radius"));
 	RespawnRadius->SetupAttachment(Billboard);
-	RespawnRadius->SetComponentTickEnabled(false);
 	RespawnRadius->SetSphereRadius(250.0f);
 	RespawnRadius->SetGenerateOverlapEvents(false);
 	RespawnRadius->SetCollisionEnabled(ECollisionEnabled::NoCollision);

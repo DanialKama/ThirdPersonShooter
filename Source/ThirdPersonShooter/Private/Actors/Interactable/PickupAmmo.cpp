@@ -12,7 +12,6 @@ APickupAmmo::APickupAmmo()
 {
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(StaticMesh);
-	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetSimulatePhysics(true); // TODO: set to false
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetGenerateOverlapEvents(false);
@@ -21,7 +20,6 @@ APickupAmmo::APickupAmmo()
 	
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
 	SphereCollision->SetupAttachment(StaticMesh);
-	SphereCollision->SetComponentTickEnabled(false);
 	SphereCollision->bApplyImpulseOnDamage = false;
 	SphereCollision->CanCharacterStepUpOn = ECB_No;
 	SphereCollision->SetCollisionProfileName("CollisionBound");	// TODO: Use Trigger profile
@@ -29,7 +27,6 @@ APickupAmmo::APickupAmmo()
 	// TODO: Show message on the player UI
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	Widget->SetupAttachment(StaticMesh);
-	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->CanCharacterStepUpOn = ECB_No;

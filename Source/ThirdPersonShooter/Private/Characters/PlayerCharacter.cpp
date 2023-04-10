@@ -15,7 +15,6 @@ APlayerCharacter::APlayerCharacter()
 {
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->SetComponentTickEnabled(false);
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 75.0f));
 	SpringArm->ProbeSize = 10.0;
 	SpringArm->bUsePawnControlRotation = true;
@@ -23,7 +22,6 @@ APlayerCharacter::APlayerCharacter()
 	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Perspective"));
 	Camera->SetupAttachment(SpringArm);
-	Camera->SetComponentTickEnabled(false);
 	
 	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Aim Timeline"));
 	

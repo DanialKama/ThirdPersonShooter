@@ -32,7 +32,6 @@ ABaseCharacter::ABaseCharacter()
 	FallCapsule->SetupAttachment(GetMesh());
 	FallCapsule->SetCapsuleHalfHeight(110.0f);
 	FallCapsule->SetCapsuleRadius(55.0f);
-	FallCapsule->SetComponentTickEnabled(false);
 	FallCapsule->CanCharacterStepUpOn = ECB_No;
 	FallCapsule->SetCollisionProfileName("FallCapsule");
 	FallCapsule->SetCanEverAffectNavigation(false);
@@ -41,7 +40,6 @@ ABaseCharacter::ABaseCharacter()
 	KickCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Kick Collision"));
 	KickCollision->SetupAttachment(GetMesh(), FName("foot_r"));
 	KickCollision->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
-	KickCollision->SetComponentTickEnabled(false);
 	KickCollision->CanCharacterStepUpOn = ECB_No;
 	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
 	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);

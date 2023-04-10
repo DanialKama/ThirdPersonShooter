@@ -6,7 +6,7 @@
 #include "Pickup.h"
 #include "PickupAmmo.generated.h"
 
-UCLASS(Abstract, meta = (DisplayName = "Pick Up Ammo"))
+UCLASS(meta = (DisplayName = "Pick Up Ammo"))
 class APickupAmmo : public APickup
 {
 	GENERATED_BODY()

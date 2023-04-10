@@ -14,10 +14,7 @@ AProjectileFieldSystemActor::AProjectileFieldSystemActor()
 	
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Component"));
 	Sphere->SetupAttachment(GetRootComponent());
-	Sphere->SetComponentTickEnabled(false);
 	Sphere->SetSphereRadius(50.0f);
-	Sphere->SetComponentTickEnabled(false);
-	Sphere->SetEnableGravity(false);
 	Sphere->SetGenerateOverlapEvents(false);
 	Sphere->CanCharacterStepUpOn = ECB_No;
 	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);

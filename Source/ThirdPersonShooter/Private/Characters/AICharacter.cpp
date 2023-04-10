@@ -17,7 +17,6 @@ AAICharacter::AAICharacter()
 	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
 	Widget->SetupAttachment(GetRootComponent());
-	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->CanCharacterStepUpOn = ECB_No;

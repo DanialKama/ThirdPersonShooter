@@ -18,7 +18,6 @@ AProjectile::AProjectile()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	SetRootComponent(StaticMesh);
-	StaticMesh->SetComponentTickEnabled(false);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->CanCharacterStepUpOn = ECB_No;
 	StaticMesh->SetCollisionProfileName("Projectile");

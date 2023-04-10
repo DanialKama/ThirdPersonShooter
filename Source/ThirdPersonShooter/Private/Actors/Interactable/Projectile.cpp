@@ -112,21 +112,16 @@ void AProjectile::SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, 
 
 void AProjectile::HitEffect(const FHitResult& HitResult) const
 {
-	UParticleSystem* Emitter;
-	USoundBase* Sound;
-	UMaterialInterface* Decal;
-	FVector DecalSize;
-	float DecalLifeSpan;
-	CalculateProjectileHitInfo(Emitter, Sound, Decal, DecalSize, DecalLifeSpan);
+	const auto [Decal, Particle, Sound] = GetHitInfo();
 
 	const FRotator SpawnRotation = UKismetMathLibrary::MakeRotFromX(HitResult.ImpactNormal);
-	
-	// Spawn impact emitter
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.ImpactPoint, SpawnRotation);
-	
+
 	// Spawn decal attached to hit component
 	UGameplayStatics::SpawnDecalAttached(Decal, DecalSize, HitResult.GetComponent(), HitResult.BoneName, HitResult.ImpactPoint,
 		SpawnRotation, EAttachLocation::KeepWorldPosition, DecalLifeSpan);
+	
+	// Spawn impact emitter
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Particle, HitResult.ImpactPoint, SpawnRotation);
 
 	// Play sound at the impact location
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitResult.ImpactPoint);
@@ -172,56 +167,47 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	}
 }
 
-void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundBase*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
+FHitInfo AProjectile::GetHitInfo() const
 {
+	FHitInfo Result;
+	
 	// Switch on surface types to calculate the appropriate effect
 	switch (SwitchExpression)
 	{
 	case 1: case 2: case 3: case 4:
 		// Head Flesh, Body Flesh, Hand Flesh, Leg Flesh
-		Emitter			= ProjectileEffect.FleshHitEmitter;
-		Sound			= ProjectileEffect.FleshHitSound;
-		Decal			= ProjectileEffect.FleshDecal;
-		DecalSize		= ProjectileEffect.FleshDecalSize;
-		DecalLifeSpan	= ProjectileEffect.FleshDecalLifeSpan;
-		break;
+		Result.Decal = FleshDecal;
+		Result.Particle = FleshHitParticle;
+		Result.Sound = FleshHitSound;
+		return Result;
 	case 5:
 		// Wood
-		Emitter			= ProjectileEffect.WoodHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.WoodDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
-		break;
+		Result.Decal = WoodDecal;
+		Result.Particle = WoodHitParticle;
+		Result.Sound = ObjectHitSound;
+		return Result;
 	case 6:
 		// Metal
-		Emitter			= ProjectileEffect.MetalHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.MetalDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
-		break;
+		Result.Decal = MetalDecal;
+		Result.Particle = MetalHitParticle;
+		Result.Sound = ObjectHitSound;
+		return Result;
 	case 7:
 		// Stone
-		Emitter			= ProjectileEffect.StoneHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.StoneDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
-		break;
+		Result.Decal = StoneDecal;
+		Result.Particle = StoneHitParticle;
+		Result.Sound = ObjectHitSound;
+		return Result;
 	case 8:
 		// Dirt
-		Emitter			= ProjectileEffect.DirtHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.DirtDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
-		break;
+		Result.Decal = DirtDecal;
+		Result.Particle = DirtHitParticle;
+		Result.Sound = ObjectHitSound;
+		return Result;
 	case 0: default:
-		Emitter			= ProjectileEffect.StoneHitEmitter;
-		Sound			= ProjectileEffect.ObjectHitSound;
-		Decal			= ProjectileEffect.StoneDecal;
-		DecalSize		= ProjectileEffect.ObjectDecalSize;
-		DecalLifeSpan	= ProjectileEffect.ObjectDecalLifeSpan;
+		Result.Decal = StoneDecal;
+		Result.Particle = StoneHitParticle;
+		Result.Sound = ObjectHitSound;
+		return Result;
 	}
 }

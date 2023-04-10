@@ -94,6 +94,13 @@ struct FProjectileEffect
 	}
 };
 
+struct FHitInfo
+{
+	UMaterialInterface* Decal;
+	UParticleSystem* Particle;
+	USoundBase* Sound;
+};
+
 UCLASS(meta = (DisplayName = "Projectile"))
 class AProjectile : public AActor
 {
@@ -122,8 +129,8 @@ private:
 	void HitEffect(const FHitResult& HitResult) const;
 	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
 
-	// TODO: Use a structure as return
-	void CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundBase*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+	/** Get projectile hit info */
+	FHitInfo GetHitInfo() const;
 	
 	void SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const;
 
@@ -149,22 +156,22 @@ private:
 	UDataTable* ExplosiveProjectileDataTable;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> FleshHitEmitter;
+	TObjectPtr<UParticleSystem> FleshHitParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> WoodHitEmitter;
+	TObjectPtr<UParticleSystem> WoodHitParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> MetalHitEmitter;
+	TObjectPtr<UParticleSystem> MetalHitParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> StoneHitEmitter;
+	TObjectPtr<UParticleSystem> StoneHitParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> DirtHitEmitter;
+	TObjectPtr<UParticleSystem> DirtHitParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UParticleSystem> ExplosiveEmitter;
+	TObjectPtr<UParticleSystem> ExplosiveParticle;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TObjectPtr<USoundBase> FleshHitSound;

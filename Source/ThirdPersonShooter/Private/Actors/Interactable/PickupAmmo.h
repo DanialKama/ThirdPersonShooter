@@ -6,19 +6,19 @@
 #include "Pickup.h"
 #include "PickupAmmo.generated.h"
 
-UCLASS()
+UCLASS(Abstract, meta = (DisplayName = "Pick Up Ammo"))
 class APickupAmmo : public APickup
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* StaticMesh;
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class USphereComponent* SphereCollision;
+	TObjectPtr<class USphereComponent> SphereCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UWidgetComponent* Widget;
+	TObjectPtr<class UWidgetComponent> Widget;
 
 // Functions
 public:
@@ -41,12 +41,12 @@ private:
 public:
 	/** Bitmask / Bitflag Enum */
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (Bitmask, BitmaskEnum = EAmmoType))
-	int32 AmmoType;
+	int32 AmmoType = 0;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
-	int32 Amount;
+	int32 Amount = 1;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	class USoundCue* PickupSound;
+	TObjectPtr<USoundBase> PickupSound;
 };

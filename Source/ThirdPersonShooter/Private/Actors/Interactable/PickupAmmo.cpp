@@ -4,17 +4,16 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Sound/SoundCue.h"
-#include "Kismet/GameplayStatics.h"
 #include "Core/Interfaces/CharacterInterface.h"
 #include "Core/Interfaces/WidgetInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 APickupAmmo::APickupAmmo()
 {
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(StaticMesh);
 	StaticMesh->SetComponentTickEnabled(false);
-	StaticMesh->SetSimulatePhysics(true);
+	StaticMesh->SetSimulatePhysics(true); // TODO: set to false
 	StaticMesh->bApplyImpulseOnDamage = false;
 	StaticMesh->SetGenerateOverlapEvents(false);
 	StaticMesh->CanCharacterStepUpOn = ECB_No;
@@ -27,6 +26,7 @@ APickupAmmo::APickupAmmo()
 	SphereCollision->CanCharacterStepUpOn = ECB_No;
 	SphereCollision->SetCollisionProfileName("CollisionBound");	// TODO: Use Trigger profile
 	
+	// TODO: Show message on the player UI
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	Widget->SetupAttachment(StaticMesh);
 	Widget->SetComponentTickEnabled(false);
@@ -37,8 +37,6 @@ APickupAmmo::APickupAmmo()
 	
 	// Initialize variables
 	PickupType = EItemType::Ammo;
-	AmmoType = static_cast<int32>(EAmmoType::None);
-	Amount = 1;
 }
 
 void APickupAmmo::BeginPlay()
@@ -58,16 +56,13 @@ void APickupAmmo::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)
 	{
-	case 0:
-		// Drop
+	case EPickupState::Drop:
 		SphereCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		break;
-	case 1:
-		// Pickup
+	case EPickupState::PickUp:
 		SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
-	case 2:
-		// Remove
+	case EPickupState::Remove:
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
 		Destroy();
 		break;

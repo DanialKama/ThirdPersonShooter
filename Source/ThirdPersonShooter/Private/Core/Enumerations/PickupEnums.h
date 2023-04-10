@@ -66,18 +66,18 @@ enum class EWeaponType : uint8
 UENUM(Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = true))
 enum class EAmmoType : uint32
 {
-	None						= 0x00000000	UMETA(Hidden),
-	AssaultRifleNormal			= 0x00000001	UMETA(DisplayName = "Assault Rifle Normal"),
-	AssaultRifleAntiArmor		= 0x00000002	UMETA(DisplayName = "Assault Rifle Anti-armor"),
-	LightPistolNormal			= 0x00000004	UMETA(DisplayName = "Light Pistol Normal"),
-	HeavyPistolNormal			= 0x00000008	UMETA(DisplayName = "Heavy Pistol Normal"),
-	HeavyPistolAntiArmor		= 0x00000010	UMETA(DisplayName = "Heavy Pistol Anti-armor"),
-	ShotgunNormal				= 0x00000020	UMETA(DisplayName = "Shotgun Normal"),
-	ShotgunDragonsBreath		= 0x00000040	UMETA(DisplayName = "Shotgun Dragons Breath"),
-	SniperRifleNormal			= 0x00000080	UMETA(DisplayName = "Sniper Rifle Normal"),
-	SniperRifleAntiArmor		= 0x00000100	UMETA(DisplayName = "Sniper Rifle Anti-armor"),
-	GrenadeLauncherExplosive	= 0x00000200	UMETA(DisplayName = "Grenade Launcher Explosive"),
-	GrenadeLauncherSmoke		= 0x00000400	UMETA(DisplayName = "Grenade Launcher Smoke"),
-	RocketLauncher				= 0x00000800	UMETA(DisplayName = "Rocket Launcher")
+	None						= 0x000	UMETA(Hidden),
+	AssaultRifleNormal			= 0x001	UMETA(DisplayName = "Assault Rifle Normal"),
+	AssaultRifleAntiArmor		= 0x002	UMETA(DisplayName = "Assault Rifle Anti-armor"),
+	LightPistolNormal			= 0x004	UMETA(DisplayName = "Light Pistol Normal"),
+	HeavyPistolNormal			= 0x008	UMETA(DisplayName = "Heavy Pistol Normal"),
+	HeavyPistolAntiArmor		= 0x010	UMETA(DisplayName = "Heavy Pistol Anti-armor"),
+	ShotgunNormal				= 0x020	UMETA(DisplayName = "Shotgun Normal"),
+	ShotgunDragonsBreath		= 0x040	UMETA(DisplayName = "Shotgun Dragons Breath"),
+	SniperRifleNormal			= 0x080	UMETA(DisplayName = "Sniper Rifle Normal"),
+	SniperRifleAntiArmor		= 0x100	UMETA(DisplayName = "Sniper Rifle Anti-armor"),
+	GrenadeLauncherExplosive	= 0x200	UMETA(DisplayName = "Grenade Launcher Explosive"),
+	GrenadeLauncherSmoke		= 0x400	UMETA(DisplayName = "Grenade Launcher Smoke"),
+	RocketLauncher				= 0x800	UMETA(DisplayName = "Rocket Launcher")
 };
 ENUM_CLASS_FLAGS(EAmmoType);

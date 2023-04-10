@@ -3,18 +3,18 @@
 #include "Projectile.h"
 
 #include "Actors/NonInteractive/ProjectileFieldSystemActor.h"
+#include "Core/Structures/ExplosiveProjectileInfoStruct.h"
 #include "Engine/DataTable.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Sound/SoundCue.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Perception/AISense_Damage.h"
-#include "Core/Structures/ExplosiveProjectileInfoStruct.h"
 
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	SetRootComponent(StaticMesh);
@@ -32,10 +32,7 @@ AProjectile::AProjectile()
 	ProjectileMovement->MaxSpeed = 2000.0f;
 
 	// Initialize variables
-	NumberOfPellets = 1;
-	PelletSpread = 0.0f;
-	AmmoType = EAmmoType::AssaultRifleNormal;
-	SwitchExpression = 0;
+	bIsExplosive = false;
 
 	// TODO: Use the blueprint instead of loading them like this
 	// Load data tables
@@ -113,10 +110,10 @@ void AProjectile::SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, 
 	UGameplayStatics::FinishSpawningActor(FieldSystem, Transform);
 }
 
-void AProjectile::HitEffect(const FHitResult HitResult) const
+void AProjectile::HitEffect(const FHitResult& HitResult) const
 {
 	UParticleSystem* Emitter;
-	USoundCue* Sound;
+	USoundBase* Sound;
 	UMaterialInterface* Decal;
 	FVector DecalSize;
 	float DecalLifeSpan;
@@ -175,7 +172,7 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	}
 }
 
-void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
+void AProjectile::CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundBase*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const
 {
 	// Switch on surface types to calculate the appropriate effect
 	switch (SwitchExpression)

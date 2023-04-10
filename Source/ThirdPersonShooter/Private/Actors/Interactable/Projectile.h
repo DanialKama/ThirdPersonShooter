@@ -9,7 +9,6 @@
 #include "Core/Structures/ProjectileInfoStruct.h"
 #include "Projectile.generated.h"
 
-class USoundCue;
 class AProjectileFieldSystemActor;
 
 USTRUCT(BlueprintType)
@@ -39,10 +38,10 @@ struct FProjectileEffect
 	UParticleSystem* ExplosiveEmitter;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* FleshHitSound;
+	USoundBase* FleshHitSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ObjectHitSound;
+	USoundBase* ObjectHitSound;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* FleshDecal;
@@ -95,19 +94,19 @@ struct FProjectileEffect
 	}
 };
 
-UCLASS()
+UCLASS(meta = (DisplayName = "Projectile"))
 class AProjectile : public AActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* StaticMesh;
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UParticleSystemComponent* TrailParticle;
+	TObjectPtr<UParticleSystemComponent> TrailParticle;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UProjectileMovementComponent* ProjectileMovement;
+	TObjectPtr<class UProjectileMovementComponent> ProjectileMovement;
 
 // Functions
 public:
@@ -120,28 +119,79 @@ private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
-	void HitEffect(const FHitResult HitResult) const;
+	void HitEffect(const FHitResult& HitResult) const;
 	float CalculatePointDamage(const FProjectileInfo* ProjectileInfo) const;
-	void CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundCue*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+
+	// TODO: Use a structure as return
+	void CalculateProjectileHitInfo(UParticleSystem*& Emitter, USoundBase*& Sound, UMaterialInterface*& Decal, FVector& DecalSize, float& DecalLifeSpan) const;
+	
 	void SpawnFieldSystem(float StrainMagnitude, float ForceMagnitude, float TorqueMagnitude) const;
 
 // Variables
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
-	int32 NumberOfPellets;
+	int32 NumberOfPellets = 1;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
-	float PelletSpread;
+	float PelletSpread = 0.0f;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	EAmmoType AmmoType;
+	EAmmoType AmmoType = EAmmoType::None;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UDataTable* ProjectileDataTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	uint8 bIsExplosive : 1;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UDataTable* ExplosiveProjectileDataTable;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> FleshHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> WoodHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> MetalHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> StoneHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> DirtHitEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UParticleSystem> ExplosiveEmitter;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USoundBase> FleshHitSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USoundBase> ObjectHitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	FVector DecalSize = FVector::OneVector;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float DecalLifeSpan = 10.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UMaterialInterface> FleshDecal;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UMaterialInterface> WoodDecal;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UMaterialInterface> MetalDecal;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UMaterialInterface> StoneDecal;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UMaterialInterface> DirtDecal;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TSubclassOf<UDamageType> DamageType;
@@ -153,5 +203,5 @@ private:
 	FProjectileEffect ProjectileEffect;
 
 	/** For switch on surface types */
-	int32 SwitchExpression;
+	int32 SwitchExpression = 0;
 };

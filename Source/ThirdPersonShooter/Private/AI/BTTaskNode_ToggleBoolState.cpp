@@ -5,7 +5,7 @@
 
 UBTTaskNode_ToggleBoolState::UBTTaskNode_ToggleBoolState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Toggle Bool State";
+	NodeName = "Toggle Bool State (Deprecated)";
 }
 
 EBTNodeResult::Type UBTTaskNode_ToggleBoolState::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

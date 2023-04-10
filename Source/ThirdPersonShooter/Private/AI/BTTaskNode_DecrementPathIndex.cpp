@@ -5,7 +5,7 @@
 
 UBTTaskNode_DecrementPathIndex::UBTTaskNode_DecrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Decrement Path Index";
+	NodeName = "Decrement Path Index (Deprecated)";
 }
 
 EBTNodeResult::Type UBTTaskNode_DecrementPathIndex::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

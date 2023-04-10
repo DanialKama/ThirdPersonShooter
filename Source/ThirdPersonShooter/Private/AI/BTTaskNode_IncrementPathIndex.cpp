@@ -9,7 +9,7 @@
 
 UBTTaskNode_IncrementPathIndex::UBTTaskNode_IncrementPathIndex(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Increment Path Index";
+	NodeName = "Increment Path Index (Deprecated)";
 }
 
 EBTNodeResult::Type UBTTaskNode_IncrementPathIndex::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

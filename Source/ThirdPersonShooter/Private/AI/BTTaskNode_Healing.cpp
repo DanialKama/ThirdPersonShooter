@@ -9,7 +9,7 @@
 
 UBTTaskNode_Healing::UBTTaskNode_Healing(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Healing";
+	NodeName = "Healing (Deprecated)";
 
 	// Initialize variables
 	HealingMontage = nullptr;

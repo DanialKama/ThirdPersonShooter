@@ -5,7 +5,7 @@
 
 UBTTaskNode_LoopPath::UBTTaskNode_LoopPath(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Loop Path";
+	NodeName = "Loop Path (Deprecated)";
 }
 
 EBTNodeResult::Type UBTTaskNode_LoopPath::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

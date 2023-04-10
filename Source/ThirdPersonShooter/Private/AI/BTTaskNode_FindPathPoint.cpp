@@ -10,8 +10,7 @@
 
 UBTTaskNode_FindPathPoint::UBTTaskNode_FindPathPoint(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	// TODO: Editor only?
-	NodeName = "Find Path Point";
+	NodeName = "Find Path Point (Deprecated)";
 }
 
 EBTNodeResult::Type UBTTaskNode_FindPathPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

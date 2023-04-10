@@ -2,8 +2,6 @@
 
 #include "ShooterAIController.h"
 
-#include "NavigationPath.h"
-#include "NavigationSystem.h"
 #include "Actors/Interactable/PickupWeapon.h"
 #include "Actors/NonInteractive/PatrolPathActor.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -11,12 +9,16 @@
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISense_Prediction.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Prediction.h"
-#include "Perception/AISense_Prediction.h"
+#include "Perception/AISenseConfig_Sight.h"
+
+// TODO: Simplify the controller and move logic to the behaviour tree
 
 AShooterAIController::AShooterAIController()
 {
@@ -52,10 +54,6 @@ AShooterAIController::AShooterAIController()
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	
 	// Initialize variables
-	MaxMeleeDistance = 200.0f;
-	MaxFiringDistance = -1.0f;
-	WeaponState = EWeaponState::Idle;
-	AIState = EAIState::Idle;
 	bAICharacterInterface = false;
 	bDoOnceFight = true;
 	bDoOnceHelp = true;

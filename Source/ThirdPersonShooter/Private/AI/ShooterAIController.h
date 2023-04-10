@@ -10,25 +10,27 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 
-UCLASS()
+// TODO: Rename to AControllerShooter
+UCLASS(meta = (DisplayName = "Shooter AI Controller"))
 class AShooterAIController : public AAIController, public IAIControllerInterface
 {
 	GENERATED_BODY()
 
+	// TODO: Use empty UPROPERTY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UAIPerceptionComponent* AIPerception;
+	TObjectPtr<UAIPerceptionComponent> AIPerception;
 
 	UPROPERTY()
-	class UAISenseConfig_Damage* AISense_Damage;
+	TObjectPtr<class UAISenseConfig_Damage> AISense_Damage;
 	
 	UPROPERTY()
-	class UAISenseConfig_Sight* AISense_Sight;
+	TObjectPtr<class UAISenseConfig_Sight> AISense_Sight;
 	
 	UPROPERTY()
-	class UAISenseConfig_Hearing* AISense_Hearing;
+	TObjectPtr<class UAISenseConfig_Hearing> AISense_Hearing;
 
 	UPROPERTY()
-	class UAISenseConfig_Prediction* AISense_Prediction;
+	TObjectPtr<class UAISenseConfig_Prediction> AISense_Prediction;
 
 // Functions
 public:
@@ -83,7 +85,7 @@ public:
 	UPROPERTY()
 	class AAICharacter* ControlledPawn;
 	
-	float MaxFiringDistance;
+	float MaxFiringDistance = -1.0f;
 	
 private:
 	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
@@ -92,7 +94,7 @@ private:
 	UBehaviorTree* BehaviorTree;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float MaxMeleeDistance;
+	float MaxMeleeDistance = 200.0f;
 	
 	UPROPERTY()
 	class UBehaviorTreeComponent* BehaviorTreeComp;
@@ -103,13 +105,13 @@ private:
 	UPROPERTY()
 	class APatrolPathActor* PatrolPath;
 	
-	EWeaponState WeaponState;
+	EWeaponState WeaponState = EWeaponState::Idle;
 	
 	/** Attacker is the current enemy that AI is fighting with */
 	UPROPERTY()
 	AActor* Attacker;
 	
-	EAIState AIState;
+	EAIState AIState = EAIState::Idle;
 	
 	FTimerHandle BackToRoutineTimer, AskForHelpTimer;
 };

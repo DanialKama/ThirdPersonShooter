@@ -2,32 +2,28 @@
 
 #include "PickupWeapon.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "DrawDebugHelpers.h"
-#include "AIController.h"
-#include "Perception/AISense_Hearing.h"
-#include "Sound/SoundCue.h"
-#include "Projectile.h"
 #include "Actors/NonInteractive/EmptyShell.h"
-#include "Components/BoxComponent.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Components/AudioComponent.h"
-#include "Components/WidgetComponent.h"
-#include "Components/AmmoComponent.h"
+#include "AIController.h"
 #include "Camera/CameraComponent.h"
-#include "Core/Interfaces/CharacterInterface.h"
+#include "Components/AmmoComponent.h"
+#include "Components/AudioComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Core/Interfaces/AIControllerInterface.h"
+#include "Core/Interfaces/CharacterInterface.h"
 #include "Core/Interfaces/PlayerControllerInterface.h"
 #include "Core/Interfaces/WidgetInterface.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Perception/AISense_Hearing.h"
+#include "Projectile.h"
 
 APickupWeapon::APickupWeapon()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 	SetRootComponent(SkeletalMesh);
-	SkeletalMesh->SetComponentTickEnabled(false);
 	SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	SkeletalMesh->bApplyImpulseOnDamage = false;
 	SkeletalMesh->CanCharacterStepUpOn = ECB_No;
@@ -35,7 +31,6 @@ APickupWeapon::APickupWeapon()
 	
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	BoxCollision->SetupAttachment(SkeletalMesh);
-	BoxCollision->SetComponentTickEnabled(false);
 	BoxCollision->SetBoxExtent(FVector(8.0f, 50.0f, 20.0f));
 	BoxCollision->bApplyImpulseOnDamage = false;
 	BoxCollision->SetGenerateOverlapEvents(true);
@@ -44,17 +39,15 @@ APickupWeapon::APickupWeapon()
 	
 	MuzzleFlash = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash"));
 	MuzzleFlash->SetupAttachment(SkeletalMesh, TEXT("MuzzleFlashSocket"));
-	MuzzleFlash->SetComponentTickEnabled(false);
+	MuzzleFlash->SetRelativeScale3D(WeaponDefaults.MuzzleFlashScale);
 	MuzzleFlash->SetAutoActivate(false);
 	
 	FireSound = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
 	FireSound->SetupAttachment(SkeletalMesh);
-	FireSound->SetComponentTickEnabled(false);
 	FireSound->SetAutoActivate(false);
 	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
 	Widget->SetupAttachment(SkeletalMesh);
-	Widget->SetComponentTickEnabled(false);
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->CanCharacterStepUpOn = ECB_No;
@@ -64,14 +57,12 @@ APickupWeapon::APickupWeapon()
 
 	// Initialize variables
 	PickupType = EItemType::Weapon;
-	CurrentWeaponState = EWeaponState::Idle;
 	bDoOnceFire = true;
 	bOwnerIsAI = false;
 	bCanFire = true;
 	bCharacterInterface = false;
 	bPlayerControllerInterface = false;
 	bAIControllerInterface = false;
-	bDrawDebugLineTrace = false;
 }
 
 void APickupWeapon::BeginPlay()
@@ -79,7 +70,6 @@ void APickupWeapon::BeginPlay()
 	Super::BeginPlay();
 	
 	AmmoComponent->Initialize();
-	MuzzleFlash->SetRelativeScale3D(WeaponDefaults.MuzzleFlashScale);
 
 	// Set weapon info on the widget to show it when the player overlap with the weapon
 	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
@@ -204,7 +194,7 @@ void APickupWeapon::SpawnProjectile()
 	}
 }
 
-void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation)
+void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation) const
 {
 	FVector Start;
 	FVector End;
@@ -215,16 +205,6 @@ void APickupWeapon::ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotat
 	CollisionQueryParams.bTraceComplex = true;
 	CollisionQueryParams.AddIgnoredActors(IgnoredActorsByTrace);
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
-
-	// Draw debug line and box
-	if (bDrawDebugLineTrace)
-	{
-		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.0f);
-		if (bHit)
-		{
-			DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(10, 10, 10), FColor::Red, false, 2.0f);
-		}
-	}
 	
 	const FVector MuzzleLocation = SkeletalMesh->GetSocketLocation(TEXT("MuzzleFlashSocket"));
 	OutLocation = MuzzleLocation;
@@ -380,16 +360,14 @@ void APickupWeapon::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)
 	{
-	case 0:
-		// Drop
+	case EPickupState::Drop:
 		SetOwner(nullptr);
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
 		SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
 		SetLifeSpan(FMath::FRandRange(15.0f, 30.0f));
 		break;
-	case 1:
-		// Pickup
+	case EPickupState::PickUp:
 		BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
 		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
@@ -433,8 +411,7 @@ void APickupWeapon::SetPickUpState(const EPickupState PickupState)
 			}
 		}
 		break;
-	case 2:
-		// Remove
+	case EPickupState::Remove:
 		Destroy();
 		break;
 	}
@@ -461,34 +438,27 @@ void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	
 	switch (WeaponState)
 	{
-	case 0: case 1: case 2: case 7:
-		// Idle, Firing, Better To Reload, Ammo Added
+	case EWeaponState::Idle: case EWeaponState::Firing: case EWeaponState::BetterToReload: case EWeaponState::AmmoAdded:
 		break;
-	case 3:
-		// Need To Reload
+	case EWeaponState::NeedToReload:
 		bCanFire = false;
 		StopFireWeapon();
 		break;
-	case 4:
-		// Reloading
+	case EWeaponState::Reloading:
 		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
 		StopFireWeapon();
 		break;
-	case 5:
-		// Cancel Reload
+	case EWeaponState::CancelReload:
 		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
 		break;
-	case 6:
-		// Reloaded
+	case EWeaponState::Reloaded:
 		bCanFire = true;
 		break;
-	case 8:
-		// Empty
+	case EWeaponState::Empty:
 		bCanFire = false;
 		StopFireWeapon();
 		break;
-	case 9:
-		// Overheat
+	case EWeaponState::Overheat:
 		bCanFire = false;
 		StopFireWeapon();
 		break;

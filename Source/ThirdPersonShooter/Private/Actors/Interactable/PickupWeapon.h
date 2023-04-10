@@ -13,6 +13,7 @@ class AEmptyShell;
 class AProjectile;
 class AMagazine;
 
+// TODO: Do not use this structure
 USTRUCT(BlueprintType)
 struct FWeaponDefaults
 {
@@ -23,30 +24,34 @@ struct FWeaponDefaults
 	
 	UPROPERTY(EditDefaultsOnly)
 	FName MagazineBoneName;
-	
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more intensity"))
+
+	/** Smaller number = more intensity */
+	UPROPERTY(EditDefaultsOnly)
 	FRotator RotationIntensity;
-	
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = faster control"))
+
+	/** Bigger number = faster control */
+	UPROPERTY(EditDefaultsOnly)
 	float ControlTime;
-	
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Bigger number = more fedback"))
+
+	/** Bigger number = more feedback */
+	UPROPERTY(EditDefaultsOnly)
 	float CrosshairRecoil;
-	
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "Smaller number = more fedback"))
+
+	/** Smaller number = more feedback */
+	UPROPERTY(EditDefaultsOnly)
 	float ControllerPitch;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* ReloadSound;
+	TObjectPtr<USoundBase> ReloadSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* RaiseSound;
+	TObjectPtr<USoundBase> RaiseSound;
 	
 	UPROPERTY(EditDefaultsOnly)
-	USoundCue* LowerSound;
+	TObjectPtr<USoundBase> LowerSound;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<AProjectile>> Projectile;
@@ -57,54 +62,46 @@ struct FWeaponDefaults
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMagazine> Magazine;
 
-	// Default constructor
+	/** Default constructor */
 	FWeaponDefaults()
-	{
-		MuzzleFlashScale = FVector::OneVector;
-		MagazineBoneName = FName("None");
-		RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
-		ControlTime = 0.25f;
-		CrosshairRecoil = 5.0f;
-		ControllerPitch = -0.5f;
-		ReloadSound = nullptr;
-		RaiseSound = nullptr;
-		LowerSound = nullptr;
-	}
+		: MuzzleFlashScale(FVector::OneVector), MagazineBoneName(NAME_None), RotationIntensity(FRotator(0.0f, 0.0f, -5.0f)),
+		ControlTime(0.25f), CrosshairRecoil(5.0f), ControllerPitch(-0.5f)
+	{}
 };
 
-UCLASS()
+UCLASS(meta = (DisplayName = "Pick Up Weapon"))
 class APickupWeapon : public APickup, public ICommonInterface
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* SkeletalMesh;
+	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UBoxComponent* BoxCollision;
+	TObjectPtr<class UBoxComponent> BoxCollision;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UParticleSystemComponent* MuzzleFlash;
+	TObjectPtr<UParticleSystemComponent> MuzzleFlash;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	UAudioComponent* FireSound;
+	TObjectPtr<UAudioComponent> FireSound;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UWidgetComponent* Widget;
+	TObjectPtr<class UWidgetComponent> Widget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UAmmoComponent* AmmoComponent;
+	TObjectPtr<class UAmmoComponent> AmmoComponent;
 
 // Functions
 public:
 	APickupWeapon();
 
 	/** Location use to adjust character left hand with IK in animation blueprint */
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	UFUNCTION(BlueprintCallable, Category = "PickUpWeapon")
 	FVector GetLeftHandLocation() const;
 	
 	/**	Location use to adjust character left hand with IK in animation blueprint */
-	UFUNCTION(BlueprintCallable, Category = "PickupWeapon")
+	UFUNCTION(BlueprintCallable, Category = "PickUpWeapon")
 	FVector GetLeftHandAimLocation() const;
 	
 	void StartFireWeapon();
@@ -132,7 +129,7 @@ private:
 	void WeaponFireEffect() const;
 	
 	void SpawnProjectile();
-	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation);
+	void ProjectileLineTrace(FVector& OutLocation, FRotator& OutRotation) const;
 	
 	/** Calculate line trace start and end */
 	void CalculateLineTrace(FVector& Start, FVector& End) const;
@@ -170,7 +167,47 @@ public:
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	uint8 bDrawDebugLineTrace : 1;
+	FVector MuzzleFlashScale = FVector::OneVector;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	FName MagazineBoneName = NAME_None;
+
+	/** Smaller number = more intensity */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	FRotator RotationIntensity = FRotator(0.0f, 0.0f, -5.0f);
+
+	/** Bigger number = faster control */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float ControlTime = 0.25f;
+
+	/** Bigger number = more feedback */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float CrosshairRecoil = 5.0f;
+
+	/** Smaller number = more feedback */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	float ControllerPitch = -0.5f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USoundBase> ReloadSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USoundBase> RaiseSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USoundBase> LowerSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TSubclassOf<UCameraShakeBase> CameraShake;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TSubclassOf<AProjectile>> Projectile;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TArray<TSubclassOf<AEmptyShell>> EmptyShell;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	TSubclassOf<AMagazine> Magazine;
 	
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
 
@@ -186,7 +223,7 @@ private:
 	UPROPERTY()
 	class AAIController* AIController;
 
-	EWeaponState CurrentWeaponState;
+	EWeaponState CurrentWeaponState = EWeaponState::Idle;
 
 	FTimerHandle FireWeaponTimer;
 };

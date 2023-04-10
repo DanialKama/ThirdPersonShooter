@@ -1,19 +1,15 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "AmmoComponent.h"
+
 #include "Core/Interfaces/CommonInterface.h"
 
 UAmmoComponent::UAmmoComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	// Initialize variables
-	MaxAmmo = 0;
-	DefaultAmmo = 0;
-	MagazineSize = 1;
-	CurrentMagazineAmmo = 0;
-	ReloadAmount = 1;
-	CurrentAmmo = 0;
 	bCommonInterface = false;
 }
 
@@ -136,6 +132,7 @@ bool UAmmoComponent::BetterToReload() const
 	{
 		return true;
 	}
+	
 	return false;
 }
 
@@ -145,6 +142,7 @@ bool UAmmoComponent::CanReload() const
 	{
 		return true;
 	}
+	
 	return false;
 }
 
@@ -154,6 +152,7 @@ bool UAmmoComponent::NoAmmoLeftToReload() const
 	{
 		return true;
 	}
+	
 	return false;
 }
 
@@ -163,5 +162,6 @@ bool UAmmoComponent::IsCompletelyEmpty() const
 	{
 		return true;
 	}
+	
 	return false;
 }

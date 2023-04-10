@@ -47,33 +47,34 @@ public:
 	uint8 bCanRecoverHealth : 1;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float MaxHealth;
+	float MaxHealth = 100.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
-	float DefaultHealth;
+	float DefaultHealth = 100.0f;
 	
-	FName HitBoneName;
+	FName HitBoneName = NAME_None;
 	
 	/** Direction of the shot */
-	FVector ShotOrigin;
+	FVector ShotOrigin = FVector::ZeroVector;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "If health goes lower than this value health component start notifying the owner", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float LowHealth;
+	/** If health goes lower than this value health component start notifying the owner */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float LowHealth = 25.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float HealingAmount;
+	float HealingAmount = 10.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float HealthRecoveryRate;
+	float HealthRecoveryRate = 0.25f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float StartHealthRecoveryDelay;
+	float StartHealthRecoveryDelay = 3.0f;
 	
 	uint8 bCommonInterface : 1, bCharacterInterface : 1;
 
 	/** At begin play Current Health is equal to Default Health */
-	float CurrentHealth;
+	float CurrentHealth = 0.0f;
 	
 	FTimerHandle HealthRecoveryTimer;
 };

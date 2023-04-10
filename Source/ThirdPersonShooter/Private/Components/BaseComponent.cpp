@@ -2,11 +2,9 @@
 
 #include "BaseComponent.h"
 
+// TODO: Do not use base component
 UBaseComponent::UBaseComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-}
-
-void UBaseComponent::Initialize()
-{
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 }

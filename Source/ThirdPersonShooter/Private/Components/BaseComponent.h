@@ -16,5 +16,5 @@ public:
 	UBaseComponent();
 
 	/** Setup component */
-	virtual void Initialize();
+	virtual void Initialize() {}
 };

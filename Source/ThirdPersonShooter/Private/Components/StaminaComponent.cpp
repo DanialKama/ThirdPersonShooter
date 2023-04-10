@@ -1,20 +1,15 @@
 // Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #include "StaminaComponent.h"
+
 #include "Core/Interfaces/CharacterInterface.h"
 
 UStaminaComponent::UStaminaComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	// Initialize variables
-	DefaultStamina = MaxStamina = 100.0f;
-	RestoreStaminaAmount = 25.0f;
-	StaminaRestoreRate = 1.0f;
-	StartStaminaRecoveryDelay = 5.0f;
-	RunStaminaDrainAmount = 1.0f;
-	SprintStaminaDrainAmount = 3.0f;
-	CurrentStamina = 0.0f;
 	bCharacterInterface = false;
 	bDoOnce = true;
 }

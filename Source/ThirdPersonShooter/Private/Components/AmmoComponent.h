@@ -33,22 +33,23 @@ private:
 // Variables
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
-	int32 MaxAmmo;
+	int32 MaxAmmo = 0;
 	
 	UPROPERTY(EditAnywhere, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
-	int32 DefaultAmmo;
+	int32 DefaultAmmo = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
-	int32 MagazineSize;
-	
-	UPROPERTY(EditAnywhere, Category = "Default", meta = (ToolTip = "If value set to something greater than zero then in initial value dose not change"))
-	int32 CurrentMagazineAmmo;
+	int32 MagazineSize = 1;
+
+	/** If value set to something greater than zero then in initial value dose not change */
+	UPROPERTY(EditAnywhere, Category = "Default")
+	int32 CurrentMagazineAmmo = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
-	int32 ReloadAmount;
+	int32 ReloadAmount = 1;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Default")
-	int32 CurrentAmmo;
+	int32 CurrentAmmo = 0;
 	
 private:
 	uint8 bCommonInterface : 1;

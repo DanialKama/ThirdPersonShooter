@@ -39,29 +39,30 @@ private:
 // Variables
 public:
 	/** At begin play Current Stamina is equal to Default Stamina */
-	float CurrentStamina;
+	float CurrentStamina = 0.0f;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float MaxStamina;
+	float MaxStamina = 100.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float DefaultStamina;
+	float DefaultStamina = 100.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float RestoreStaminaAmount;
+	float RestoreStaminaAmount = 25.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Per second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float StaminaRestoreRate;
+	/** Per second */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	float StaminaRestoreRate = 1.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float StartStaminaRecoveryDelay;
+	float StartStaminaRecoveryDelay = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float RunStaminaDrainAmount;
+	float RunStaminaDrainAmount = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
-	float SprintStaminaDrainAmount;
+	float SprintStaminaDrainAmount = 3.0f;
 	
 	uint8 bCharacterInterface : 1, bDoOnce : 1;
 	

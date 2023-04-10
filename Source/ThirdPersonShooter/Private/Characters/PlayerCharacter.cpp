@@ -14,6 +14,8 @@
 
 APlayerCharacter::APlayerCharacter()
 {
+	AutoPossessAI = EAutoPossessAI::Disabled;
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 75.0f));

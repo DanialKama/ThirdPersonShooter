@@ -7,13 +7,13 @@
 #include "Core/Interfaces/AICharacterInterface.h"
 #include "AICharacter.generated.h"
 
-UCLASS()
+UCLASS(meta = (DisplayName = "AI Character"))
 class AAICharacter : public ABaseCharacter, public IAICharacterInterface
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	class UWidgetComponent* Widget;
+	TObjectPtr<class UWidgetComponent> Widget;
 
 // Functions
 public:
@@ -30,7 +30,7 @@ public:
 	virtual void HolsterWeapon() override;
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
-	virtual APatrolPathActor* GetPatrolPath_Implementation() override;
+	virtual APatrolPathActor* GetPatrolPath_Implementation() override { return PatrolPath; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -57,7 +57,7 @@ private:
 // Variables
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
-	UAnimMontage* SurrenderMontage;
+	TObjectPtr<UAnimMontage> SurrenderMontage;
 
 	UPROPERTY()
 	class ARespawnActor* RespawnHandler;
@@ -73,7 +73,7 @@ private:
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float RespawnTime;
+	float RespawnTime = 5.0f;
 
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1;
 	

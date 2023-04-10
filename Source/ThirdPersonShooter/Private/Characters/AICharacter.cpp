@@ -4,15 +4,16 @@
 
 #include "Actors/Interactable/PickupWeapon.h"
 #include "Actors/NonInteractive/RespawnActor.h"
+#include "AI/ShooterAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/WidgetComponent.h"
-#include "AI/ShooterAIController.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Core/Interfaces/WidgetInterface.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AAICharacter::AAICharacter()
 {
+	// TODO: Just spawn the AI characters
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
@@ -26,7 +27,6 @@ AAICharacter::AAICharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);
 
 	// Initialize variables
-	RespawnTime = 5.0f;
 	bAIControllerInterface = false;
 	bWidgetInterface = false;
 }
@@ -70,10 +70,12 @@ void AAICharacter::SetPrimaryWeapon()
 		const TSubclassOf<APickupWeapon> WeaponToSpawn = PrimaryWeapons[FMath::RandRange(0, PrimaryWeapons.Num() - 1)];
 		const FVector Location = GetMesh()->GetSocketLocation(FName("RightHandHoldSocket"));
 		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("RightHandHoldSocket"));
+		
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		
 		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
 		{
 			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
@@ -91,10 +93,12 @@ void AAICharacter::SetSidearmWeapon()
 		const TSubclassOf<APickupWeapon> WeaponToSpawn = SidearmWeapons[FMath::RandRange(0, SidearmWeapons.Num() - 1)];
 		const FVector Location = GetMesh()->GetSocketLocation(FName("Weapon3Socket"));
 		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("Weapon3Socket"));
+		
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		
 		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
 		{
 			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
@@ -218,19 +222,16 @@ void AAICharacter::UseWeapon(bool bAim, bool bFire)
 {
 	if (bAim)
 	{
-		if (CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
+		if (CurrentHoldingWeapon != EWeaponToDo::NoWeapon && SetAimState(true))
 		{
-			if (SetAimState(true))
+			if (bFire)
 			{
-				if (bFire)
-				{
-					FTimerHandle TimerHandle;
-					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StartFireWeapon, 0.75f);
-				}
-				else
-				{
-					StopFireWeapon();
-				}
+				FTimerHandle TimerHandle;
+				GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StartFireWeapon, 0.75f);
+			}
+			else
+			{
+				StopFireWeapon();
 			}
 		}
 	}
@@ -254,22 +255,21 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case 0: case 2: case 3:
-		// Full, Recovery Started, Recovery Ended
+	case EHealthState::Full: case EHealthState::RecoveryStarted: case EHealthState::RecoveryStopped:
 		Super::SetHealthState_Implementation(HealthState);
 		break;
-	case 1:
-		// Low
+	case EHealthState::Low:
 		if (bAIControllerInterface)
 		{
 			// If health is low, report it to the controller to start taking cover and using meds
 			IAIControllerInterface::Execute_SetAIState(AIController, EAIState::LowHealth);
 		}
 		break;
-	case 4:
-		// Death
+	case EHealthState::Death:
 		Super::SetHealthState_Implementation(HealthState);
+		
 		Widget->SetVisibility(false);
+		
 		if (RespawnHandler)
 		{
 			FRespawnInfo RespawnInfo;
@@ -290,9 +290,4 @@ void AAICharacter::HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterr
 		AIController->SetAIState_Implementation(EAIState::LowHealth);
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
-}
-
-APatrolPathActor* AAICharacter::GetPatrolPath_Implementation()
-{
-	return PatrolPath;	
 }

@@ -9,7 +9,7 @@
 UCLASS()
 class UAnimNotify_DropMag : public UAnimNotify
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 	
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 };

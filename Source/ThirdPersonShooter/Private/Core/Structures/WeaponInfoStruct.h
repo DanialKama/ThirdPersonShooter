@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "UObject/NoExportTypes.h"
 #include "Core/Enumerations/PickupEnums.h"
 #include "WeaponInfoStruct.generated.h"
+
+// TODO: Declare this structure in the weapon class or don't use it at all if possible
 
 /** Ammo component info that owner needs */
 USTRUCT(BlueprintType)
@@ -40,10 +41,12 @@ struct FWeaponInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (Bitmask, BitmaskEnum = EAmmoType))
 	int32 AmmoType = static_cast<int32>(EAmmoType::None);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (ToolTip = "Min Fire Offset is only for AI"))
+	/** Min Fire Offset is only for AI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float MinFireOffset = -10.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (ToolTip = "Max Fire Offset is only for AI"))
+	/** Max Fire Offset is only for AI */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
 	float MaxFireOffset = 10.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")

@@ -3,7 +3,7 @@
 #include "Projectile.h"
 
 #include "Actors/NonInteractive/ProjectileFieldSystemActor.h"
-#include "Core/Structures/ExplosiveProjectileInfoStruct.h"
+#include "Core/Structures/ProjectileInfo.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"

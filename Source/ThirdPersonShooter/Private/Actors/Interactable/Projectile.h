@@ -6,7 +6,7 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 #include "Core/Enumerations/PickupEnums.h"
-#include "Core/Structures/ProjectileInfoStruct.h"
+#include "Core/Structures/ProjectileInfo.h"
 #include "Projectile.generated.h"
 
 class AProjectileFieldSystemActor;

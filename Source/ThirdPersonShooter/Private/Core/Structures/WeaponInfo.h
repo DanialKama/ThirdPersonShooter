@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Core/Enumerations/PickupEnums.h"
-#include "WeaponInfoStruct.generated.h"
+#include "WeaponInfo.generated.h"
 
 // TODO: Declare this structure in the weapon class or don't use it at all if possible
 

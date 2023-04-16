@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "AmmoComponentInfoStruct.generated.h"
+#include "AmmoComponentInfo.generated.h"
 
 // TODO: Declare it in the ammo component
 

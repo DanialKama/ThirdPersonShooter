@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Core/Structures/WeaponInfoStruct.h"
+#include "Core/Structures/WeaponInfo.h"
 #include "WidgetInterface.generated.h"
 
 // This class does not need to be modified.

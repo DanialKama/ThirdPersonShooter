@@ -1,77 +1,59 @@
-// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
+﻿// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "RespawnActor.generated.h"
+#include "SpawnerAI.generated.h"
 
 class AAICharacter;
 
-USTRUCT(BlueprintType)
-struct FRespawnInfo
+USTRUCT(BlueprintType, meta = (DisplayName = "Spawn Data"))
+struct FSpawnData
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere)
-	float SpawnTime;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0))
+	int32 SpawnDelay;
 	
 	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<AAICharacter> CharacterToSpawn;
 
-	/* Default constructor */
-	FRespawnInfo()
-		: SpawnDelay(5.0f)
+	// Default constructor
+	FSpawnData()
+		: SpawnDelay(5)
 	{}
 };
 
-// TODO: Rename to AAISpawner
 UCLASS(meta = (DisplayName = "AI Spawner"))
 class ASpawnerAI : public AActor
 {
 	GENERATED_BODY()
 
-	// TODO: Use Scene component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UBox> Billboard;
-
-	// TODO: Use random location in box
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<class USphereComponent> RespawnRadius;
+	TObjectPtr<USceneComponent> SceneComponent;
 
 // Functions
-public:	
-	ARespawnActor();
+public:
+	/** Sets default values for this actor's properties */
+	ASpawnerAI();
 
-	// TODO: Rename Respawn to Spawn
-	
-	/** Enter the respawn queue and wait till respawning */
-	void EnterRespawnQueue(FRespawnInfo RespawnInfo);
+	void EnterSpawnQueue(const FSpawnData& SpawnData);
 
 protected:
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
 private:
-	void StartRespawn();
+	void StartSpawn();
 	
-	UFUNCTION()
-	void RespawnHandler();
+	void UpdateSpawnQueue();
 
 // Variables
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default")
-	TArray<FRespawnInfo> RespawnList;
+	UPROPERTY(EditAnywhere, Category = "Default")
+	TArray<FSpawnData> RespawnList;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float SpawnDelay = 5.0f;
-
-	/** AI character to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	TSubclassOf<AAICharacter> CharacterToSpawn;
-	
-	UPROPERTY()
-	class UNavigationSystemV1* NavigationSystem;
-
 	FTimerHandle SpawnTimer;
 };

@@ -1,71 +1,61 @@
-// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
+﻿// Copyright 2022-2023 Danial Kamali. All Rights Reserved.
 
-#include "RespawnActor.h"
+#include "SpawnerAI.h"
 
-#include "Characters/AICharacter.h"
-#include "Components/BillboardComponent.h"
-#include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "NavigationSystem.h"
-
-ARespawnActor::ARespawnActor()
+ASpawnerAI::ASpawnerAI()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+	SetHidden(true);
+	SetCanBeDamaged(false);
+	UpdateOverlapsMethodDuringLevelStreaming = EActorUpdateOverlapsMethod::NeverUpdate;
 
-	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
-	SetRootComponent(Billboard);
-	Billboard->bIsScreenSizeScaled = true;
+#if WITH_EDITORONLY_DATA
+	bEnableAutoLODGeneration = false;
+#endif
 	
-	RespawnRadius = CreateDefaultSubobject<USphereComponent>(TEXT("Respawn Radius"));
-	RespawnRadius->SetupAttachment(Billboard);
-	RespawnRadius->SetSphereRadius(250.0f);
-	RespawnRadius->SetGenerateOverlapEvents(false);
-	RespawnRadius->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RespawnRadius->SetCollisionResponseToAllChannels(ECR_Ignore);
-	RespawnRadius->CanCharacterStepUpOn = ECB_No;
+	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
+	RootComponent = SceneComponent;
+	SceneComponent->Mobility = EComponentMobility::Static;
 }
 
-void ARespawnActor::BeginPlay()
+void ASpawnerAI::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Initialize navigation system
-	NavigationSystem = UNavigationSystemV1::GetCurrent(GetWorld());
 	
-	// Start respawning if there is any actor to respawn
+	// Start spawning if there is any actor to spawn
 	if (RespawnList.Num() > 0)
 	{
-		StartRespawn();
+		StartSpawn();
 	}
 }
 
-void ARespawnActor::EnterRespawnQueue(FRespawnInfo RespawnInfo)
+void ASpawnerAI::EnterSpawnQueue(const FSpawnData& SpawnData)
 {
-	RespawnList.Add(RespawnInfo);
-	StartRespawn();
+	RespawnList.Add(SpawnData);
+	StartSpawn();
 }
 
-void ARespawnActor::StartRespawn()
+void ASpawnerAI::StartSpawn()
 {
-	// If respawn timer is not started yet then start it
-	if (SpawnTimer.IsValid() == false)	// TODO: Need Improvement
+	// Start the spawn timer if it is not started yet.
+	if (!GetWorld()->GetTimerManager().IsTimerActive(SpawnTimer))
 	{
-		GetWorld()->GetTimerManager().SetTimer(SpawnTimer, this, &ARespawnActor::RespawnHandler, 0.5f, true);
+		GetWorld()->GetTimerManager().SetTimer(SpawnTimer, this, &ASpawnerAI::UpdateSpawnQueue, 1.0f, true);
 	}
 }
 
-void ARespawnActor::RespawnHandler()
+void ASpawnerAI::UpdateSpawnQueue()
 {
 	TArray<uint8> IndicesToSpawn;
 	const uint8 ListLength = RespawnList.Num();
 	for (uint8 i = 0; i < ListLength; ++i)
 	{
-		const float NewTime = RespawnList[i].SpawnTime - 0.5f;
+		const int32 NewTime = --RespawnList[i].SpawnDelay;
 		// Check if it is time to respawn
-		if (NewTime > 0.0f)
+		if (NewTime > 0)
 		{
-			RespawnList[i].SpawnTime = NewTime;
+			RespawnList[i].SpawnDelay = NewTime;
 		}
 		else
 		{
@@ -78,12 +68,12 @@ void ARespawnActor::RespawnHandler()
 	{
 		FTransform Transform;
 		FNavLocation NavLocation;
-		const bool bResult = NavigationSystem->GetRandomReachablePointInRadius(GetActorLocation(), RespawnRadius->GetScaledSphereRadius(), NavLocation);
+		/*const bool bResult = NavigationSystem->GetRandomReachablePointInRadius(GetActorLocation(), RespawnRadius->GetScaledSphereRadius(), NavLocation);
 		bResult ? Transform.SetLocation(NavLocation.Location) : Transform.SetLocation(GetActorLocation());
 		Transform.SetRotation(FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Quaternion());
 		AAICharacter* NewActor = GetWorld()->SpawnActorDeferred<AAICharacter>(RespawnList[IndicesToSpawn[j]].CharacterToSpawn, Transform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
 		NewActor->RespawnHandler = this;
-		UGameplayStatics::FinishSpawningActor(NewActor, Transform);
+		UGameplayStatics::FinishSpawningActor(NewActor, Transform);*/
 		
 		RespawnList.RemoveAt(IndicesToSpawn[j]);
 		for (uint8 k = j; k < SpawnLength; ++k)

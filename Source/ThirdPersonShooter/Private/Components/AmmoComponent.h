@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseComponent.h"
-#include "Core/Structures/AmmoComponentInfoStruct.h"
+#include "Core/Structures/AmmoComponentInfo.h"
 #include "AmmoComponent.generated.h"
 
 UCLASS()

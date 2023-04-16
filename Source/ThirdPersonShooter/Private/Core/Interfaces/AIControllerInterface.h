@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Core/Structures/AmmoComponentInfoStruct.h"
+#include "Core/Structures/AmmoComponentInfo.h"
 #include "AIControllerInterface.generated.h"
 
 // This class does not need to be modified.

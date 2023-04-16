@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Core/Structures/AmmoComponentInfoStruct.h"
+#include "Core/Structures/AmmoComponentInfo.h"
 #include "Core/Enumerations/PickupEnums.h"
 #include "PlayerControllerInterface.generated.h"
 

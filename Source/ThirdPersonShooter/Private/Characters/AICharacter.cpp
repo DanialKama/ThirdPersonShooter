@@ -13,8 +13,8 @@
 
 AAICharacter::AAICharacter()
 {
-	// TODO: Just spawn the AI characters
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AutoPossessAI = EAutoPossessAI::Spawned;
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	
 	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
 	Widget->SetupAttachment(GetRootComponent());

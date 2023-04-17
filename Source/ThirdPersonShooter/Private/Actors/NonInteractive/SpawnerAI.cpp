@@ -2,6 +2,9 @@
 
 #include "SpawnerAI.h"
 
+#include "Characters/AICharacter.h"
+#include "Kismet/GameplayStatics.h"
+
 ASpawnerAI::ASpawnerAI()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -24,7 +27,7 @@ void ASpawnerAI::BeginPlay()
 	Super::BeginPlay();
 	
 	// Start spawning if there is any actor to spawn
-	if (RespawnList.Num() > 0)
+	if (SpawnList.Num() > 0)
 	{
 		StartSpawn();
 	}
@@ -32,7 +35,7 @@ void ASpawnerAI::BeginPlay()
 
 void ASpawnerAI::EnterSpawnQueue(const FSpawnData& SpawnData)
 {
-	RespawnList.Add(SpawnData);
+	SpawnList.Add(SpawnData);
 	StartSpawn();
 }
 
@@ -47,42 +50,50 @@ void ASpawnerAI::StartSpawn()
 
 void ASpawnerAI::UpdateSpawnQueue()
 {
-	TArray<uint8> IndicesToSpawn;
-	const uint8 ListLength = RespawnList.Num();
-	for (uint8 i = 0; i < ListLength; ++i)
+	// Index of the ready-to-spawn characters
+	TArray<int32> ReadyToSpawn;
+
+	int32 i;
+	for (i = 0; i < SpawnList.Num(); ++i)
 	{
-		const int32 NewTime = --RespawnList[i].SpawnDelay;
-		// Check if it is time to respawn
+		// Reduce the spawn delay and spawn the character if needed
+		const int32 NewTime = --SpawnList[i].SpawnDelay;
+		
 		if (NewTime > 0)
 		{
-			RespawnList[i].SpawnDelay = NewTime;
+			SpawnList[i].SpawnDelay = NewTime;
 		}
 		else
 		{
-			IndicesToSpawn.Add(i);
+			ReadyToSpawn.Add(i);
 		}
 	}
 	
-	const uint8 SpawnLength = IndicesToSpawn.Num();
-	for (uint8 j = 0; j < SpawnLength; ++j)
+	for (i = 0; i < ReadyToSpawn.Num(); ++i)
 	{
-		FTransform Transform;
-		FNavLocation NavLocation;
-		/*const bool bResult = NavigationSystem->GetRandomReachablePointInRadius(GetActorLocation(), RespawnRadius->GetScaledSphereRadius(), NavLocation);
-		bResult ? Transform.SetLocation(NavLocation.Location) : Transform.SetLocation(GetActorLocation());
-		Transform.SetRotation(FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Quaternion());
-		AAICharacter* NewActor = GetWorld()->SpawnActorDeferred<AAICharacter>(RespawnList[IndicesToSpawn[j]].CharacterToSpawn, Transform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
-		NewActor->RespawnHandler = this;
-		UGameplayStatics::FinishSpawningActor(NewActor, Transform);*/
+		FVector RandomUnit = FMath::VRand();
+		RandomUnit.Z = 0.0f;
+		RandomUnit *= FMath::FRandRange(0.0f, Range);
+
+		FTransform SpawnTransform;
+		SpawnTransform.SetLocation(RandomUnit + SceneComponent->GetComponentLocation());
+		SpawnTransform.SetRotation(FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Quaternion());
+
+		UClass* LoadedAsset = SpawnList[ReadyToSpawn[i]].CharacterToSpawn.LoadSynchronous();
 		
-		RespawnList.RemoveAt(IndicesToSpawn[j]);
-		for (uint8 k = j; k < SpawnLength; ++k)
+		AAICharacter* NewCharacter = GetWorld()->SpawnActorDeferred<AAICharacter>(LoadedAsset, SpawnTransform);
+		NewCharacter->Spawner = this;
+		UGameplayStatics::FinishSpawningActor(NewCharacter, SpawnTransform);
+		
+		SpawnList.RemoveAt(ReadyToSpawn[i]);
+		
+		/*for (int32 j = i; j < ReadyToSpawn.Num(); ++j)
 		{
-			IndicesToSpawn[k] = --IndicesToSpawn[k];
-		}
+			ReadyToSpawn[j] = --ReadyToSpawn[j];
+		}*/
 	}
 	
-	if (RespawnList.IsEmpty())
+	if (SpawnList.IsEmpty())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnTimer);
 	}

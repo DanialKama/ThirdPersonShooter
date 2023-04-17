@@ -23,6 +23,10 @@ struct FSpawnData
 	FSpawnData()
 		: SpawnDelay(5)
 	{}
+
+	FSpawnData(const int32 InSpawnDelay, const TSoftClassPtr<AAICharacter> InCharacterToSpawn)
+		: SpawnDelay(InSpawnDelay), CharacterToSpawn(InCharacterToSpawn)
+	{}
 };
 
 UCLASS(meta = (DisplayName = "AI Spawner"))
@@ -52,8 +56,12 @@ private:
 // Variables
 public:
 	UPROPERTY(EditAnywhere, Category = "Default")
-	TArray<FSpawnData> RespawnList;
+	TArray<FSpawnData> SpawnList;
 
 private:
+	/** Spawn range */
+	UPROPERTY(EditAnywhere, Category = "Default")
+	float Range = 150.0f;
+	
 	FTimerHandle SpawnTimer;
 };

@@ -68,6 +68,11 @@ void ASpawnerAI::UpdateSpawnQueue()
 			ReadyToSpawn.Add(i);
 		}
 	}
+
+	if (ReadyToSpawn.IsEmpty())
+	{
+		return;
+	}
 	
 	for (i = 0; i < ReadyToSpawn.Num(); ++i)
 	{
@@ -86,11 +91,6 @@ void ASpawnerAI::UpdateSpawnQueue()
 		UGameplayStatics::FinishSpawningActor(NewCharacter, SpawnTransform);
 		
 		SpawnList.RemoveAt(ReadyToSpawn[i]);
-		
-		/*for (int32 j = i; j < ReadyToSpawn.Num(); ++j)
-		{
-			ReadyToSpawn[j] = --ReadyToSpawn[j];
-		}*/
 	}
 	
 	if (SpawnList.IsEmpty())

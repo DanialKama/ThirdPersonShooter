@@ -3,7 +3,7 @@
 #include "AICharacter.h"
 
 #include "Actors/Interactable/PickupWeapon.h"
-#include "Actors/NonInteractive/RespawnActor.h"
+#include "Actors/NonInteractive/SpawnerAI.h"
 #include "AI/ShooterAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/HealthComponent.h"
@@ -270,12 +270,9 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		
 		Widget->SetVisibility(false);
 		
-		if (RespawnHandler)
+		if (Spawner)
 		{
-			FRespawnInfo RespawnInfo;
-			RespawnInfo.SpawnTime = RespawnTime;
-			RespawnInfo.CharacterToSpawn = this->GetClass();
-			RespawnHandler->EnterRespawnQueue(RespawnInfo);
+			Spawner->EnterSpawnQueue(FSpawnData(RespawnTime, StaticClass()));
 		}
 		break;
 	}

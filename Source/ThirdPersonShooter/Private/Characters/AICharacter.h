@@ -60,7 +60,7 @@ public:
 	TObjectPtr<UAnimMontage> SurrenderMontage;
 
 	UPROPERTY()
-	class ARespawnActor* RespawnHandler;
+	class ASpawnerAI* Spawner;
 	
 private:
 	UPROPERTY(EditInstanceOnly, Category = "Default")
@@ -72,8 +72,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Sidearm weapons to spawn and attach", AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
-	float RespawnTime = 5.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, UIMin = 0, AllowPrivateAccess = true))
+	int32 RespawnTime = 5;
 
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1;
 	

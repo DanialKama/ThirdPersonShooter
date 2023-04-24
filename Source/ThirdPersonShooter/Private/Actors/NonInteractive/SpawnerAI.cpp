@@ -3,7 +3,6 @@
 #include "SpawnerAI.h"
 
 #include "Characters/AICharacter.h"
-#include "Kismet/GameplayStatics.h"
 
 ASpawnerAI::ASpawnerAI()
 {
@@ -85,12 +84,18 @@ void ASpawnerAI::UpdateSpawnQueue()
 		SpawnTransform.SetRotation(FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Quaternion());
 
 		UClass* LoadedAsset = SpawnList[ReadyToSpawn[i]].CharacterToSpawn.LoadSynchronous();
+
+		AAICharacter* NewCharacter = Cast<AAICharacter>(GetWorld()->SpawnActor(LoadedAsset, &SpawnTransform));
+		if (NewCharacter)
+		{
+			NewCharacter->Spawner = this;
 		
-		AAICharacter* NewCharacter = GetWorld()->SpawnActorDeferred<AAICharacter>(LoadedAsset, SpawnTransform);
-		NewCharacter->Spawner = this;
-		UGameplayStatics::FinishSpawningActor(NewCharacter, SpawnTransform);
-		
-		SpawnList.RemoveAt(ReadyToSpawn[i]);
+			SpawnList.RemoveAt(ReadyToSpawn[i]);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NEW CHARACTER IS NOT VALID!!!"));
+		}
 	}
 	
 	if (SpawnList.IsEmpty())

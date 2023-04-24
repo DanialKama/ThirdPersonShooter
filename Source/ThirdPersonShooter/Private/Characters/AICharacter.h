@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
-#include "Core/Interfaces/AICharacterInterface.h"
 #include "AICharacter.generated.h"
 
 UCLASS(meta = (DisplayName = "AI Character"))
-class AAICharacter : public ABaseCharacter, public IAICharacterInterface
+class AAICharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -18,6 +17,8 @@ class AAICharacter : public ABaseCharacter, public IAICharacterInterface
 // Functions
 public:
 	AAICharacter();
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	/** True to do it, false to stop it (to start fire weapon aim is necessary) */
 	void UseWeapon(bool bAim, bool bFire);
@@ -30,11 +31,9 @@ public:
 	virtual void HolsterWeapon() override;
 	virtual void SetHealthLevel_Implementation(float Health) override;
 	virtual void SetHealthState_Implementation(EHealthState HealthState) override;
-	virtual APatrolPathActor* GetPatrolPath_Implementation() override { return PatrolPath; }
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void SwitchIsEnded() override;
 	virtual void HealingMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const override;
@@ -63,9 +62,6 @@ public:
 	class ASpawnerAI* Spawner;
 	
 private:
-	UPROPERTY(EditInstanceOnly, Category = "Default")
-	APatrolPathActor* PatrolPath;
-	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> PrimaryWeapons;
 	
@@ -73,7 +69,7 @@ private:
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, UIMin = 0, AllowPrivateAccess = true))
-	int32 RespawnTime = 5;
+	int32 RespawnDelay = 5;
 
 	uint8 bAIControllerInterface : 1, bWidgetInterface : 1;
 	

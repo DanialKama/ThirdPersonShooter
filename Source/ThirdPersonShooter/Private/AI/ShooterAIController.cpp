@@ -3,12 +3,10 @@
 #include "ShooterAIController.h"
 
 #include "Actors/Interactable/PickupWeapon.h"
-#include "Actors/NonInteractive/PatrolPathActor.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Characters/AICharacter.h"
 #include "Components/AmmoComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -54,11 +52,9 @@ AShooterAIController::AShooterAIController()
 	BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 	
 	// Initialize variables
-	bAICharacterInterface = false;
 	bDoOnceFight = true;
 	bDoOnceHelp = true;
 	bIsDisarm = false;
-	bHasPath = false;
 }
 
 void AShooterAIController::BeginPlay()
@@ -76,22 +72,8 @@ void AShooterAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
+	// TODO: Use GetPawn()
 	ControlledPawn = Cast<AAICharacter>(InPawn);
-	if (ControlledPawn)
-	{
-		if (InPawn->GetClass()->ImplementsInterface(UAICharacterInterface::StaticClass()))
-		{
-			bAICharacterInterface = true;
-			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
-			// If patrol path is valid then start patrolling
-			if (PatrolPath)
-			{
-				FTimerDelegate TimerDelegate;
-				TimerDelegate.BindUObject(this, &AShooterAIController::StartPatrolling);
-				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-			}
-		}
-	}
 }
 
 void AShooterAIController::Tick(float DeltaSeconds)
@@ -177,7 +159,7 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 	}
 }
 
-void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleSight(AActor* UpdatedActor, const FAIStimulus& Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
@@ -237,7 +219,7 @@ void AShooterAIController::HandleSight(AActor* UpdatedActor, FAIStimulus Stimulu
 	}
 }
 
-void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus)
+void AShooterAIController::HandleDamage(AActor* UpdatedActor, const FAIStimulus& Stimulus)
 {
 	// Start searching
 	AIState = EAIState::Search;
@@ -255,7 +237,7 @@ void AShooterAIController::HandleDamage(AActor* UpdatedActor, FAIStimulus Stimul
 	Attacker = TargetActor;
 }
 
-void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
+void AShooterAIController::HandleHearing(const FAIStimulus& Stimulus)
 {
 	// Check if the updated actor is reachable
 	const UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), ControlledPawn->GetActorLocation(), Stimulus.StimulusLocation);
@@ -312,7 +294,7 @@ void AShooterAIController::HandleHearing(FAIStimulus Stimulus)
 	}
 }
 
-void AShooterAIController::HandlePrediction(FAIStimulus Stimulus) const
+void AShooterAIController::HandlePrediction(const FAIStimulus& Stimulus) const
 {
 	BlackboardComp->SetValueAsVector(FName("TargetLocation"), Stimulus.StimulusLocation);
 }
@@ -342,31 +324,10 @@ void AShooterAIController::BackToRoutine()
 		ControlledPawn->UseWeapon(false, false);
 		BlackboardComp->SetValueAsBool(FName("TakeCover"), false);
 		BlackboardComp->SetValueAsFloat(FName("WaitTime"), 0.0f);
-	
-		if (bAICharacterInterface)
-		{
-			PatrolPath = IAICharacterInterface::Execute_GetPatrolPath(GetPawn());
-		}
-
-		// Start patrolling if patrol path is valid	
-		if (PatrolPath)
-		{
-			StartPatrolling();
-		}
-		else
-		{
-			BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
-			BlackboardComp->SetValueAsBool(FName("Search"), false);
-		}
+		
+		BlackboardComp->SetValueAsObject(FName("TargetActor"), nullptr);
+		BlackboardComp->SetValueAsBool(FName("Search"), false);
 	}
-}
-
-void AShooterAIController::StartPatrolling() const
-{
-	BlackboardComp->SetValueAsBool(FName("LoopPath"), PatrolPath->bIsLoop);
-	BlackboardComp->SetValueAsBool(FName("Direction"), true);
-	BlackboardComp->SetValueAsFloat(FName("WaitTime"), PatrolPath->WaitTime);
-	BlackboardComp->SetValueAsBool(FName("Patrol"), true);
 }
 
 // TODO - Explain it
@@ -577,7 +538,7 @@ void AShooterAIController::SetAIState_Implementation(EAIState NewAIState)
 	}
 }
 
-float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor*& CloserActor)
+float AShooterAIController::FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, const FVector& CurrentLocation, AActor*& CloserActor)
 {
 	float DistanceToActor;
 	if (Actor1)
@@ -614,13 +575,14 @@ void AShooterAIController::AskForHelp() const
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), ControlledPawn->GetActorLocation(), 1.0f, ControlledPawn, 0.0f, FName("Help"));
 }
 
+// TODO: Improve
 void AShooterAIController::Surrender()
 {
-	ControlledPawn->DropCurrentObject();
+	/*ControlledPawn->DropCurrentObject();
 	bIsDisarm = true;
 	BlackboardComp->SetValueAsBool(FName("IsDisarm"), true);
 	BlackboardComp->SetValueAsFloat(FName("WaitTime"), 60.0f);
 	ClearFocus(EAIFocusPriority::Gameplay);
 	ControlledPawn->GetCharacterMovement()->DisableMovement();
-	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);
+	ControlledPawn->PlayAnimMontage(ControlledPawn->SurrenderMontage);*/
 }

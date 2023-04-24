@@ -10,7 +10,7 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "ShooterAIController.generated.h"
 
-// TODO: Rename to AControllerShooter
+// TODO: Rename to AAIC_Shooter
 UCLASS(meta = (DisplayName = "Shooter AI Controller"))
 class AShooterAIController : public AAIController, public IAIControllerInterface
 {
@@ -52,10 +52,10 @@ private:
 	UFUNCTION()
 	void PerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	
-	void HandleSight(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HandleDamage(AActor* UpdatedActor, FAIStimulus Stimulus);
-	void HandleHearing(FAIStimulus Stimulus);
-	void HandlePrediction(FAIStimulus Stimulus) const;
+	void HandleSight(AActor* UpdatedActor, const FAIStimulus& Stimulus);
+	void HandleDamage(AActor* UpdatedActor, const FAIStimulus& Stimulus);
+	void HandleHearing(const FAIStimulus& Stimulus);
+	void HandlePrediction(const FAIStimulus& Stimulus) const;
 	void HandleTeam(const AActor* UpdatedActor);
 	
 	/** Start or resume gunfight */
@@ -65,10 +65,7 @@ private:
 	void TryToReload(bool bNoAmmoLeftToReload);
 	
 	/** Return nearest actor as actor object reference and distance to it */
-	static float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, FVector CurrentLocation, AActor* &CloserActor);
-
-	UFUNCTION()
-	void StartPatrolling() const;
+	static float FindNearestOfTwoActor(AActor* Actor1, AActor* Actor2, const FVector& CurrentLocation, AActor* &CloserActor);
 
 	UFUNCTION()
 	void AskForHelp() const;
@@ -88,7 +85,7 @@ public:
 	float MaxFiringDistance = -1.0f;
 	
 private:
-	uint8 bIsDisarm : 1, bHasPath : 1, bAICharacterInterface : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
+	uint8 bIsDisarm : 1, bDoOnceFight : 1, bDoOnceHelp : 1;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	UBehaviorTree* BehaviorTree;
@@ -101,9 +98,6 @@ private:
 	
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
-	
-	UPROPERTY()
-	class APatrolPathActor* PatrolPath;
 	
 	EWeaponState WeaponState = EWeaponState::Idle;
 	

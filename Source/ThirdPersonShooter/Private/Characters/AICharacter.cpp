@@ -21,7 +21,7 @@ AAICharacter::AAICharacter()
 	Widget->SetWidgetSpace(EWidgetSpace::Screen);
 	Widget->SetGenerateOverlapEvents(false);
 	Widget->CanCharacterStepUpOn = ECB_No;
-	Widget->SetCollisionProfileName(FName("NoCollision"));
+	Widget->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	Widget->SetVisibility(false);
 
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);
@@ -36,23 +36,26 @@ void AAICharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetPrimaryWeapon();
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUObject(this, &AAICharacter::SetSidearmWeapon);
-	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+	SetSidearmWeapon();
 }
 
 void AAICharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+
+	if (NewController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DEF AIC IS VALID!!!"));
+	}
 	
 	AIController = Cast<AShooterAIController>(NewController);
-	if (AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+	if (AIController && AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
 	{
 		bAIControllerInterface = true;
 		
 		AIBlackboard = AIController->GetBlackboardComponent();
 		const float Health = GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth;
-		AIBlackboard->SetValueAsFloat(FName("Health"), Health);
+		AIBlackboard->SetValueAsFloat("Health", Health);
 		
 		Widget->InitWidget();
 		if (Widget->GetWidget() && Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
@@ -61,6 +64,10 @@ void AAICharacter::PossessedBy(AController* NewController)
 			bWidgetInterface = true;
 		}
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CUSTOM AIC IS NOT VALID!!!"));
+	}
 }
 
 void AAICharacter::SetPrimaryWeapon()
@@ -68,8 +75,8 @@ void AAICharacter::SetPrimaryWeapon()
 	if (PrimaryWeapons.Num() > 0)
 	{
 		const TSubclassOf<APickupWeapon> WeaponToSpawn = PrimaryWeapons[FMath::RandRange(0, PrimaryWeapons.Num() - 1)];
-		const FVector Location = GetMesh()->GetSocketLocation(FName("RightHandHoldSocket"));
-		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("RightHandHoldSocket"));
+		const FVector Location = GetMesh()->GetSocketLocation("RightHandHoldSocket");
+		const FRotator Rotation = GetMesh()->GetSocketRotation("RightHandHoldSocket");
 		
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
@@ -91,8 +98,8 @@ void AAICharacter::SetSidearmWeapon()
 	if (SidearmWeapons.Num() > 0)
 	{
 		const TSubclassOf<APickupWeapon> WeaponToSpawn = SidearmWeapons[FMath::RandRange(0, SidearmWeapons.Num() - 1)];
-		const FVector Location = GetMesh()->GetSocketLocation(FName("Weapon3Socket"));
-		const FRotator Rotation = GetMesh()->GetSocketRotation(FName("Weapon3Socket"));
+		const FVector Location = GetMesh()->GetSocketLocation("Weapon3Socket");
+		const FRotator Rotation = GetMesh()->GetSocketRotation("Weapon3Socket");
 		
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
@@ -104,10 +111,10 @@ void AAICharacter::SetSidearmWeapon()
 			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
 			Interact_Implementation();
 
-			if (AIController->MaxFiringDistance == -1.0f)
+			/*if (AIController->MaxFiringDistance == -1.0f)
 			{
 				AIController->MaxFiringDistance = NewWeapon->WeaponInfo.EffectiveRange;
-			}
+			}*/
 		}
 	}
 }
@@ -244,7 +251,7 @@ void AAICharacter::UseWeapon(bool bAim, bool bFire)
 
 void AAICharacter::SetHealthLevel_Implementation(float Health)
 {
-	AIBlackboard->SetValueAsFloat(FName("Health"), Health);
+	// AIController->GetBlackboardComponent()->SetValueAsFloat("Health", Health);
 	if (bWidgetInterface)
 	{
 		IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
@@ -272,7 +279,7 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 		
 		if (Spawner)
 		{
-			Spawner->EnterSpawnQueue(FSpawnData(RespawnTime, StaticClass()));
+			Spawner->EnterSpawnQueue(FSpawnData(RespawnDelay, StaticClass()));
 		}
 		break;
 	}

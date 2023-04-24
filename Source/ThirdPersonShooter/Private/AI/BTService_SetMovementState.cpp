@@ -7,7 +7,7 @@
 
 UBTService_SetMovementState::UBTService_SetMovementState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Set Movement State (Deprecated)";
+	NodeName = "Set Movement State";
 	
 	bNotifyBecomeRelevant = true;
 

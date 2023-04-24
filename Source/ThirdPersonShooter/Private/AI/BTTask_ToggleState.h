@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_ToggleBoolState.generated.h"
+#include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
+#include "BTTask_ToggleState.generated.h"
 
 UCLASS()
-class UBTTask_ToggleBoolState : public UBTTaskNode
+class UBTTask_ToggleState : public UBTTask_BlackboardBase
 {
 	GENERATED_UCLASS_BODY()
 
@@ -15,6 +16,5 @@ class UBTTask_ToggleBoolState : public UBTTaskNode
 
 // Variables
 public:
-	UPROPERTY(EditAnywhere, Category = "NODE")
-	FName KeyName = NAME_None;
+	
 };

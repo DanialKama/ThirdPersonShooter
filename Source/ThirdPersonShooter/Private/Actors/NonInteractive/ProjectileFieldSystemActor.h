@@ -16,19 +16,19 @@ class AProjectileFieldSystemActor : public AFieldSystemActor
 	TObjectPtr<class USphereComponent> Sphere;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<URadialFalloff> RadialFalloff;
+	TObjectPtr<class URadialFalloff> RadialFalloff;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UOperatorField> OperatorField;
+	TObjectPtr<class UOperatorField> OperatorField;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<URadialVector> RadialVector;
+	TObjectPtr<class URadialVector> RadialVector;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<URandomVector> RandomVector;
+	TObjectPtr<class URandomVector> RandomVector;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UUniformVector> UniformVector;
+	TObjectPtr<class UUniformVector> UniformVector;
 
 // Functions
 public:

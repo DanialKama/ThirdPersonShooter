@@ -56,7 +56,7 @@ void UHealthComponent::TakePointDamage(AActor* DamagedActor, float Damage, ACont
 	UpdateHealthOnDamage(Damage, BoneName, ShotFromDirection);
 }
 
-void UHealthComponent::TakeRadialDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
+void UHealthComponent::TakeRadialDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, const FHitResult& HitInfo, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UpdateHealthOnDamage(Damage, HitInfo.BoneName, Origin);
 }

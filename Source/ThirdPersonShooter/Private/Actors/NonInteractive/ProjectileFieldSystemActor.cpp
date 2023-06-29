@@ -3,6 +3,7 @@
 #include "ProjectileFieldSystemActor.h"
 
 #include "Components/SphereComponent.h"
+#include "Field/FieldSystemObjects.h"
 
 AProjectileFieldSystemActor::AProjectileFieldSystemActor()
 {

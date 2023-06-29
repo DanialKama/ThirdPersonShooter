@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "ShooterHUD.generated.h"
 
+// TODO: Rename to AHUDShooter
 UCLASS()
 class AShooterHUD : public AHUD
 {

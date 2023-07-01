@@ -2,11 +2,11 @@
 
 #include "StaminaComponent.h"
 
+#include "Characters/BaseCharacter.h"
 #include "Core/Interfaces/CharacterInterface.h"
 
 UStaminaComponent::UStaminaComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	// Initialize variables
@@ -14,22 +14,28 @@ UStaminaComponent::UStaminaComponent()
 	bDoOnce = true;
 }
 
-void UStaminaComponent::Initialize()
+void UStaminaComponent::Activate(bool bReset)
 {
-	Super::Initialize();
+	Super::Activate(bReset);
 
 	CurrentStamina = FMath::Clamp(DefaultStamina, 0.0f, MaxStamina);
 
-	if (GetOwner())
+	// Detected if the interfaces is present on owner
+	if (GetOwner()->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
 	{
-		// Detected if the interfaces is present on owner
-		if (GetOwner()->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-		{
-			bCharacterInterface = true;
-
-			ICharacterInterface::Execute_SetStaminaLevel(GetOwner(), CurrentStamina / MaxStamina, CurrentStamina == MaxStamina);
-		}
+		bCharacterInterface = true;
+		ICharacterInterface::Execute_SetStaminaLevel(GetOwner(), CurrentStamina / MaxStamina, CurrentStamina == MaxStamina);
 	}
+}
+
+void UStaminaComponent::Deactivate()
+{
+	Super::Deactivate();
+
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer(RestoreTimer);
+	TimerManager.ClearTimer(RunningTimer);
+	TimerManager.ClearTimer(SprintingTimer);
 }
 
 void UStaminaComponent::StopStaminaDrain()
@@ -106,7 +112,8 @@ void UStaminaComponent::RunningDrainStamina()
 		// If stamina is zero set owner movement to walk
 		if (CurrentStamina <= 0.0f)
 		{
-			ICharacterInterface::Execute_SetMovementState(GetOwner(), EMovementState::Walk, false, false);
+			ABaseCharacter* OwnerCharacter = GetOwner<ABaseCharacter>();
+			OwnerCharacter->SetMovementState(OwnerCharacter->WalkSpeed, OwnerCharacter->WalkJumpZVelocity);
 		}
 	}
 }
@@ -122,7 +129,8 @@ void UStaminaComponent::SprintingDrainStamina()
 		// If stamina is zero set owner movement to walk
 		if (CurrentStamina <= 0.0f)
 		{
-			ICharacterInterface::Execute_SetMovementState(GetOwner(), EMovementState::Walk, false, false);
+			ABaseCharacter* OwnerCharacter = GetOwner<ABaseCharacter>();
+			OwnerCharacter->SetMovementState(OwnerCharacter->WalkSpeed, OwnerCharacter->WalkJumpZVelocity);
 		}
 	}
 }

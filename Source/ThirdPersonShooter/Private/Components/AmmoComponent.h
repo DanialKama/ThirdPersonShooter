@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "BaseComponent.h"
+#include "Components/ActorComponent.h"
 #include "Core/Structures/AmmoComponentInfo.h"
+#include "CoreMinimal.h"
 #include "AmmoComponent.generated.h"
 
 UCLASS()
-class UAmmoComponent : public UBaseComponent
+class UAmmoComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -16,7 +16,7 @@ class UAmmoComponent : public UBaseComponent
 public:	
 	UAmmoComponent();
 
-	virtual void Initialize() override;
+	virtual void Activate(bool bReset) override;
 	
 	FAmmoComponentInfo GetAmmoComponentInfo() const;
 	void SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmmo, const int32 InMagazineSize, const int32 InCurrentMagazineAmmo);
@@ -32,20 +32,20 @@ private:
 
 // Variables
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, UIMin = 0))
 	int32 MaxAmmo = 0;
 	
-	UPROPERTY(EditAnywhere, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditAnywhere, Category = "Default", meta = (ClampMin = 0, UIMin = 0))
 	int32 DefaultAmmo = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, UIMin = 0))
 	int32 MagazineSize = 1;
 
 	/** If value set to something greater than zero then in initial value dose not change */
 	UPROPERTY(EditAnywhere, Category = "Default")
 	int32 CurrentMagazineAmmo = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0", ClampMax = "999", UIMin = "0", UIMax = "999"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, ClampMax = 999, UIMin = 0, UIMax = 999))
 	int32 ReloadAmount = 1;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Default")

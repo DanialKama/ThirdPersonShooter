@@ -7,7 +7,6 @@
 
 UHealthComponent::UHealthComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	// Initialize variables
@@ -16,26 +15,23 @@ UHealthComponent::UHealthComponent()
 	bCharacterInterface = false;
 }
 
-void UHealthComponent::Initialize()
+void UHealthComponent::Activate(bool bReset)
 {
-	Super::Initialize();
-	
-	if (GetOwner())
-	{
-		// TODO: Really Dan :/
-		GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
-		GetOwner()->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
-		GetOwner()->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);
+	Super::Activate(bReset);
 
-		// Detected if the interfaces is present on owner
-		if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
-		{
-			bCommonInterface = true;
-		}
-		if (GetOwner()->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-		{
-			bCharacterInterface = true;
-		}
+	// TODO: Really Dan :/
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::TakeAnyDamage);
+	GetOwner()->OnTakePointDamage.AddDynamic(this, &UHealthComponent::TakePointDamage);
+	GetOwner()->OnTakeRadialDamage.AddDynamic(this, &UHealthComponent::TakeRadialDamage);
+
+	// Detected if the interfaces is present on owner
+	if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
+	{
+		bCommonInterface = true;
+	}
+	if (GetOwner()->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+	{
+		bCharacterInterface = true;
 	}
 
 	CurrentHealth = FMath::Clamp(DefaultHealth, 0.0f, MaxHealth);
@@ -44,6 +40,16 @@ void UHealthComponent::Initialize()
 	{
 		ICharacterInterface::Execute_SetHealthLevel(GetOwner(), CurrentHealth / MaxHealth);
 	}
+}
+
+void UHealthComponent::Deactivate()
+{
+	Super::Deactivate();
+
+	GetOwner()->OnTakeAnyDamage.RemoveDynamic(this, &UHealthComponent::TakeAnyDamage);
+	GetOwner()->OnTakePointDamage.RemoveDynamic(this, &UHealthComponent::TakePointDamage);
+	GetOwner()->OnTakeRadialDamage.RemoveDynamic(this, &UHealthComponent::TakeRadialDamage);
+	GetWorld()->GetTimerManager().ClearTimer(HealthRecoveryTimer);
 }
 
 void UHealthComponent::TakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)

@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "BaseComponent.h"
 #include "StaminaComponent.generated.h"
 
 UCLASS()
-class UStaminaComponent : public UBaseComponent
+class UStaminaComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -15,8 +15,10 @@ class UStaminaComponent : public UBaseComponent
 public:
 	UStaminaComponent();
 
-	virtual void Initialize() override;
-	
+	virtual void Activate(bool bReset) override;
+	virtual void Deactivate() override;
+
+	// TODO: C++ only
 	UFUNCTION(BlueprintCallable, Category = "StaminaComponent")
 	void StopStaminaDrain();
 
@@ -42,26 +44,26 @@ public:
 	float CurrentStamina = 0.0f;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float MaxStamina = 100.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float DefaultStamina = 100.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float RestoreStaminaAmount = 25.0f;
 
 	/** Per second */
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float StaminaRestoreRate = 1.0f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float StartStaminaRecoveryDelay = 5.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float RunStaminaDrainAmount = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float SprintStaminaDrainAmount = 3.0f;
 	
 	uint8 bCharacterInterface : 1, bDoOnce : 1;

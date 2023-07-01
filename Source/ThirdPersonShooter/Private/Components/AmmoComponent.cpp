@@ -6,25 +6,21 @@
 
 UAmmoComponent::UAmmoComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	// Initialize variables
 	bCommonInterface = false;
 }
 
-void UAmmoComponent::Initialize()
+void UAmmoComponent::Activate(bool bReset)
 {
-	Super::Initialize();
-	
+	Super::Activate(bReset);
+
 	CurrentAmmo = DefaultAmmo;
 
-	if (GetOwner())
+	if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 	{
-		if (GetOwner()->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
-		{
-			bCommonInterface = true;
-		}
+		bCommonInterface = true;
 	}
 
 	if (CurrentMagazineAmmo <= 0)
@@ -123,7 +119,6 @@ void UAmmoComponent::SetAmmoInfo(const int32 InMaxAmmo, const int32 InDefaultAmm
 	DefaultAmmo = InDefaultAmmo;
 	MagazineSize = InMagazineSize;
 	CurrentMagazineAmmo = InCurrentMagazineAmmo;
-	Initialize();
 }
 
 bool UAmmoComponent::BetterToReload() const

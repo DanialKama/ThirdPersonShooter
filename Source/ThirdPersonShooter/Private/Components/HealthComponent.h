@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "BaseComponent.h"
 #include "HealthComponent.generated.h"
 
 UCLASS()
-class UHealthComponent : public UBaseComponent
+class UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -15,7 +15,8 @@ class UHealthComponent : public UBaseComponent
 public:	
 	UHealthComponent();
 
-	virtual void Initialize() override;
+	virtual void Activate(bool bReset) override;
+	virtual void Deactivate() override;
 	
 	void Healing(float HealthDifference);
 
@@ -46,10 +47,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Default")
 	uint8 bCanRecoverHealth : 1;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0))
 	float MaxHealth = 100.0f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0))
 	float DefaultHealth = 100.0f;
 	
 	FName HitBoneName = NAME_None;
@@ -59,16 +60,17 @@ public:
 	
 private:
 	/** If health goes lower than this value health component start notifying the owner */
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float LowHealth = 25.0f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float HealingAmount = 10.0f;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Per Second", ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+
+	/** Per Second */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float HealthRecoveryRate = 0.25f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = "0.0", UIMin = "0.0", AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0.0, UIMin = 0.0, AllowPrivateAccess = true))
 	float StartHealthRecoveryDelay = 3.0f;
 	
 	uint8 bCommonInterface : 1, bCharacterInterface : 1;

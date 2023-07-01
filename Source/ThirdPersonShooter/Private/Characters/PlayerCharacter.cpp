@@ -2,6 +2,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "Actors/Interactable/PickupWeapon.h"
 #include "Components/HealthComponent.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Core/ShooterGameModeBase.h"
@@ -30,7 +31,6 @@ APlayerCharacter::APlayerCharacter()
 	
 	// Initialize variables
 	bDoubleTabGate = false;
-	bDoOnceCrouch = true;
 	bTapHeld = false;
 	
 }
@@ -41,14 +41,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	check(PlayerInputComponent);
 	
 	// Input Actions
-	InputComponent->BindAction("Jump", IE_Pressed, this, &ABaseCharacter::StartJump);
-	InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
+	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 		
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprinting);
 	InputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprinting);
 		
-	InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::TryToToggleCrouch);
-	InputComponent->BindAction("Crouch", IE_Released, this, &APlayerCharacter::ResetCrouchByDelay);
+	InputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::SetCrouchState);
 		
 	InputComponent->BindAction("Aim", IE_Pressed, this, &APlayerCharacter::TryToStartAiming);
 	InputComponent->BindAction("Aim", IE_Released, this, &APlayerCharacter::ResetAim);
@@ -142,93 +141,66 @@ void APlayerCharacter::DoubleTabGate()
 	}
 }
 
+// TODO: Handle the double tab by using the enhanced input
 void APlayerCharacter::DoubleTabHandler()
 {
-	switch (TabNumber)
+	// switch (TabNumber)
+	// {
+	// 	default: case 0:
+	// 		// Completed
+	// 	SetMovementState()
+	// 		SetMovementState_Implementation(PreviousMovementState, false, false);
+	// 		break;
+	// 	case 1:
+	// 		// Single Tap
+	// 		TabNumber = 0;
+	// 		if (bTapHeld)
+	// 		{
+	// 			// While aiming player can only walk 
+	// 			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Run;
+	// 			// Only set movement state to run if the player is moving
+	// 			if (GetVelocity().Size() > 0.0f)
+	// 			{
+	// 				SetMovementState_Implementation(NewMovement, false, false);
+	// 			}
+	// 			else
+	// 			{
+	// 				MovementState = NewMovement;
+	// 			}
+	// 		}
+	// 		break;
+	// 	case 2:
+	// 		// Double Tap
+	// 		TabNumber = 0;
+	// 		if (bTapHeld)
+	// 		{
+	// 			// While aiming player can only walk 
+	// 			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Sprint;
+	// 			// Only set movement state to sprint if the player is moving
+	// 			if (GetVelocity().Size() > 0.0f)
+	// 			{
+	// 				SetMovementState_Implementation(NewMovement, false, false);
+	// 			}
+	// 			else
+	// 			{
+	// 				MovementState = NewMovement;
+	// 			}
+	// 		}
+	// 		break;
+	// }
+}
+
+void APlayerCharacter::SetCrouchState()
+{
+	// TODO: Add a delay to prevent spamming
+	if (bIsCrouched)
 	{
-		EMovementState NewMovement;
-	default: case 0:
-		// Completed
-		SetMovementState_Implementation(PreviousMovementState, false, false);
-		break;
-	case 1:
-		// Single Tap
-		TabNumber = 0;
-		if (bTapHeld)
-		{
-			// While aiming player can only walk 
-			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Run;
-			// Only set movement state to run if the player is moving
-			if (GetVelocity().Size() > 0.0f)
-			{
-				SetMovementState_Implementation(NewMovement, false, false);
-			}
-			else
-			{
-				MovementState = NewMovement;
-			}
-		}
-		break;
-	case 2:
-		// Double Tap
-		TabNumber = 0;
-		if (bTapHeld)
-		{
-			// While aiming player can only walk 
-			bIsAimed ? NewMovement = EMovementState::Walk : NewMovement = EMovementState::Sprint;
-			// Only set movement state to sprint if the player is moving
-			if (GetVelocity().Size() > 0.0f)
-			{
-				SetMovementState_Implementation(NewMovement, false, false);
-			}
-			else
-			{
-				MovementState = NewMovement;
-			}
-		}
-		break;
+		UnCrouch();
 	}
-}
-
-void APlayerCharacter::TryToToggleCrouch()
-{
-	if (bDoOnceCrouch)
+	else
 	{
-		bDoOnceCrouch = false;
-		ToggleCrouch();
-		
-		FVector TargetRelativeLocation;
-		switch (MovementState)
-		{
-		case 0: case 1: case 2:
-			// Walk, Run, Sprint
-			TargetRelativeLocation = FVector(0.0f, 0.0f, 75.0f);
-			break;
-		case 3:
-			// Crouch
-			TargetRelativeLocation = FVector(0.0f, 0.0f, 50.0f);
-			break;
-		case 4:
-			// Prone
-			TargetRelativeLocation = FVector(0.0f, 0.0f, 25.0f);
-			break;
-		}
-		
-		FLatentActionInfo LatentInfo;
-		LatentInfo.CallbackTarget = this;
-		UKismetSystemLibrary::MoveComponentTo(SpringArm, TargetRelativeLocation, FRotator::ZeroRotator, true, true, 0.2f, true, EMoveComponentAction::Type::Move, LatentInfo);
+		Crouch();
 	}
-}
-
-void APlayerCharacter::ResetCrouchByDelay()
-{
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::ResetCrouch, 0.3f);
-}
-
-void APlayerCharacter::ResetCrouch()
-{
-	bDoOnceCrouch = true;
 }
 
 void APlayerCharacter::TryToMeleeAttack()
@@ -296,129 +268,122 @@ void APlayerCharacter::AimTimeLineFinished()
 void APlayerCharacter::SwitchToNextWeapon()
 {
 	// Order of switch to next weapon: Holster -> Primary -> Secondary -> Sidearm -> Holster
-	switch (CurrentHoldingWeapon)
+	switch (CurrentWeapon ? CurrentWeapon->CurrentSocket : EWeaponToDo::NoWeapon)
 	{
-	case 0:
-		// No Weapon
-		if (PrimaryWeapon)
-		{
-			SwitchToPrimary();
-		}
-		else if (SecondaryWeapon)
-		{
-			SwitchToSecondary();
-		}
-		else if (SidearmWeapon)
-		{
-			SwitchToSidearm();
-		}
-		else
-		{
+		case EWeaponToDo::NoWeapon:
+			if (PrimaryWeapon)
+			{
+				SwitchToPrimary();
+			}
+			else if (SecondaryWeapon)
+			{
+				SwitchToSecondary();
+			}
+			else if (SidearmWeapon)
+			{
+				SwitchToSidearm();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
+		case EWeaponToDo::PrimaryWeapon:
+			if (SecondaryWeapon)
+			{
+				SwitchToSecondary();
+			}
+			else if (SidearmWeapon)
+			{
+				SwitchToSidearm();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
+		case EWeaponToDo::SecondaryWeapon:
+			if (SidearmWeapon)
+			{
+				SwitchToSidearm();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
+		case EWeaponToDo::SidearmWeapon:
 			HolsterWeapon();
-		}
-		break;
-	case 1:
-		// Primary Weapon
-		if (SecondaryWeapon)
-		{
-			SwitchToSecondary();
-		}
-		else if (SidearmWeapon)
-		{
-			SwitchToSidearm();
-		}
-		else
-		{
-			HolsterWeapon();
-		}
-		break;
-	case 2:
-		// Secondary Weapon
-		if (SidearmWeapon)
-		{
-			SwitchToSidearm();
-		}
-		else
-		{
-			HolsterWeapon();
-		}
-		break;
-	case 3:
-		// Sidearm Weapon
-		HolsterWeapon();
-		break;
+			break;
 	}
 }
 
 void APlayerCharacter::SwitchToPreviousWeapon()
 {
 	// Order of switching to previous weapon: Holster -> Sidearm -> Secondary -> Primary -> Holster
-	switch (CurrentHoldingWeapon)
+	switch (CurrentWeapon ? CurrentWeapon->CurrentSocket : EWeaponToDo::NoWeapon)
 	{
-	case 0:
-		if (SidearmWeapon)
-		{
-			SwitchToSidearm();
-		}
-		else if (SecondaryWeapon)
-		{
-			SwitchToSecondary();
-		}
-		else if (PrimaryWeapon)
-		{
-			SwitchToPrimary();
-		}
-		else
-		{
+		case EWeaponToDo::NoWeapon:
+			if (SidearmWeapon)
+			{
+				SwitchToSidearm();
+			}
+			else if (SecondaryWeapon)
+			{
+				SwitchToSecondary();
+			}
+			else if (PrimaryWeapon)
+			{
+				SwitchToPrimary();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
+		case EWeaponToDo::PrimaryWeapon:
 			HolsterWeapon();
-		}
-		break;
-	case 1:
-		// Primary Weapon
-		HolsterWeapon();
-		break;
-	case 2:
-		// Secondary Weapon
-		if (PrimaryWeapon)
-		{
-			SwitchToPrimary();
-		}
-		else
-		{
-			HolsterWeapon();
-		}
-		break;
-	case 3:
-		// Sidearm Weapon
-		if (SecondaryWeapon)
-		{
-			SwitchToSecondary();
-		}
-		else if (PrimaryWeapon)
-		{
-			SwitchToPrimary();
-		}
-		else
-		{
-			HolsterWeapon();
-		}
-		break;
+			break;
+		case EWeaponToDo::SecondaryWeapon:
+			if (PrimaryWeapon)
+			{
+				SwitchToPrimary();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
+		case EWeaponToDo::SidearmWeapon:
+			if (SecondaryWeapon)
+			{
+				SwitchToSecondary();
+			}
+			else if (PrimaryWeapon)
+			{
+				SwitchToPrimary();
+			}
+			else
+			{
+				HolsterWeapon();
+			}
+			break;
 	}
 }
 
-void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot)
+void APlayerCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon)
 {
-	Super::SetCurrentWeapon(NewCurrentWeapon, WeaponSlot);
+	Super::SetCurrentWeapon(NewCurrentWeapon);
 	
-	// Hide ammo info on player UI widget when the player holding no weapon
-	if (CurrentHoldingWeapon == EWeaponToDo::NoWeapon)
+	// Hide the ammo info on player UI widget if the player not holding a weapon
+	if (CurrentWeapon)
 	{
-		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Hidden);
-		HUDRef->ToggleCommandMessage(FText::FromString(""), ESlateVisibility::Hidden, false);
+		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
-		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Visible);
+		HUDRef->SetAmmoInfoVisibility(ESlateVisibility::Hidden);
+		HUDRef->ToggleCommandMessage(FText::FromString(""), ESlateVisibility::Hidden, false);
 	}
 }
 

@@ -38,7 +38,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 
-	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot) override;
+	virtual void SetCurrentWeapon(APickupWeapon* NewCurrentWeapon) override;
 
 private:
 	/** Wait for one frame to access a valid player controller */
@@ -65,13 +65,8 @@ private:
 	
 	void StartSprinting();
 	void StopSprinting();
-	void TryToToggleCrouch();
 	
-	/** To not spamming crouch */
-	void ResetCrouchByDelay();
-
-	UFUNCTION()
-	void ResetCrouch();
+	void SetCrouchState();
 
 	UFUNCTION()
 	void TryToMeleeAttack();
@@ -109,7 +104,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TSoftObjectPtr<UCurveFloat> AimFloatCurve;
 
-	uint8 bTapHeld : 1, bDoubleTabGate : 1, bDoOnceCrouch : 1;
+	uint8 bTapHeld : 1, bDoubleTabGate : 1;
 	
 	UPROPERTY()
 	class AShooterPlayerController* PlayerController;

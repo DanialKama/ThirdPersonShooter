@@ -91,20 +91,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UWidgetComponent> Widget;
 
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UAmmoComponent> AmmoComponent;
 
 // Functions
 public:
 	APickupWeapon();
-
-	/** Location use to adjust character left hand with IK in animation blueprint */
-	UFUNCTION(BlueprintCallable, Category = "PickUpWeapon")
-	FVector GetLeftHandLocation() const;
-	
-	/**	Location use to adjust character left hand with IK in animation blueprint */
-	UFUNCTION(BlueprintCallable, Category = "PickUpWeapon")
-	FVector GetLeftHandAimLocation() const;
 	
 	void StartFireWeapon();
 	void StopFireWeapon();
@@ -116,9 +109,6 @@ public:
 	virtual void SetPickUpState(const EPickupState PickupState) override;
 	virtual void SetCanFire_Implementation(bool bInCanFire) override;
 	virtual void SetWeaponState_Implementation(EWeaponState WeaponState) override;
-
-	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() const { return SkeletalMesh; }
-	FORCEINLINE UAmmoComponent* GetAmmoComponent() const { return AmmoComponent; }
 	
 protected:
 	virtual void BeginPlay() override;

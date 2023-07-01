@@ -344,16 +344,6 @@ bool APickupWeapon::CanPickupAmmo() const
 	return false;
 }
 
-FVector APickupWeapon::GetLeftHandLocation() const
-{
-	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandSocket"));
-}
-// TODO: Delete 
-FVector APickupWeapon::GetLeftHandAimLocation() const
-{
-	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
-}
-
 void APickupWeapon::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)

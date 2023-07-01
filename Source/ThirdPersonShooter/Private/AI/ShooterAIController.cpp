@@ -368,7 +368,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	switch (WeaponState)
 	{
 		case EWeaponState::Idle:
-			if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == 0)
+			if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == 0)
 			{
 				SwitchWeapon();
 			}
@@ -388,7 +388,7 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 			break;
 		case EWeaponState::Reloading:
 			// If AI is in combat and there is an attacker and half of the mag is already full then stop reloading and continue fighting
-			if (Attacker && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->GetAmmoComponent()->MagazineSize / 2)
+			if (Attacker && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->AmmoComponent->MagazineSize / 2)
 			{
 				Fight();
 			}
@@ -417,15 +417,15 @@ void AShooterAIController::SwitchWeapon()
 	switch (ControlledPawn->CurrentWeapon ? ControlledPawn->CurrentWeapon->CurrentSocket : EWeaponToDo::NoWeapon)
 	{
 		case EWeaponToDo::NoWeapon:
-			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToPrimary();
 			}
-			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSecondary();
 			}
-			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSidearm();
 			}
@@ -436,11 +436,11 @@ void AShooterAIController::SwitchWeapon()
 			}
 			break;
 		case EWeaponToDo::PrimaryWeapon:
-			if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSecondary();
 			}
-			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSidearm();
 			}
@@ -451,11 +451,11 @@ void AShooterAIController::SwitchWeapon()
 			}
 			break;
 		case EWeaponToDo::SecondaryWeapon:
-			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToPrimary();
 			}
-			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSidearm();
 			}
@@ -466,11 +466,11 @@ void AShooterAIController::SwitchWeapon()
 			}
 			break;
 		case EWeaponToDo::SidearmWeapon:
-			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToPrimary();
 			}
-			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->AmmoComponent->CurrentAmmo > 0)
 			{
 				ControlledPawn->SwitchToSecondary();
 			}

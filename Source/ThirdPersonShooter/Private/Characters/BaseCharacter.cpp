@@ -6,6 +6,7 @@
 #include "Actors/Interactable/PickupWeapon.h"
 #include "Actors/NonInteractive/Magazine.h"
 #include "AIModule/Classes/AIController.h"
+#include "Animation/AnimInstance_Shooter.h"
 #include "Components/AmmoComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/HealthComponent.h"
@@ -310,6 +311,12 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 
 		SetArmedState(true);
 	}
+
+	UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
+	AnimInstance->Movement = NewWeapon->Movement;
+	AnimInstance->MovementAim = NewWeapon->MovementAim;
+	AnimInstance->MovementCrouch = NewWeapon->MovementCrouch;
+	AnimInstance->MovementCrouchAim = NewWeapon->MovementCrouchAim;
 }
 
 APickupWeapon* ABaseCharacter::SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn)
@@ -321,8 +328,8 @@ APickupWeapon* ABaseCharacter::SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpaw
 	APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn->GetClass(), GetActorLocation(), FRotator::ZeroRotator, ActorSpawnParameters);
 
 	// Transfer important info to spawned weapon
-	NewWeapon->GetAmmoComponent()->SetAmmoInfo(WeaponToSpawn->GetAmmoComponent()->MaxAmmo, WeaponToSpawn->GetAmmoComponent()->CurrentAmmo,
-		WeaponToSpawn->GetAmmoComponent()->MagazineSize, WeaponToSpawn->GetAmmoComponent()->CurrentMagazineAmmo);
+	NewWeapon->AmmoComponent->SetAmmoInfo(WeaponToSpawn->AmmoComponent->MaxAmmo, WeaponToSpawn->AmmoComponent->CurrentAmmo,
+		WeaponToSpawn->AmmoComponent->MagazineSize, WeaponToSpawn->AmmoComponent->CurrentMagazineAmmo);
 
 	WeaponToSpawn->Destroy();
 	return NewWeapon;
@@ -398,13 +405,13 @@ void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 		switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
 		{
 			case EWeaponToDo::PrimaryWeapon:
-				PrimaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				PrimaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
 				break;
 			case EWeaponToDo::SecondaryWeapon:
-				SecondaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				SecondaryWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
 				break;
 			case EWeaponToDo::SidearmWeapon:
-				SidearmWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				SidearmWeapon->AmmoComponent->AddAmmo(Ammo->Amount);
 				break;
 			default:
 				break;
@@ -460,7 +467,7 @@ void ABaseCharacter::StopFireWeapon()
 
 void ABaseCharacter::ReloadWeapon()
 {
-	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->GetAmmoComponent()->CanReload())
+	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->AmmoComponent->CanReload())
 	{
 		bDoOnceReload = false;
 
@@ -558,7 +565,7 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 				if (CurrentWeapon && bCanReload)
 				{
 					CurrentWeapon->ReloadWeapon();
-					if (CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == CurrentWeapon->GetAmmoComponent()->MagazineSize)
+					if (CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == CurrentWeapon->AmmoComponent->MagazineSize)
 					{
 						StopAnimMontage();
 					}
@@ -576,7 +583,7 @@ void ABaseCharacter::SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew)
 		Transform.SetLocation(GetMesh()->GetSocketLocation(FName("LeftHandHoldSocket")));
 		Magazine = GetWorld()->SpawnActorDeferred<AMagazine>(Weapon->WeaponDefaults.Magazine, Transform, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		// If spawned mag is the used mag then change mesh based on current magazine ammo
-		if (bIsNew == false && CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo <= 0)
+		if (bIsNew == false && CurrentWeapon->AmmoComponent->CurrentMagazineAmmo <= 0)
 		{
 			Magazine->bIsEmpty = true;
 		}
@@ -842,12 +849,12 @@ void ABaseCharacter::SwitchToSidearm()
 	}
 }
 
-void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon)
+void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, const EWeaponToDo TargetWeapon, const bool bSwitchWeapon)
 {
 	if (WeaponToSwitch)
 	{
-		WeaponToSwitch->GetSkeletalMesh()->SetSimulatePhysics(false);
-		WeaponToSwitch->GetSkeletalMesh()->SetCollisionProfileName(FName("NoCollision"), false);
+		WeaponToSwitch->SkeletalMesh->SetSimulatePhysics(false);
+		WeaponToSwitch->SkeletalMesh->SetCollisionProfileName(FName("NoCollision"), false);
 
 		// If character try to switch, attach the current weapon to skeletal mesh socket and set target weapon as current weapon
 		if (bSwitchWeapon)
@@ -934,11 +941,10 @@ void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, const EWeaponTo
 
 void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)
 {
-	// TODO
-	// if (bCharacterAnimationInterface)
-	// {
-	// 	ICharacterAnimationInterface::Execute_AddRecoil(AnimInstance, RotationIntensity, ControlTime);
-	// }
+	UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
+	AnimInstance->RecoilRotation = RotationIntensity;
+	AnimInstance->RecoilControlTime = ControlTime;
+	AnimInstance->RecoilAlpha = 1.0f;
 }
 
 void ABaseCharacter::SetArmedState(const bool bArmedState)
@@ -971,12 +977,6 @@ bool ABaseCharacter::SetAimState(bool bNewState)
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		// TODO: Update anim instance
-		// if (bCharacterAnimationInterface)
-		// {
-		// 	ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, true, CurrentWeapon);
-		// }
-
 		// Force the character to walk while aiming
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		
@@ -988,11 +988,8 @@ bool ABaseCharacter::SetAimState(bool bNewState)
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	StopFireWeapon();
 
-	// TODO: Update anim instance
-	// if (bCharacterAnimationInterface)
-	// {
-	// 	ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, false, CurrentWeapon);
-	// }
+	UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
+	AnimInstance->RecoilAlpha = 0.0f;
 	
 	return false;
 }

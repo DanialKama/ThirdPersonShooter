@@ -140,7 +140,7 @@ private:
 	void DropWeapon(EWeaponToDo WeaponToDrop);
 	void PickupAmmo(APickup* NewAmmo);
 	void SpawnMagazine(const APickupWeapon* Weapon, bool bIsNew);
-	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponToDo TargetWeapon, bool bSwitchWeapon);
+	void SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, const EWeaponToDo TargetWeapon, const bool bSwitchWeapon);
 	
 	void DismembermentInitiate(FVector ShotOrigin, FName HitBone);
 	USkeletalMeshComponent* DismembermentLeftLeg(FName HitBone);

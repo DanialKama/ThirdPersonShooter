@@ -13,43 +13,43 @@ struct FWeaponInfo
 {
 	GENERATED_BODY()
 
-	FORCEINLINE FWeaponInfo();
+	FORCEINLINE	FWeaponInfo();
 
 	explicit FORCEINLINE FWeaponInfo(EWeaponType InWeaponType, FString InName, float InRange, float InEffectiveRange, bool InbIsAutomatic, float InTimeBetweenShots, float InCoolDownTime, int32 InAmmoType, float InMinFireOffset, float InMaxFireOffset, UCurveFloat* InWeaponSpreadCurve);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	EWeaponType WeaponType = EWeaponType::Pistol;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
-	FString Name = TEXT("Weapon");
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FString Name = FString("Weapon");
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Range = 4000.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float EffectiveRange = 2000.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bIsAutomatic = false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float TimeBetweenShots = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float CoolDownTime = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures", meta = (Bitmask, BitmaskEnum = EAmmoType))
-	int32 AmmoType = static_cast<int32>(EAmmoType::None);
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "/Script/ThirdPersonShooter.EAmmoType"))
+	int32 AmmoType = 0;
 
 	/** Min Fire Offset is only for AI */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MinFireOffset = -10.0f;
 
 	/** Max Fire Offset is only for AI */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxFireOffset = 10.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Core/Structures")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UCurveFloat* WeaponSpreadCurve = nullptr;
 };
 

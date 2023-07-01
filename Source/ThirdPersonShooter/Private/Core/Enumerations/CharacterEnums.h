@@ -4,14 +4,12 @@
 
 #include "CharacterEnums.generated.h"
 
-UENUM(BlueprintType, Category = "CharacterEnums")
+UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
-	Walk	UMETA(DisplayName = "Walk"),
-	Run		UMETA(DisplayName = "Run"),
-	Sprint	UMETA(DisplayName = "Sprint"),
-	Crouch	UMETA(DisplayName = "Crouch")
-};
+	Walk,
+	Run,
+	Sprint
 };
 
 UENUM(BlueprintType, Category = "CharacterEnums")

@@ -23,7 +23,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")
 	void SetWeaponInfo(FWeaponInfo WeaponInfo);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface", meta = (ToolTip = "Do not select multiple for Ammo Type"))
+	/** Do not select multiple for Ammo Type */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")
 	void SetAmmoInfo(int32 AmmoType, int32 Amount);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetInterface")

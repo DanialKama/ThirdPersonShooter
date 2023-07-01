@@ -4,6 +4,8 @@
 
 #include "PickupEnums.generated.h"
 
+// TODO: Delete UMETA + C++ only
+
 UENUM(BlueprintType, Category = "PickupEnums")
 enum class EItemType : uint8
 {

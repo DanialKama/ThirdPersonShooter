@@ -28,16 +28,21 @@ public:
 	// TODO: Use pawn controller
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	bool IsPlayer();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Call from player controller to handle interaction on current object"))
+
+	/** Call from player controller to handle interaction on current object */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	void Interact();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Health component call it"))
+
+	/** Health component call it */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	void SetHealthState(EHealthState HealthState);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Ammo component call it"))
+	/** Ammo component call it */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	void SetCanFire(bool bInCanFire);
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface", meta = (ToolTip = "Ammo component call it to update weapon state"))
+
+	// TODO: Delete
+	/** Ammo component call it to update weapon state */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CommonInterface")
 	void SetWeaponState(EWeaponState WeaponState);
 };

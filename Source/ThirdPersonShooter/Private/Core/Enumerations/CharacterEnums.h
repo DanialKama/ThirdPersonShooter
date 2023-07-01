@@ -12,13 +12,6 @@ enum class EMovementState : uint8
 	Sprint	UMETA(DisplayName = "Sprint"),
 	Crouch	UMETA(DisplayName = "Crouch")
 };
-
-UENUM(BlueprintType, Category = "CharacterEnums")
-enum class EInVehicleState : uint8
-{
-	Driver		UMETA(DisplayName = "Driver"),
-	Gunner		UMETA(DisplayName = "Gunner"),
-	Passenger	UMETA(DisplayName = "Passenger")
 };
 
 UENUM(BlueprintType, Category = "CharacterEnums")

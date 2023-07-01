@@ -240,44 +240,27 @@ void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 
 void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo TargetSlot)
 {
-	APickupWeapon* NewWeapon;
-	// If the controller is AI do not spawn weapon (AI by default spawn weapon and does not pick up)
-	if (Cast<AAIController>(GetController()))
-	{
-		NewWeapon = WeaponToEquip;
-	}
-	else
-	{
-		NewWeapon = SpawnAndReplaceWeapon(WeaponToEquip);
-	}
-
-	if (NewWeapon == nullptr)
-	{
-		return;
-	}
-	
 	// If weapon owner is the player then weapon use camera reference for line trace
-	NewWeapon->CameraComponent = ChildCameraComponent;
-	NewWeapon->SetInstigator(this);
-	NewWeapon->SetOwner(this);
-	NewWeapon->SetPickUpState(EPickupState::PickUp);
+	WeaponToEquip->CameraComponent = ChildCameraComponent;
+	WeaponToEquip->SetOwner(this);
+	WeaponToEquip->SetPickUpState(EPickupState::PickUp);
 	
 	if (CurrentWeapon)
 	{
-		NewWeapon->LowerWeapon();
+		WeaponToEquip->LowerWeapon();
 		switch (TargetSlot)
 		{
 		case EWeaponToDo::PrimaryWeapon:
-			AttachWeapon(NewWeapon, EWeaponToDo::PrimaryWeapon);
-			PrimaryWeapon = NewWeapon;
+			AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
+			PrimaryWeapon = WeaponToEquip;
 			break;
 		case EWeaponToDo::SecondaryWeapon:
-			AttachWeapon(NewWeapon, EWeaponToDo::SecondaryWeapon);
-			SecondaryWeapon = NewWeapon;
+			AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
+			SecondaryWeapon = WeaponToEquip;
 			break;
 		case EWeaponToDo::SidearmWeapon:
-			AttachWeapon(NewWeapon, EWeaponToDo::SidearmWeapon);
-			SidearmWeapon = NewWeapon;
+			AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
+			SidearmWeapon = WeaponToEquip;
 			break;
 		default:
 			checkNoEntry();
@@ -285,27 +268,27 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 	}
 	else
 	{
-		NewWeapon->RaiseWeapon();
+		WeaponToEquip->RaiseWeapon();
 		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-		NewWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
+		WeaponToEquip->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
 
 		// Check if the new weapon is a sidearm then replace it with the old sidearm
-		const EWeaponType NewWeaponType = NewWeapon->WeaponInfo.WeaponType;
+		const EWeaponType NewWeaponType = WeaponToEquip->WeaponInfo.WeaponType;
 		if (NewWeaponType == EWeaponType::Pistol || NewWeaponType == EWeaponType::SMG)
 		{
-			SidearmWeapon = NewWeapon;
+			SidearmWeapon = WeaponToEquip;
 			SetCurrentWeapon(SidearmWeapon);
 		}
 		// If the primary weapon is valid then the secondary weapon replace with the new weapon
 		else if (PrimaryWeapon)
 		{
-			SecondaryWeapon = NewWeapon;
+			SecondaryWeapon = WeaponToEquip;
 			SetCurrentWeapon(SecondaryWeapon);
 		}
 		// The primary weapon is only replaced when it is invalid
 		else
 		{
-			PrimaryWeapon = NewWeapon;
+			PrimaryWeapon = WeaponToEquip;
 			SetCurrentWeapon(PrimaryWeapon);
 		}
 
@@ -313,26 +296,10 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 	}
 
 	UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
-	AnimInstance->Movement = NewWeapon->Movement;
-	AnimInstance->MovementAim = NewWeapon->MovementAim;
-	AnimInstance->MovementCrouch = NewWeapon->MovementCrouch;
-	AnimInstance->MovementCrouchAim = NewWeapon->MovementCrouchAim;
-}
-
-APickupWeapon* ABaseCharacter::SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn)
-{
-	FActorSpawnParameters ActorSpawnParameters;
-	ActorSpawnParameters.Owner = this;
-	ActorSpawnParameters.Instigator = GetInstigator();
-	ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn->GetClass(), GetActorLocation(), FRotator::ZeroRotator, ActorSpawnParameters);
-
-	// Transfer important info to spawned weapon
-	NewWeapon->AmmoComponent->SetAmmoInfo(WeaponToSpawn->AmmoComponent->MaxAmmo, WeaponToSpawn->AmmoComponent->CurrentAmmo,
-		WeaponToSpawn->AmmoComponent->MagazineSize, WeaponToSpawn->AmmoComponent->CurrentMagazineAmmo);
-
-	WeaponToSpawn->Destroy();
-	return NewWeapon;
+	AnimInstance->Movement = WeaponToEquip->Movement;
+	AnimInstance->MovementAim = WeaponToEquip->MovementAim;
+	AnimInstance->MovementCrouch = WeaponToEquip->MovementCrouch;
+	AnimInstance->MovementCrouchAim = WeaponToEquip->MovementCrouchAim;
 }
 
 void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)

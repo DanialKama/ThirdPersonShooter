@@ -122,17 +122,6 @@ protected:
 private:
 	void PickupWeapon(APickup* NewWeapon);
 	void AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo TargetSlot);
-
-	// TODO: Delete it, We don't need it anymore
-	/** Replace the input weapon with a similar weapon
-	 * to be persistence between level streaming.
-	 * (all-important information will be transferred to the new weapon)
-	 * Because when the player picks up a weapon from a streamed level
-	 * and then that level unloads the weapon will be destroyed,
-	 * so instead of just attaching the current weapon from the streamed level
-	 * we spawn a new weapon that includes in persistent level and does not destroy on level unloads.
-	 */
-	APickupWeapon* SpawnAndReplaceWeapon(APickupWeapon* WeaponToSpawn);
 	
 	/** Attach to skeletal mesh */
 	void AttachWeapon(APickupWeapon* WeaponToAttach, const EWeaponToDo TargetSocket) const;

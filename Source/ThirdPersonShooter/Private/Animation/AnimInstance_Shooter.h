@@ -85,11 +85,29 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float AimPitch = 0.0f;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+public:
+	UPROPERTY(BlueprintReadOnly)
 	float RecoilAlpha = 0.0f;
+
+	/** Recoil rotation intensity */
+	UPROPERTY(BlueprintReadOnly)
+	FRotator RecoilRotation = FRotator::ZeroRotator;
 
 	float RecoilControlTime = 0.0f;
 
+	UPROPERTY(BlueprintReadOnly)
+	UBlendSpace* Movement;
+
+	UPROPERTY(BlueprintReadOnly)
+	UBlendSpace* MovementAim;
+
+	UPROPERTY(BlueprintReadOnly)
+	UBlendSpace* MovementCrouch;
+
+	UPROPERTY(BlueprintReadOnly)
+	UBlendSpace* MovementCrouchAim;
+
+private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FVector LeftHandLocation = FVector::ZeroVector;
 	

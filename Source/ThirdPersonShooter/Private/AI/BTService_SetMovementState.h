@@ -12,6 +12,7 @@ class UBTService_SetMovementState : public UBTService
 {
 	GENERATED_UCLASS_BODY()
 
+// Functions
 protected:
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
@@ -19,10 +20,4 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, Category = "Node")
 	EMovementState MovementState = EMovementState::Walk;
-	
-	UPROPERTY(EditAnywhere, Category = "Node")
-	uint8 bRelatedToCrouch : 1;
-
-	UPROPERTY(EditAnywhere, Category = "Node")
-	uint8 bRelatedToProne : 1;
 };

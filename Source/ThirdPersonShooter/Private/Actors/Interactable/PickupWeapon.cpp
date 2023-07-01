@@ -69,8 +69,6 @@ void APickupWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	AmmoComponent->Initialize();
-
 	// Set weapon info on the widget to show it when the player overlap with the weapon
 	if (Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
@@ -350,7 +348,7 @@ FVector APickupWeapon::GetLeftHandLocation() const
 {
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandSocket"));
 }
-
+// TODO: Delete 
 FVector APickupWeapon::GetLeftHandAimLocation() const
 {
 	return SkeletalMesh->GetSocketLocation(TEXT("LeftHandAimSocket"));
@@ -360,60 +358,60 @@ void APickupWeapon::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)
 	{
-	case EPickupState::Drop:
-		SetOwner(nullptr);
-		BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
-		SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
-		SetLifeSpan(FMath::FRandRange(15.0f, 30.0f));
-		break;
-	case EPickupState::PickUp:
-		BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
-		SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
-		SetLifeSpan(0.0f);
+		case EPickupState::Drop:
+			SetOwner(nullptr);
+			BoxCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			SkeletalMesh->SetCollisionProfileName(TEXT("Ragdoll"), false);
+			SkeletalMesh->SetCollisionObjectType(ECC_PhysicsBody);
+			SetLifeSpan(FMath::FRandRange(15.0f, 30.0f));
+			break;
+		case EPickupState::PickUp:
+			BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			SkeletalMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
+			SkeletalMesh->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
+			SetLifeSpan(0.0f);
 
-		// Ignore self and owner for line trace
-		IgnoredActorsByTrace.Empty();
-		IgnoredActorsByTrace.Add(this);
-		IgnoredActorsByTrace.Add(GetOwner());
-		
-		// Determine if the owner is player or AI
-		if (Cast<APlayerController>(Owner->GetInstigatorController()))
-		{
-			bOwnerIsAI = false;
-		}
-		else
-		{
-			bOwnerIsAI = true;
-			AIController = Cast<AAIController>(Owner->GetInstigatorController());
-		}
-		
-		if (Owner)
-		{
-			bCharacterInterface = false;
-			bPlayerControllerInterface = false;
-			bAIControllerInterface = false;
+			// Ignore self and owner for line trace
+			IgnoredActorsByTrace.Empty();
+			IgnoredActorsByTrace.Add(this);
+			IgnoredActorsByTrace.Add(GetOwner());
+			
+			// Determine if the owner is player or AI
+			if (Cast<APlayerController>(Owner->GetInstigatorController()))
+			{
+				bOwnerIsAI = false;
+			}
+			else
+			{
+				bOwnerIsAI = true;
+				AIController = Cast<AAIController>(Owner->GetInstigatorController());
+			}
+			
+			if (Owner)
+			{
+				bCharacterInterface = false;
+				bPlayerControllerInterface = false;
+				bAIControllerInterface = false;
 
-			if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
-			{
-				bCharacterInterface = true;
-			}
+				if (Owner->GetClass()->ImplementsInterface(UCharacterInterface::StaticClass()))
+				{
+					bCharacterInterface = true;
+				}
 
-			OwnerController = Cast<AController>(Owner->GetInstigatorController());
-			if (OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
-			{
-				bAIControllerInterface = true;
+				OwnerController = Cast<AController>(Owner->GetInstigatorController());
+				if (OwnerController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
+				{
+					bAIControllerInterface = true;
+				}
+				else if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
+				{
+					bPlayerControllerInterface = true;
+				}
 			}
-			else if (OwnerController->GetClass()->ImplementsInterface(UPlayerControllerInterface::StaticClass()))
-			{
-				bPlayerControllerInterface = true;
-			}
-		}
-		break;
-	case EPickupState::Remove:
-		Destroy();
-		break;
+			break;
+		case EPickupState::Remove:
+			Destroy();
+			break;
 	}
 }
 
@@ -438,30 +436,30 @@ void APickupWeapon::SetWeaponState_Implementation(EWeaponState WeaponState)
 	
 	switch (WeaponState)
 	{
-	case EWeaponState::Idle: case EWeaponState::Firing: case EWeaponState::BetterToReload: case EWeaponState::AmmoAdded:
-		break;
-	case EWeaponState::NeedToReload:
-		bCanFire = false;
-		StopFireWeapon();
-		break;
-	case EWeaponState::Reloading:
-		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
-		StopFireWeapon();
-		break;
-	case EWeaponState::CancelReload:
-		AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
-		break;
-	case EWeaponState::Reloaded:
-		bCanFire = true;
-		break;
-	case EWeaponState::Empty:
-		bCanFire = false;
-		StopFireWeapon();
-		break;
-	case EWeaponState::Overheat:
-		bCanFire = false;
-		StopFireWeapon();
-		break;
+		case EWeaponState::NeedToReload:
+			bCanFire = false;
+			StopFireWeapon();
+			break;
+		case EWeaponState::Reloading:
+			AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
+			StopFireWeapon();
+			break;
+		case EWeaponState::CancelReload:
+			AmmoComponent->CurrentMagazineAmmo > 0 ? bCanFire = true : bCanFire = false;
+			break;
+		case EWeaponState::Reloaded:
+			bCanFire = true;
+			break;
+		case EWeaponState::Empty:
+			bCanFire = false;
+			StopFireWeapon();
+			break;
+		case EWeaponState::Overheat:
+			bCanFire = false;
+			StopFireWeapon();
+			break;
+		default:
+			break;
 	}
 }
 

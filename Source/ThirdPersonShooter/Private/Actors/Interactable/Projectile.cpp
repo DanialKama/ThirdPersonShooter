@@ -138,32 +138,32 @@ float AProjectile::CalculatePointDamage(const FProjectileInfo* ProjectileInfo) c
 	// Switch on surface types to calculate the appropriate damage
 	switch (SwitchExpression)
 	{
-	case 1:
-		// Head Flesh
-		return ProjectileInfo->DamageToHead;
-	case 2:
-		// Body Flesh
-		return ProjectileInfo->DamageToBody;
-	case 3:
-		// Hand Flesh
-		return ProjectileInfo->DamageToHand;
-	case 4:
-		// Leg Flesh
-		return  ProjectileInfo->DamageToLeg;
-	case 5:
-		// Wood
-		return ProjectileInfo->DamageToWood;
-	case 6:
-		// Metal
-		return ProjectileInfo->DamageToMetal;
-	case 7:
-		// Stone
-		return ProjectileInfo->DamageToStone;
-	case 8:
-		// Dirt
-		return ProjectileInfo->DamageToDirt;
-	case 0: default:
-		return ProjectileInfo->DefaultDamage;
+		case 1:
+			// Head Flesh
+			return ProjectileInfo->DamageToHead;
+		case 2:
+			// Body Flesh
+			return ProjectileInfo->DamageToBody;
+		case 3:
+			// Hand Flesh
+			return ProjectileInfo->DamageToHand;
+		case 4:
+			// Leg Flesh
+			return  ProjectileInfo->DamageToLeg;
+		case 5:
+			// Wood
+			return ProjectileInfo->DamageToWood;
+		case 6:
+			// Metal
+			return ProjectileInfo->DamageToMetal;
+		case 7:
+			// Stone
+			return ProjectileInfo->DamageToStone;
+		case 8:
+			// Dirt
+			return ProjectileInfo->DamageToDirt;
+		default:
+			return ProjectileInfo->DefaultDamage;
 	}
 }
 

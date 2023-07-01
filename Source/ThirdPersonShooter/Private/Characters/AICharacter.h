@@ -21,7 +21,7 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	/** True to do it, false to stop it (to start fire weapon aim is necessary) */
-	void UseWeapon(bool bAim, bool bFire);
+	void UseWeapon(const bool bAim, const bool bFire);
 	
 	virtual void ReloadWeapon() override;
 	virtual void ResetReload() override;
@@ -62,10 +62,12 @@ public:
 	class ASpawnerAI* Spawner;
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Primary weapons to spawn and attach", AllowPrivateAccess = true))
+	/** Primary weapons to spawn and attach */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> PrimaryWeapons;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ToolTip = "Sidearm weapons to spawn and attach", AllowPrivateAccess = true))
+
+	/** Sidearm weapons to spawn and attach */
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TArray<TSubclassOf<APickupWeapon>> SidearmWeapons;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (ClampMin = 0, UIMin = 0, AllowPrivateAccess = true))

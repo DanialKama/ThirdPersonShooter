@@ -53,16 +53,16 @@ void APickupAmmo::SetPickUpState(const EPickupState PickupState)
 {
 	switch (PickupState)
 	{
-	case EPickupState::Drop:
-		SphereCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		break;
-	case EPickupState::PickUp:
-		SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		break;
-	case EPickupState::Remove:
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
-		Destroy();
-		break;
+		case EPickupState::Drop:
+			SphereCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			break;
+		case EPickupState::PickUp:
+			SphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			break;
+		case EPickupState::Remove:
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
+			Destroy();
+			break;
 	}
 }
 

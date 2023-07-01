@@ -40,7 +40,7 @@ private:
 // Variables
 public:
 	/** Bitmask / Bitflag Enum */
-	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (Bitmask, BitmaskEnum = EAmmoType))
+	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (Bitmask, BitmaskEnum = "/Script/ThirdPersonShooter.EAmmoType"))
 	int32 AmmoType = 0;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default")

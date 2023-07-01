@@ -110,48 +110,48 @@ void AShooterAIController::PerceptionUpdated(const TArray<AActor*>& UpdatedActor
 				{
 					switch (j)
 					{
-					case 0:
-						// Sight Sense, Check if the actor is not in the same team as this AI
-						if (ActorTag != ControlledPawn->TeamTag)
-						{
-							HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
-						}
-						else if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr && GetFocusActor() == nullptr && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
-						{
-							ControlledPawn->UseWeapon(false, false);
-						}
-						break;
-					case 1:
-						// Damage Sense, Only handle damage if it's from a new enemy
-						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ControlledPawn->TeamTag != ActorTag && GetFocusActor() != UpdatedActor)
-						{
-							HandleDamage(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
-						}
-						break;
-					case 2:
-						// Hearing Sense, Handle hearing if not currently in a fight
-						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr)
-						{
-							// If the sound is from a teammate that asking for help, move to its locations
-							if (ActorPerceptionInfo.LastSensedStimuli[j].Tag == "Help" && ControlledPawn->TeamTag == ActorTag)
+						case 0:
+							// Sight Sense, Check if the actor is not in the same team as this AI
+							if (ActorTag != ControlledPawn->TeamTag)
 							{
-								HandleTeam(UpdatedActor);
+								HandleSight(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
 							}
-							else if (ControlledPawn->TeamTag != ActorTag || GetFocusActor() == nullptr)
+							else if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr && GetFocusActor() == nullptr && BlackboardComp->GetValueAsBool(FName("SearchForSound")))
 							{
-								HandleHearing(ActorPerceptionInfo.LastSensedStimuli[j]);
+								ControlledPawn->UseWeapon(false, false);
 							}
-						}
-						break;
-					case 3:
-						// Prediction Sense
-						if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ActorTag != ControlledPawn->TeamTag)
-						{
-							HandlePrediction(ActorPerceptionInfo.LastSensedStimuli[j]);
-						}
-						break;
-					default:
-						UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
+							break;
+						case 1:
+							// Damage Sense, Only handle damage if it's from a new enemy
+							if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ControlledPawn->TeamTag != ActorTag && GetFocusActor() != UpdatedActor)
+							{
+								HandleDamage(UpdatedActor, ActorPerceptionInfo.LastSensedStimuli[j]);
+							}
+							break;
+						case 2:
+							// Hearing Sense, Handle hearing if not currently in a fight
+							if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && Attacker == nullptr)
+							{
+								// If the sound is from a teammate that asking for help, move to its locations
+								if (ActorPerceptionInfo.LastSensedStimuli[j].Tag == "Help" && ControlledPawn->TeamTag == ActorTag)
+								{
+									HandleTeam(UpdatedActor);
+								}
+								else if (ControlledPawn->TeamTag != ActorTag || GetFocusActor() == nullptr)
+								{
+									HandleHearing(ActorPerceptionInfo.LastSensedStimuli[j]);
+								}
+							}
+							break;
+						case 3:
+							// Prediction Sense
+							if (ActorPerceptionInfo.LastSensedStimuli[j].WasSuccessfullySensed() && ActorTag != ControlledPawn->TeamTag)
+							{
+								HandlePrediction(ActorPerceptionInfo.LastSensedStimuli[j]);
+							}
+							break;
+						default:
+							UE_LOG(LogTemp, Warning, TEXT("Unknown Sense!"));
 					}
 				}
 			}
@@ -252,33 +252,24 @@ void AShooterAIController::HandleHearing(const FAIStimulus& Stimulus)
 		
 		switch (AIState)
 		{
-		case 0: case 1: case 2:
-			// Idle, Fight, Search
-			switch (WeaponState)
-			{
-			case 0: case 1: case 2: case 5: case 6: case 7:
-				// Idle, Firing, Better To Reload, Cancel Reload, Reloaded
-				ControlledPawn->UseWeapon(true, false);
-				break;
-			case 3:
-				// Need To Reload
+			case EAIState::Idle: case EAIState::Fight: case EAIState::Search:
+				switch (WeaponState)
 				{
-					const FAmmoComponentInfo AmmoComponentInfo;
-					SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
+					case EWeaponState::Idle: case EWeaponState::Firing: case EWeaponState::BetterToReload: case EWeaponState::CancelReload: case EWeaponState::Reloaded: case EWeaponState::AmmoAdded:
+						ControlledPawn->UseWeapon(true, false);
+						break;
+					case EWeaponState::NeedToReload:
+						SetWeaponState_Implementation(FAmmoComponentInfo(), EWeaponState::NeedToReload);
+						break;
+					case EWeaponState::Empty:
+						SwitchWeapon();
+						break;
+					default:
+						break;
 				}
 				break;
-			case 4: case 9:
-				// Reloading, Overheat
+			default:
 				break;
-			case 8:
-				// Empty
-				SwitchWeapon();
-				break;
-			}
-			break;
-		case 3: case 4: case 5: case 6:
-			// Reload, Switch Weapon, Low Health, Use Med
-			break;
 		}
 	}
 	// take cover if enemy is unreachable
@@ -335,16 +326,14 @@ void AShooterAIController::Fight()
 {
 	switch (AIState)
 	{
-	case 0: case 1: case 2:
-		// Idle, Fight, Search
-		if (Attacker)
-		{
-			TryToUseWeapon();
-		}
-		break;
-	case 3: case 4: case 5: case 6:
-		// Reload, Switch, Low Health, Use Med
-		break;
+		case EAIState::Idle: case EAIState::Fight: case EAIState::Search:
+			if (Attacker)
+			{
+				TryToUseWeapon();
+			}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -352,28 +341,24 @@ void AShooterAIController::TryToUseWeapon()
 {
 	switch (WeaponState)
 	{
-	case 0: case 2: case 5: case 6: case 7:
-		// Idle, Better To Reload, Cancel Reload, Reloaded, Ammo Added
-		ControlledPawn->UseWeapon(true, true);
-		break;
-	case 3:
-		// Need To Reload
+		case EWeaponState::Idle: case EWeaponState::BetterToReload: case EWeaponState::CancelReload: case EWeaponState::Reloaded: case EWeaponState::AmmoAdded:
+			ControlledPawn->UseWeapon(true, true);
+			break;
+		case EWeaponState::NeedToReload:
 		{
 			ControlledPawn->UseWeapon(false, false);
 			const FAmmoComponentInfo AmmoComponentInfo;
 			SetWeaponState_Implementation(AmmoComponentInfo, EWeaponState::NeedToReload);
 		}
-		break;
-	case 4:
-		// Reloading
-		ControlledPawn->UseWeapon(false, false);
-		break;
-	case 8:
-		SwitchWeapon();
-		break;
-	 case 1: case 9:
-		// Firing, Overheat
-		break;
+			break;
+		case EWeaponState::Reloading:
+			ControlledPawn->UseWeapon(false, false);
+			break;
+		case EWeaponState::Empty:
+			SwitchWeapon();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -382,49 +367,44 @@ void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo Ammo
 	WeaponState = NewWeaponState;
 	switch (WeaponState)
 	{
-	case 0:
-		// Idle
-		if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == 0)
-		{
-			SwitchWeapon();
-		}
-		break;
-	case 2:
-		// Better To Reload, If there is no threat then reload the weapon
-		if (!Attacker && !BlackboardComp->GetValueAsObject(FName("TargetActor")) && AIState != EAIState::Reload && AIState != EAIState::Switch)
-		{
-			TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
-		}
-		break;
-	case 3:
-		// Need To Reload
-		if (AIState != EAIState::Reload && AIState != EAIState::Switch)
-		{
-			TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
-		}
-		break;
-	case 4:
-		// Reloading
-		// If AI is in combat and there is an attacker and half of the mag is already full then stop reloading and continue fighting
-		if (Attacker && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->GetAmmoComponent()->MagazineSize / 2)
-		{
+		case EWeaponState::Idle:
+			if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == 0)
+			{
+				SwitchWeapon();
+			}
+			break;
+		case EWeaponState::BetterToReload:
+			// If there is no threat then reload the weapon
+			if (!Attacker && !BlackboardComp->GetValueAsObject(FName("TargetActor")) && AIState != EAIState::Reload && AIState != EAIState::Switch)
+			{
+				TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
+			}
+			break;
+		case EWeaponState::NeedToReload:
+			if (AIState != EAIState::Reload && AIState != EAIState::Switch)
+			{
+				TryToReload(AmmoComponentInfo.bNoAmmoLeftToReload);
+			}
+			break;
+		case EWeaponState::Reloading:
+			// If AI is in combat and there is an attacker and half of the mag is already full then stop reloading and continue fighting
+			if (Attacker && ControlledPawn->CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo > ControlledPawn->CurrentWeapon->GetAmmoComponent()->MagazineSize / 2)
+			{
+				Fight();
+			}
+			break;
+		case EWeaponState::CancelReload: case EWeaponState::Reloaded: case EWeaponState::AmmoAdded:
+			// Resume fighting after reload finished
 			Fight();
-		}
-		break;
-	case 5: case 6: case 7:
-		// Cancel Reload, Reloaded, Ammo Added - Resume fighting after reload finished
-		Fight();
-		break;
-	case 8:
-		// Empty
-		if (AIState != EAIState::Switch)
-		{
-			SwitchWeapon();
-		}
-		break;
-	case 1: case 9:
-		// Firing, Overheat
-		break;
+			break;
+		case EWeaponState::Empty:
+			if (AIState != EAIState::Switch)
+			{
+				SwitchWeapon();
+			}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -432,77 +412,74 @@ void AShooterAIController::SwitchWeapon()
 {
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AShooterAIController::Surrender);
+
 	// If there is no weapon to switch then surrender
-	switch (ControlledPawn->CurrentHoldingWeapon)
+	switch (ControlledPawn->CurrentWeapon ? ControlledPawn->CurrentWeapon->CurrentSocket : EWeaponToDo::NoWeapon)
 	{
-	case 0:
-		// No Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToPrimary();
-		}
-		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSecondary();
-		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSidearm();
-		}
-		else
-		{
-			ControlledPawn->UseWeapon(false, false);
-			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-		}
-		break;
-	case 1:
-		// Primary Weapon
-		if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSecondary();
-		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSidearm();
-		}
-		else
-		{
-			ControlledPawn->UseWeapon(false, false);
-			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-		}
-		break;
-	case 2:
-		// Secondary Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToPrimary();
-		}
-		else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSidearm();
-		}
-		else
-		{
-			ControlledPawn->UseWeapon(false, false);
-			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-		}
-		break;
-	case 3:
-		// Sidearm Weapon
-		if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToPrimary();
-		}
-		else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
-		{
-			ControlledPawn->SwitchToSecondary();
-		}
-		else
-		{
-			ControlledPawn->UseWeapon(false, false);
-			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-		}
-		break;
+		case EWeaponToDo::NoWeapon:
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToPrimary();
+			}
+			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSecondary();
+			}
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSidearm();
+			}
+			else
+			{
+				ControlledPawn->UseWeapon(false, false);
+				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+			break;
+		case EWeaponToDo::PrimaryWeapon:
+			if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSecondary();
+			}
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSidearm();
+			}
+			else
+			{
+				ControlledPawn->UseWeapon(false, false);
+				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+			break;
+		case EWeaponToDo::SecondaryWeapon:
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToPrimary();
+			}
+			else if (ControlledPawn->SidearmWeapon && ControlledPawn->SidearmWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSidearm();
+			}
+			else
+			{
+				ControlledPawn->UseWeapon(false, false);
+				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+			break;
+		case EWeaponToDo::SidearmWeapon:
+			if (ControlledPawn->PrimaryWeapon && ControlledPawn->PrimaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToPrimary();
+			}
+			else if (ControlledPawn->SecondaryWeapon && ControlledPawn->SecondaryWeapon->GetAmmoComponent()->CurrentAmmo > 0)
+			{
+				ControlledPawn->SwitchToSecondary();
+			}
+			else
+			{
+				ControlledPawn->UseWeapon(false, false);
+				GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+			break;
 	}
 
 	if (ControlledPawn->CurrentWeapon)

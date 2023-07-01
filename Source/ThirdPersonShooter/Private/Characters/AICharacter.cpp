@@ -225,11 +225,11 @@ void AAICharacter::HideWidget() const
 	Widget->SetVisibility(false);	
 }
 
-void AAICharacter::UseWeapon(bool bAim, bool bFire)
+void AAICharacter::UseWeapon(const bool bAim, const bool bFire)
 {
 	if (bAim)
 	{
-		if (CurrentHoldingWeapon != EWeaponToDo::NoWeapon && SetAimState(true))
+		if (CurrentWeapon && SetAimState(true))
 		{
 			if (bFire)
 			{
@@ -262,26 +262,26 @@ void AAICharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case EHealthState::Full: case EHealthState::RecoveryStarted: case EHealthState::RecoveryStopped:
-		Super::SetHealthState_Implementation(HealthState);
-		break;
-	case EHealthState::Low:
-		if (bAIControllerInterface)
-		{
-			// If health is low, report it to the controller to start taking cover and using meds
-			IAIControllerInterface::Execute_SetAIState(AIController, EAIState::LowHealth);
-		}
-		break;
-	case EHealthState::Death:
-		Super::SetHealthState_Implementation(HealthState);
-		
-		Widget->SetVisibility(false);
-		
-		if (Spawner)
-		{
-			Spawner->EnterSpawnQueue(FSpawnData(RespawnDelay, StaticClass()));
-		}
-		break;
+		case EHealthState::Full: case EHealthState::RecoveryStarted: case EHealthState::RecoveryStopped:
+			Super::SetHealthState_Implementation(HealthState);
+			break;
+		case EHealthState::Low:
+			if (bAIControllerInterface)
+			{
+				// If health is low, report it to the controller to start taking cover and using meds
+				IAIControllerInterface::Execute_SetAIState(AIController, EAIState::LowHealth);
+			}
+			break;
+		case EHealthState::Death:
+			Super::SetHealthState_Implementation(HealthState);
+			
+			Widget->SetVisibility(false);
+			
+			if (Spawner)
+			{
+				Spawner->EnterSpawnQueue(FSpawnData(RespawnDelay, StaticClass()));
+			}
+			break;
 	}
 }
 

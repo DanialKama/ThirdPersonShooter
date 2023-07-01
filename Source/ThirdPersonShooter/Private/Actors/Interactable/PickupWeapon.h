@@ -74,9 +74,11 @@ class APickupWeapon : public APickup, public ICommonInterface
 {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
 
+private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UBoxComponent> BoxCollision;
 	
@@ -164,6 +166,9 @@ public:
 	/** Use for line trace if the owner is player */
 	UPROPERTY()
 	class UCameraComponent* CameraComponent;
+
+	/** The current socket that this weapon is assigned to */
+	EWeaponToDo CurrentSocket = EWeaponToDo::NoWeapon;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
@@ -208,7 +213,36 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	TSubclassOf<AMagazine> Magazine;
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UAnimMontage* IdleMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UAnimMontage* StandUpReloadMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UAnimMontage* CrouchReloadMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UAnimMontage* HolsterWeaponMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UAnimMontage* GrabWeaponMontage;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UBlendSpace* Movement;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UBlendSpace* MovementAim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UBlendSpace* MovementCrouch;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
+	UBlendSpace* MovementCrouchAim;
+
+private:
 	uint8 bDoOnceFire : 1, bOwnerIsAI : 1, bCanFire : 1, bCharacterInterface : 1, bPlayerControllerInterface : 1, bAIControllerInterface : 1;
 
 	UPROPERTY()

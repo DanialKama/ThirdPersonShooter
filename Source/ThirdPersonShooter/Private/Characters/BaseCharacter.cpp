@@ -11,11 +11,9 @@
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Components/TimelineComponent.h"
-#include "Core/Interfaces/CharacterAnimationInterface.h"
 #include "Core/Interfaces/CommonInterface.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
@@ -25,35 +23,10 @@ ABaseCharacter::ABaseCharacter()
 	bUseControllerRotationYaw = false;
 	
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
+	// TODO: Why?
 	GetMesh()->SetGenerateOverlapEvents(true);
 
-	// TODO: Delete this
-	FallCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Fall Capsule"));
-	FallCapsule->SetupAttachment(GetMesh());
-	FallCapsule->SetCapsuleHalfHeight(110.0f);
-	FallCapsule->SetCapsuleRadius(55.0f);
-	FallCapsule->CanCharacterStepUpOn = ECB_No;
-	FallCapsule->SetCollisionProfileName("FallCapsule");
-	FallCapsule->SetCanEverAffectNavigation(false);
-
-	// TODO: Use sphere trace
-	KickCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Kick Collision"));
-	KickCollision->SetupAttachment(GetMesh(), FName("foot_r"));
-	KickCollision->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
-	KickCollision->CanCharacterStepUpOn = ECB_No;
-	KickCollision->SetCollisionProfileName("OverlapOnlyBody");
-	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	KickCollision->SetCanEverAffectNavigation(false);
-	
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
-	
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
-	
-	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
-	StimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
-	
-	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
-	
+	// TODO: Change the values in the blueprint
 	GetCharacterMovement()->BrakingFriction = 0.1f;
 	GetCharacterMovement()->SetCrouchedHalfHeight(65.0f);
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
@@ -67,33 +40,34 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->NavAgentProps.AgentRadius = 42.0f;
 	GetCharacterMovement()->NavAgentProps.AgentHeight = 192.0f;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	WalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	WalkJumpZVelocity = GetCharacterMovement()->JumpZVelocity;
+	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
+	// TODO: Move it to the BeginPlay
+	StimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
+	
+	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
 	// Initialize variables
-	bCharacterAnimationInterface = false;
 	bDoOnceStopped = true;
 	bDoOnceMoving = true;
 	bDoOnceReload = true;
-	bRagdollState = false;
-	bDoOnceDeath = true;
 	bCanHolster = false;
 	bCanReload = true;
+	bIsAiming = false;
 	bIsAlive = true;
-	bIsArmed = false;
-	bIsAimed = false;
 }
 
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && AnimInstance->GetClass()->ImplementsInterface(UCharacterAnimationInterface::StaticClass()))
-	{
-		bCharacterAnimationInterface = true;
-	}
 	
 	CharacterTagContainer.AddTag(TeamTag);
-	FallCapsule->SetRelativeLocation(MeshLocationOffset);
 
 	// Create material instances for every material on mesh, mainly used for death dither effect
 	TArray<UMaterialInterface*> Materials = GetMesh()->GetMaterials();
@@ -102,13 +76,6 @@ void ABaseCharacter::BeginPlay()
 	{
 		MaterialInstances.Add(GetMesh()->CreateDynamicMaterialInstance(i, Materials[i]));
 	}
-
-	HealthComponent->Initialize();
-	StaminaComponent->Initialize();
-	
-	FallCapsule->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::FallCapsuleBeginOverlap);
-	
-	KickCollision->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::KickCollisionBeginOverlap);
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -127,107 +94,69 @@ void ABaseCharacter::Tick(float DeltaTime)
 	}
 	else if (bDoOnceMoving)
 	{
-		CharacterIsOnMove();
+		GetWorld()->GetTimerManager().ClearTimer(IdleTimer);
+		StopAnimMontage();
 		bCanHolster = false;
 		bDoOnceMoving = false;
 		bDoOnceStopped = true;
 	}
 
-	// If ragdoll state is true then keep mesh and capsule together
-	if (bRagdollState)
+	// Uncrouch if the character is falling
+	if (bIsCrouched && GetCharacterMovement()->bWantsToCrouch && GetCharacterMovement()->MovementMode == MOVE_Falling)
 	{
-		// If this is not the player then no need to set capsule location after character death
-		if (bIsAlive || IsPlayerControlled())
-		{
-			CalculateCapsuleLocation();
-			GetCapsuleComponent()->SetWorldLocation(MeshLocation);
-		}
+		UnCrouch();
 	}
 }
 
-void ABaseCharacter::CharacterIsOnMove()
+void ABaseCharacter::SetMovementState(const EMovementState NewState)
 {
-	GetWorld()->GetTimerManager().ClearTimer(IdleTimer);
-	StopAnimMontage();
-	UpdateMovementState();
-}
-
-void ABaseCharacter::SetMovementState_Implementation(EMovementState CurrentMovementState, bool bRelatedToCrouch, bool bRelatedToProne)
-{
-	if (HealthComponent)
-	{
-		if (bRelatedToCrouch || bRelatedToProne)
-		{
-			PreviousMovementState = CurrentMovementState;
-		}
+	float NewWalkSpeed;
+	float NewJumpZVelocity;
 	
-		if (StaminaComponent->CurrentStamina > 0.0f)
-		{
-			MovementState = CurrentMovementState;
-		}
-		else
-		{
-			MovementState = PreviousMovementState;
-		}
-
-		UpdateMovementState();
+	switch (NewState)
+	{
+		case EMovementState::Run:
+			NewWalkSpeed = RunningSpeed;
+			NewJumpZVelocity = RunningJumpZVelocity;
+			break;
+		case EMovementState::Sprint:
+			NewWalkSpeed = SprintSpeed;
+			NewJumpZVelocity = SprintJumpZVelocity;
+			break;
+		default:
+			NewWalkSpeed = WalkSpeed;
+			NewJumpZVelocity = WalkJumpZVelocity;
 	}
+	
+	SetMovementState(NewWalkSpeed, NewJumpZVelocity);
 }
 
-void ABaseCharacter::UpdateMovementState()
+void ABaseCharacter::SetMovementState(const float NewWalkSpeed, const float NewJumpZVelocity)
 {
-	switch (MovementState)
+	if (NewWalkSpeed > WalkSpeed)
 	{
-	case 0:
-		// Walk
-		StaminaComponent->StopStaminaDrain();
-		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
-		GetCharacterMovement()->JumpZVelocity = 300.0f;
-		break;
-	case 1:
-		// Run
-		UnCrouch();
-		StaminaComponent->StartRunning();
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
-		GetCharacterMovement()->JumpZVelocity = 360.0f;
-		break;
-	case 2:
-		// Sprint
-		UnCrouch();
-		StaminaComponent->StartSprinting();
-		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = 600.0f;
-		GetCharacterMovement()->JumpZVelocity = 420.0f;
-		break;
-	case 3:
-		// Crouch
-		if (GetCharacterMovement()->IsFalling())
+		if (StaminaComponent->CurrentStamina <= 0.0f)
 		{
-			UnCrouch();
+			return;
 		}
-		else
-		{
-			Crouch();
-		}
-		StaminaComponent->StopStaminaDrain();
-		GetCharacterMovement()->MaxWalkSpeed = 150.0f;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
-		GetCharacterMovement()->JumpZVelocity = 0.0f;
-		break;
-	case 4:
-		// Prone
-		StaminaComponent->StopStaminaDrain();
-		GetCharacterMovement()->MaxWalkSpeed = 80.0f;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = 80.0f;
-		GetCharacterMovement()->JumpZVelocity = 0.0f;
-		break;
+		
+		UnCrouch();
 	}
-
-	if (bCharacterAnimationInterface)
+	
+	GetCharacterMovement()->MaxWalkSpeed = NewWalkSpeed;
+	GetCharacterMovement()->JumpZVelocity = NewJumpZVelocity;
+	
+	if (NewWalkSpeed == WalkSpeed)
 	{
-		ICharacterAnimationInterface::Execute_SetMovementState(AnimInstance, MovementState);
+		StaminaComponent->StopStaminaDrain();
+	}
+	else if (NewWalkSpeed == RunningSpeed)
+	{
+		StaminaComponent->StartRunning();
+	}
+	else
+	{
+		StaminaComponent->StartSprinting();
 	}
 }
 
@@ -237,63 +166,61 @@ void ABaseCharacter::SetPickup_Implementation(const EItemType NewPickupType, APi
 	Pickup = NewPickup;
 }
 
+// TODO: Use a line trace to interact
 void ABaseCharacter::Interact_Implementation()
 {
-	if (Pickup)
+	if (Pickup == nullptr)
 	{
-		switch (PickupType)
-		{
-		case 0:
-			// Weapon
+		return;
+	}
+	
+	switch (PickupType)
+	{
+		case EItemType::Weapon:
 			PickupWeapon(Pickup);
 			break;
-		case 1:
-			// Ammo
+		case EItemType::Ammo:
 			PickupAmmo(Pickup);
 			break;
-		case 2:
-			// Health
+		case EItemType::Health:
 			// TODO
 			break;
-		}
 	}
 }
 
 void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 {
-	if (APickupWeapon* Weapon = Cast<APickupWeapon>(NewWeapon))
+	APickupWeapon* Weapon = Cast<APickupWeapon>(NewWeapon);
+	if (Weapon == nullptr)
 	{
-		switch (Weapon->WeaponInfo.WeaponType)
-		{
-		case 0: case 1:
-			// Pistol and SMG
+		return;
+	}
+	
+	switch (Weapon->WeaponInfo.WeaponType)
+	{
+		case EWeaponType::Pistol: case EWeaponType::SMG:
 			if (SidearmWeapon)
 			{
 				DropWeapon(EWeaponToDo::SidearmWeapon);
 			}
 			AddWeapon(Weapon, EWeaponToDo::SidearmWeapon);
 			break;
-		case 2: case 3: case 4: case 5: case 6:
-			// Rifle, LMG, Shotgun, Sniper, and Launcher
+		default:
 			if (PrimaryWeapon)
 			{
 				if (SecondaryWeapon)
 				{
-					switch (CurrentHoldingWeapon)
+					// if character currently holding the primary weapon or no weapon then add the new weapon to the primary slot
+					if (CurrentWeapon == nullptr || CurrentWeapon == PrimaryWeapon)
 					{
-					case 0: case 1:
-						// No Weapon and Primary Weapon - if character currently holding the primary weapon or no weapon then add the new weapon to the primary slot
 						DropWeapon(EWeaponToDo::PrimaryWeapon);
 						AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
-						break;
-					case 2:
-						// Secondary Weapon - if character currently holding the secondary weapon then add the new weapon to the secondary slot
+					}
+					// if character currently holding the secondary weapon then add the new weapon to the secondary slot
+					else
+					{
 						DropWeapon(EWeaponToDo::SecondaryWeapon);
 						AddWeapon(Weapon, EWeaponToDo::SecondaryWeapon);
-						break;
-					case 3:
-						// Sidearm Weapon - pistol and SMG handles in cases 0 and 1
-						break;
 					}
 				}
 				// If the secondary weapon slot is empty then add it there
@@ -307,12 +234,10 @@ void ABaseCharacter::PickupWeapon(APickup* NewWeapon)
 			{
 				AddWeapon(Weapon, EWeaponToDo::PrimaryWeapon);
 			}
-			break;
-		}
 	}
 }
 
-void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAsWeapon)
+void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo TargetSlot)
 {
 	APickupWeapon* NewWeapon;
 	// If the controller is AI do not spawn weapon (AI by default spawn weapon and does not pick up)
@@ -325,73 +250,65 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, EWeaponToDo EquipAs
 		NewWeapon = SpawnAndReplaceWeapon(WeaponToEquip);
 	}
 
-	if (NewWeapon)
+	if (NewWeapon == nullptr)
 	{
-		// If weapon owner is the player then weapon use camera reference for line trace
-		NewWeapon->CameraComponent = ChildCameraComponent;
-		NewWeapon->SetInstigator(this);
-		NewWeapon->SetOwner(this);
-		NewWeapon->SetPickUpState(EPickupState::PickUp);
+		return;
+	}
 	
-		if (CurrentWeapon)
+	// If weapon owner is the player then weapon use camera reference for line trace
+	NewWeapon->CameraComponent = ChildCameraComponent;
+	NewWeapon->SetInstigator(this);
+	NewWeapon->SetOwner(this);
+	NewWeapon->SetPickUpState(EPickupState::PickUp);
+	
+	if (CurrentWeapon)
+	{
+		NewWeapon->LowerWeapon();
+		switch (TargetSlot)
 		{
-			NewWeapon->LowerWeapon();
-			switch (EquipAsWeapon)
-			{
-			case 0:
-				// Not a valid slot
-				break;
-			case 1:
-				// Add to primary weapon slot
-				AttachWeapon(NewWeapon, EWeaponToDo::PrimaryWeapon);
-				PrimaryWeapon = NewWeapon;
-				PrimaryWeaponSupportedAmmo = PrimaryWeapon->WeaponInfo.AmmoType;
-				break;
-			case 2:
-				// Add to secondary weapon slot
-				AttachWeapon(NewWeapon, EWeaponToDo::SecondaryWeapon);
-				SecondaryWeapon = NewWeapon;
-				SecondaryWeaponSupportedAmmo = SecondaryWeapon->WeaponInfo.AmmoType;
-				break;
-			case 3:
-				// Add to sidearm weapon slot
-				AttachWeapon(NewWeapon, EWeaponToDo::SidearmWeapon);
-				SidearmWeapon = NewWeapon;
-				SidearmWeaponSupportedAmmo = SidearmWeapon->WeaponInfo.AmmoType;
-				break;
-			}
+		case EWeaponToDo::PrimaryWeapon:
+			AttachWeapon(NewWeapon, EWeaponToDo::PrimaryWeapon);
+			PrimaryWeapon = NewWeapon;
+			break;
+		case EWeaponToDo::SecondaryWeapon:
+			AttachWeapon(NewWeapon, EWeaponToDo::SecondaryWeapon);
+			SecondaryWeapon = NewWeapon;
+			break;
+		case EWeaponToDo::SidearmWeapon:
+			AttachWeapon(NewWeapon, EWeaponToDo::SidearmWeapon);
+			SidearmWeapon = NewWeapon;
+			break;
+		default:
+			checkNoEntry();
 		}
+	}
+	else
+	{
+		NewWeapon->RaiseWeapon();
+		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+		NewWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
+
+		// Check if the new weapon is a sidearm then replace it with the old sidearm
+		const EWeaponType NewWeaponType = NewWeapon->WeaponInfo.WeaponType;
+		if (NewWeaponType == EWeaponType::Pistol || NewWeaponType == EWeaponType::SMG)
+		{
+			SidearmWeapon = NewWeapon;
+			SetCurrentWeapon(SidearmWeapon);
+		}
+		// If the primary weapon is valid then the secondary weapon replace with the new weapon
+		else if (PrimaryWeapon)
+		{
+			SecondaryWeapon = NewWeapon;
+			SetCurrentWeapon(SecondaryWeapon);
+		}
+		// The primary weapon is only replaced when it is invalid
 		else
 		{
-			NewWeapon->RaiseWeapon();
-			const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-			NewWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
-
-			// Check if the new weapon is a sidearm then replace it with the old sidearm
-			const EWeaponType NewWeaponType = NewWeapon->WeaponInfo.WeaponType;
-			if (NewWeaponType == EWeaponType::Pistol || NewWeaponType == EWeaponType::SMG)
-			{
-				SidearmWeapon = NewWeapon;
-				SidearmWeaponSupportedAmmo = SidearmWeapon->WeaponInfo.AmmoType;
-				SetCurrentWeapon(SidearmWeapon, EWeaponToDo::SidearmWeapon);
-			}
-			// If the primary weapon is valid then the secondary weapon replace with the new weapon
-			else if (PrimaryWeapon)
-			{
-				SecondaryWeapon = NewWeapon;
-				SecondaryWeaponSupportedAmmo = SecondaryWeapon->WeaponInfo.AmmoType;
-				SetCurrentWeapon(SecondaryWeapon, EWeaponToDo::SecondaryWeapon);
-			}
-			// The primary weapon is only replaced when it is invalid
-			else
-			{
-				PrimaryWeapon = NewWeapon;
-				PrimaryWeaponSupportedAmmo = PrimaryWeapon->WeaponInfo.AmmoType;
-				SetCurrentWeapon(PrimaryWeapon, EWeaponToDo::PrimaryWeapon);
-			}
-
-			SetArmedState(true);
+			PrimaryWeapon = NewWeapon;
+			SetCurrentWeapon(PrimaryWeapon);
 		}
+
+		SetArmedState(true);
 	}
 }
 
@@ -416,71 +333,62 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 	const FDetachmentTransformRules DetachmentTransformRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	switch (WeaponToDrop)
 	{
-	case 0:
-		// No Weapon = nothing to drop
-		break;
-	case 1:
-		// Drop the primary weapon
-		if (PrimaryWeapon)
-		{
-			PrimaryWeapon->LowerWeapon();
-			PrimaryWeapon->DetachFromActor(DetachmentTransformRules);
-			PrimaryWeapon->SetPickUpState(EPickupState::Drop);
-			if (CurrentWeapon == PrimaryWeapon)
+		case EWeaponToDo::PrimaryWeapon:
+			if (PrimaryWeapon)
 			{
-				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-				StopAnimMontage();
+				PrimaryWeapon->LowerWeapon();
+				PrimaryWeapon->DetachFromActor(DetachmentTransformRules);
+				PrimaryWeapon->SetPickUpState(EPickupState::Drop);
+				if (CurrentWeapon == PrimaryWeapon)
+				{
+					SetCurrentWeapon(nullptr);
+					StopAnimMontage();
+				}
+				PrimaryWeapon = nullptr;
 			}
-			PrimaryWeapon = nullptr;
-		}
-		break;
-	case 2:
-		// Drop the secondary weapon
-		if (SecondaryWeapon)
-		{
-			SecondaryWeapon->LowerWeapon();
-			SecondaryWeapon->DetachFromActor(DetachmentTransformRules);
-			SecondaryWeapon->SetPickUpState(EPickupState::Drop);
-			if (CurrentWeapon == SecondaryWeapon)
+			break;
+		case EWeaponToDo::SecondaryWeapon:
+			if (SecondaryWeapon)
 			{
-				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-				StopAnimMontage();
+				SecondaryWeapon->LowerWeapon();
+				SecondaryWeapon->DetachFromActor(DetachmentTransformRules);
+				SecondaryWeapon->SetPickUpState(EPickupState::Drop);
+				if (CurrentWeapon == SecondaryWeapon)
+				{
+					SetCurrentWeapon(nullptr);
+					StopAnimMontage();
+				}
+				SecondaryWeapon = nullptr;
 			}
-			SecondaryWeapon = nullptr;
-		}
-		break;
-	case 3:
-		// Drop the sidearm weapon
-		if (SidearmWeapon)
-		{
-			SidearmWeapon->LowerWeapon();
-			SidearmWeapon->DetachFromActor(DetachmentTransformRules);
-			SidearmWeapon->SetPickUpState(EPickupState::Drop);
-			if (CurrentWeapon == SidearmWeapon)
+			break;
+		case EWeaponToDo::SidearmWeapon:
+			if (SidearmWeapon)
 			{
-				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-				StopAnimMontage();
+				SidearmWeapon->LowerWeapon();
+				SidearmWeapon->DetachFromActor(DetachmentTransformRules);
+				SidearmWeapon->SetPickUpState(EPickupState::Drop);
+				if (CurrentWeapon == SidearmWeapon)
+				{
+					SetCurrentWeapon(nullptr);
+					StopAnimMontage();
+				}
+				SidearmWeapon = nullptr;
 			}
-			SidearmWeapon = nullptr;
-		}
-		break;
+			break;
+		default:
+			break;
 	}
 }
 
-void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewCurrentWeapon, EWeaponToDo WeaponSlot)
+void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewWeapon)
 {
-	CurrentHoldingWeapon = WeaponSlot;
-	if (NewCurrentWeapon == nullptr)
+	if (NewWeapon == nullptr)
 	{
 		SetAimState(false);
 		ResetAim();
 	}
 
-	CurrentWeapon = NewCurrentWeapon;
-	if (CurrentWeapon)
-	{
-		WeaponType = CurrentWeapon->WeaponInfo.WeaponType;
-	}
+	CurrentWeapon = NewWeapon;
 }
 
 void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
@@ -489,21 +397,17 @@ void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 	{
 		switch (CanPickupAmmo_Implementation(Ammo->AmmoType))
 		{
-		case 0:
-			// No Weapon = no ammo
-			break;
-		case 1:
-			// Primary Weapon
-			PrimaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
-			break;
-		case 2:
-			// Secondary Weapon
-			SecondaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
-			break;
-		case 3:
-			// Sidearm Weapon
-			SidearmWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
-			break;
+			case EWeaponToDo::PrimaryWeapon:
+				PrimaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				break;
+			case EWeaponToDo::SecondaryWeapon:
+				SecondaryWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				break;
+			case EWeaponToDo::SidearmWeapon:
+				SidearmWeapon->GetAmmoComponent()->AddAmmo(Ammo->Amount);
+				break;
+			default:
+				break;
 		}
 
 		Ammo->SetPickUpState(EPickupState::Remove);
@@ -512,52 +416,35 @@ void ABaseCharacter::PickupAmmo(APickup* NewAmmo)
 
 EWeaponToDo ABaseCharacter::CanPickupAmmo_Implementation(int32 AmmoType)
 {
-	if (CurrentWeapon)
-	{
-		bool bIsSameAmmo = false;
-		switch (CurrentHoldingWeapon)
-		{
-		case 0:
-			// No weapon = no ammo
-			break;
-		case 1:
-			// Primary Weapon
-			bIsSameAmmo = AmmoType & PrimaryWeaponSupportedAmmo;
-			break;
-		case 2:
-			// Secondary Weapon
-			bIsSameAmmo = AmmoType & SecondaryWeaponSupportedAmmo;
-			break;
-		case 3:
-			// Sidearm Weapon
-			bIsSameAmmo = AmmoType & SidearmWeaponSupportedAmmo;
-			break;
-		}
-
-		if (CurrentWeapon->CanPickupAmmo() && bIsSameAmmo)
-		{
-			return CurrentHoldingWeapon;
-		}
-	}
-	if (PrimaryWeapon && PrimaryWeapon->CanPickupAmmo() && AmmoType & PrimaryWeaponSupportedAmmo)
-	{
-		return EWeaponToDo::PrimaryWeapon;
-	}
-	if (SecondaryWeapon && SecondaryWeapon->CanPickupAmmo() && AmmoType & SecondaryWeaponSupportedAmmo)
-	{
-		return EWeaponToDo::SecondaryWeapon;
-	}
-	if (SidearmWeapon && SidearmWeapon->CanPickupAmmo() && AmmoType & SidearmWeaponSupportedAmmo)
-	{
-		return EWeaponToDo::SidearmWeapon;
-	}
-	
 	return EWeaponToDo::NoWeapon;
+
+	// TODO: Redesign
+	// if (CurrentWeapon)
+	// {
+	// 	if (CurrentWeapon->CanPickupAmmo() && GameplayTools::HasFlag(CurrentWeapon->WeaponInfo.AmmoType, AmmoType))
+	// 	{
+	// 		return CurrentHoldingWeapon;
+	// 	}
+	// }
+	// if (PrimaryWeapon && PrimaryWeapon->CanPickupAmmo() && AmmoType & PrimaryWeaponSupportedAmmo)
+	// {
+	// 	return EWeaponToDo::PrimaryWeapon;
+	// }
+	// if (SecondaryWeapon && SecondaryWeapon->CanPickupAmmo() && AmmoType & SecondaryWeaponSupportedAmmo)
+	// {
+	// 	return EWeaponToDo::SecondaryWeapon;
+	// }
+	// if (SidearmWeapon && SidearmWeapon->CanPickupAmmo() && AmmoType & SidearmWeaponSupportedAmmo)
+	// {
+	// 	return EWeaponToDo::SidearmWeapon;
+	// }
+	//
+	// return EWeaponToDo::NoWeapon;
 }
 
 void ABaseCharacter::StartFireWeapon()
 {
-	if (CurrentWeapon && bIsAimed)
+	if (CurrentWeapon && bIsAiming)
 	{
 		CurrentWeapon->StartFireWeapon();
 	}
@@ -573,40 +460,28 @@ void ABaseCharacter::StopFireWeapon()
 
 void ABaseCharacter::ReloadWeapon()
 {
-	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->GetAmmoComponent()->CanReload() && CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
+	if (bDoOnceReload && CurrentWeapon && CurrentWeapon->GetAmmoComponent()->CanReload())
 	{
 		bDoOnceReload = false;
-		UAnimMontage* MontageToPlay = nullptr;
-		const int32 Index = static_cast<int32>(WeaponType);
-		switch (MovementState)
+
+		UAnimMontage* MontageToPlay;
+		if (bIsCrouched)
 		{
-		case 0: case 1: case 2:
-			// Walk, Run, Sprint
-			MontageToPlay = StandUpReloadMontages[Index];
-			break;
-		case 3:
-			// Crouch
-			MontageToPlay = CrouchReloadMontages[Index];
-			break;
-		case 4:
-			// Prone
-			if (APlayerController* LocalPC = Cast<APlayerController>(Controller))
-			{
-				DisableInput(LocalPC);
-			}
-			
-			MontageToPlay = ProneReloadMontages[Index];
-			break;
+			MontageToPlay = CurrentWeapon->CrouchReloadMontage;
+		}
+		else
+		{
+			MontageToPlay = CurrentWeapon->StandUpReloadMontage;
 		}
 		
-		const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
+		const float MontageLength = GetMesh()->AnimScriptInstance->Montage_Play(MontageToPlay);
 		if (MontageLength > 0.0f)
 		{
-			AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
 			
 			FOnMontageEnded EndedDelegate;
 			EndedDelegate.BindUObject(this, &ABaseCharacter::ReloadWeaponMontageHandler);
-			AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
+			GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
 
 			if (CurrentWeapon->GetClass()->ImplementsInterface(UCommonInterface::StaticClass()))
 			{
@@ -654,46 +529,41 @@ void ABaseCharacter::SetReloadNotify(const EReloadState ReloadState)
 {
 	if (CurrentWeapon)
 	{
-		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+		const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+
 		switch (ReloadState)
 		{
-		case 0:
-			// Start Reload
-			bCanReload = false;
-			break;
-		case 1:
-			// Remove Mag
-			SpawnMagazine(CurrentWeapon, false);
-			CurrentWeapon->SetMagazineVisibility(false);
-			Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
-			break;
-		case 2:
-			// Drop Mag
-			Magazine->GetMesh()->SetSimulatePhysics(true);
-			break;
-		case 3:
-			// Pick Mag
-			SpawnMagazine(CurrentWeapon, true);
-			CurrentWeapon->SetMagazineVisibility(false);
-			Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("LeftHandHoldSocket"));
-			break;
-		case 4:
-			// Insert Mag
-			bCanReload = true;
-			Magazine->Destroy();
-			CurrentWeapon->SetMagazineVisibility(true);
-			break;
-		case 5:
-			// End Reload
-			if (CurrentWeapon && bCanReload)
-			{
-				CurrentWeapon->ReloadWeapon();
-				if (CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == CurrentWeapon->GetAmmoComponent()->MagazineSize)
+			case EReloadState::StartReload:
+				bCanReload = false;
+				break;
+			case EReloadState::RemoveMag:
+				SpawnMagazine(CurrentWeapon, false);
+				CurrentWeapon->SetMagazineVisibility(false);
+				Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentRules, FName("LeftHandHoldSocket"));
+				break;
+			case EReloadState::DropMag:
+				Magazine->GetMesh()->SetSimulatePhysics(true);
+				break;
+			case EReloadState::PickMag:
+				SpawnMagazine(CurrentWeapon, true);
+				CurrentWeapon->SetMagazineVisibility(false);
+				Magazine->GetMesh()->AttachToComponent(GetMesh(), AttachmentRules, FName("LeftHandHoldSocket"));
+				break;
+			case EReloadState::InsertMag:
+				bCanReload = true;
+				Magazine->Destroy();
+				CurrentWeapon->SetMagazineVisibility(true);
+				break;
+			case EReloadState::EndReload:
+				if (CurrentWeapon && bCanReload)
 				{
-					StopAnimMontage();
+					CurrentWeapon->ReloadWeapon();
+					if (CurrentWeapon->GetAmmoComponent()->CurrentMagazineAmmo == CurrentWeapon->GetAmmoComponent()->MagazineSize)
+					{
+						StopAnimMontage();
+					}
 				}
-			}
-			break;
+				break;
 		}
 	}
 }
@@ -721,29 +591,24 @@ void ABaseCharacter::ResetReload()
 
 void ABaseCharacter::HolsterWeapon()
 {
-	if (CurrentWeapon)
+	if (CurrentWeapon == nullptr)
 	{
-		const int32 Index = static_cast<int32>(WeaponType);
-		UAnimMontage* MontageToPlay = HolsterWeaponMontages[Index];
+		SwitchIsEnded();
+		return;
+	}
+	
+	SetArmedState(false);
+	bCanReload = false;
+	CurrentWeapon->LowerWeapon();
+	
+	const float MontageLength = GetMesh()->AnimScriptInstance->Montage_Play(CurrentWeapon->HolsterWeaponMontage);
+	if (MontageLength > 0.0f)
+	{
+		GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), CurrentWeapon->HolsterWeaponMontage);
 		
-		SetArmedState(false);
-		if (CurrentHoldingWeapon != EWeaponToDo::NoWeapon)
-		{
-			bCanReload = false;
-			CurrentWeapon->LowerWeapon();
-			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), MontageToPlay);
-				FOnMontageEnded EndedDelegate;
-				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
-				AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
-			}
-		}
-		else
-		{
-			SwitchIsEnded();
-		}
+		FOnMontageEnded EndedDelegate;
+		EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
+		GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, CurrentWeapon->HolsterWeaponMontage);
 	}
 }
 
@@ -767,223 +632,212 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 {
 	switch (NotifyState)
 	{
-	case 0:
-		// Begin
-		bCanReload = false;
-		bCanHolster = true;
-		break;
-	case 1:
-		// End
-		if (bCanHolster)
-		{
-			// If the character is not trying to switch weapons then just holster the current weapon
-			if (WeaponToGrab == EWeaponToDo::NoWeapon)
+		case ENotifyState::Begin:
+			bCanReload = false;
+			bCanHolster = true;
+			break;
+		case ENotifyState::End:
+			if (bCanHolster)
 			{
-				AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
-				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-				SetArmedState(false);
-				bCanReload = true;
-				return;
-			}
+				// If the character is not trying to switch weapons then just holster the current weapon
+				if (WeaponToGrab == EWeaponToDo::NoWeapon)
+				{
+					AttachWeapon(CurrentWeapon, CurrentWeapon->CurrentSocket);
+					SetCurrentWeapon(nullptr);
+					SetArmedState(false);
+					bCanReload = true;
+					return;
+				}
 
-			// If the character trying to switch weapons and neither of the weapons is not a sidearm
-			// then attach the current weapon to behind the character and attach the target weapon to hand.
-			if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
-			{
-				switch (WeaponToGrab)
+				// If the character trying to switch weapons and neither of the weapons is not a sidearm
+				// then attach the current weapon to behind the character and attach the target weapon to hand.
+				if (WeaponToHolsterType != EWeaponType::Pistol && WeaponToHolsterType != EWeaponType::SMG && WeaponToSwitchType != EWeaponType::Pistol && WeaponToSwitchType != EWeaponType::SMG)
 				{
-				case 0:
-					// No Weapon = nothing to switch
-					break;
-				case 1:
-					// Primary Weapon
-					SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
-					break;
-				case 2:
-					// Secondary Weapon
-					SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
-					break;
-				case 3:
-					// Sidearm Weapon
-					SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
-					break;
+					switch (WeaponToGrab)
+					{
+					case EWeaponToDo::PrimaryWeapon:
+						SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
+						break;
+					case EWeaponToDo::SecondaryWeapon:
+						SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
+						break;
+					case EWeaponToDo::SidearmWeapon:
+						SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
+						break;
+					default:
+						// No Weapon = nothing to switch
+						break;
+					}
 				}
-			}
-			// Switching or holstering a sidearm weapon requires more steps to do
-			// so if the character is trying to switch weapons and one of them is a sidearm
-			// then attach the current weapon to its socket (behind or side) and start switching to the target weapon
-			else
-			{
-				AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
-				SetCurrentWeapon(nullptr, EWeaponToDo::NoWeapon);
-				SetArmedState(false);
-				switch (WeaponToGrab)
+				// Switching or holstering a sidearm weapon requires more steps to do
+				// so if the character is trying to switch weapons and one of them is a sidearm
+				// then attach the current weapon to its socket (behind or side) and start switching to the target weapon
+				else
 				{
-				case 0:
-					// No Weapon = nothing to switch
-					break;
-				case 1:
-					// Primary Weapon
-					SwitchToPrimary();
-					break;
-				case 2:
-					// Secondary Weapon
-					SwitchToSecondary();
-					break;
-				case 3:
-					// Sidearm Weapon
-					SwitchToSidearm();
-					break;
+					AttachWeapon(CurrentWeapon, CurrentWeapon->CurrentSocket);
+					SetCurrentWeapon(nullptr);
+					SetArmedState(false);
+					
+					switch (WeaponToGrab)
+					{
+					case 0:
+						// No Weapon = nothing to switch
+						break;
+					case 1:
+						// Primary Weapon
+						SwitchToPrimary();
+						break;
+					case 2:
+						// Secondary Weapon
+						SwitchToSecondary();
+						break;
+					case 3:
+						// Sidearm Weapon
+						SwitchToSidearm();
+						break;
+					}
 				}
+				bCanReload = true;
 			}
-			bCanReload = true;
-		}
-		break;
+			break;
 	}
 }
 
 void ABaseCharacter::SwitchToPrimary()
 {
-	if (PrimaryWeapon)
+	if (PrimaryWeapon == nullptr)
 	{
-		bCanReload = false;
-		SetArmedState(false);
-		
-		const int32 CurrentWeaponType = static_cast<int32>(WeaponType);
-		const int32 PrimaryWeaponType = static_cast<int32>(PrimaryWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponMontages[PrimaryWeaponType];
-		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponType];
+		return;
+	}
+	
+	bCanReload = false;
+	SetArmedState(false);
 
-		switch (CurrentHoldingWeapon)
+	// If currently holding no weapon then grab the primary weapon
+	if (CurrentWeapon == nullptr)
+	{
+		if (GetMesh()->AnimScriptInstance->Montage_Play(PrimaryWeapon->GrabWeaponMontage) > 0.0f)
 		{
-			float MontageLength;
-		case 0:
-			// If currently holding no weapon then grab the primary weapon
-			MontageLength = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
-				GrabbedWeapon = PrimaryWeapon;
-				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
-			}
-			break;
-		case 1:
-			// If currently holding the primary weapon then holster it
-			HolsterWeapon();
-			break;
-		case 2: case 3:
-			// If currently holding the secondary or sidearm weapon then holster it and grab the primary weapon
-			CurrentWeapon->LowerWeapon();
 			GrabbedWeapon = PrimaryWeapon;
-			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-				WeaponToGrab = EWeaponToDo::PrimaryWeapon;
-				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
-				WeaponToSwitchType = PrimaryWeapon->WeaponInfo.WeaponType;
-				FOnMontageEnded EndedDelegate;
-				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
-				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
-			}
-			break;
+			WeaponToGrab = EWeaponToDo::PrimaryWeapon;
+			
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), PrimaryWeapon->GrabWeaponMontage);
+		}
+	}
+	// If currently holding the primary weapon then holster it
+	else if (CurrentWeapon == PrimaryWeapon)
+	{
+		HolsterWeapon();
+	}
+	// If currently holding the secondary or sidearm weapon then holster it and grab the primary weapon
+	else
+	{
+		CurrentWeapon->LowerWeapon();
+		GrabbedWeapon = PrimaryWeapon;
+
+		if (GetMesh()->AnimScriptInstance->Montage_Play(CurrentWeapon->HolsterWeaponMontage) > 0.0f)
+		{
+			WeaponToGrab = EWeaponToDo::PrimaryWeapon;
+			WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+			WeaponToSwitchType = PrimaryWeapon->WeaponInfo.WeaponType;
+			
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), CurrentWeapon->HolsterWeaponMontage);
+			
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
+			GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, CurrentWeapon->HolsterWeaponMontage);
 		}
 	}
 }
 
 void ABaseCharacter::SwitchToSecondary()
 {
-	if (SecondaryWeapon)
+	if (SecondaryWeapon == nullptr)
 	{
-		bCanReload = false;
-		SetArmedState(false);
-		
-		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
-		const int32 SecondaryWeaponIndex = static_cast<int32>(SecondaryWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponMontages[SecondaryWeaponIndex];
-		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponIndex];
-		
-		switch (CurrentHoldingWeapon)
+		return;
+	}
+	
+	bCanReload = false;
+	SetArmedState(false);
+
+	// If currently holding no weapon then grab the secondary weapon
+	if (CurrentWeapon == nullptr)
+	{
+		if (GetMesh()->AnimScriptInstance->Montage_Play(SecondaryWeapon->GrabWeaponMontage) > 0.0f)
 		{
-			float MontageLength;
-		case 0:
-			// If currently holding no weapon then grab the secondary weapon
-			MontageLength = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
-				GrabbedWeapon = SecondaryWeapon;
-				WeaponToGrab = EWeaponToDo::SecondaryWeapon;
-			}
-			break;
-		case 2:
-			// If currently holding the secondary weapon then holster it
-			HolsterWeapon();
-			break;
-		case 1: case 3:
-			// If currently holding the primary or sidearm weapon then holster it and grab the secondary weapon
-			CurrentWeapon->LowerWeapon();
 			GrabbedWeapon = SecondaryWeapon;
-			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-				WeaponToGrab = EWeaponToDo::SecondaryWeapon;
-				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
-				WeaponToSwitchType = SecondaryWeapon->WeaponInfo.WeaponType;
-				FOnMontageEnded EndedDelegate;
-				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
-				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
-			}
-			break;
+			WeaponToGrab = EWeaponToDo::SecondaryWeapon;
+			
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), SecondaryWeapon->GrabWeaponMontage);
+		}
+	}
+	// If currently holding the secondary weapon then holster it
+	else if (CurrentWeapon == SecondaryWeapon)
+	{
+		HolsterWeapon();
+	}
+	// If currently holding the primary or sidearm weapon then holster it and grab the secondary weapon
+	else
+	{
+		CurrentWeapon->LowerWeapon();
+		GrabbedWeapon = SecondaryWeapon;
+		
+		if (GetMesh()->AnimScriptInstance->Montage_Play(CurrentWeapon->HolsterWeaponMontage) > 0.0f)
+		{
+			WeaponToGrab = EWeaponToDo::SecondaryWeapon;
+			WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+			WeaponToSwitchType = SecondaryWeapon->WeaponInfo.WeaponType;
+		
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), CurrentWeapon->HolsterWeaponMontage);
+		
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
+			GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, CurrentWeapon->HolsterWeaponMontage);
 		}
 	}
 }
 
 void ABaseCharacter::SwitchToSidearm()
 {
-	if (SidearmWeapon)
+	if (SidearmWeapon == nullptr)
 	{
-		bCanReload = false;
-		SetArmedState(false);
+		return;
+	}
 
-		const int32 CurrentWeaponIndex = static_cast<int32>(WeaponType);
-		const int32 SidearmWeaponIndex = static_cast<int32>(SidearmWeapon->WeaponInfo.WeaponType);
-		UAnimMontage* GrabMontage = GrabWeaponMontages[SidearmWeaponIndex];
-		UAnimMontage* HolsterMontage = HolsterWeaponMontages[CurrentWeaponIndex];
-		
-		switch (CurrentHoldingWeapon)
+	bCanReload = false;
+	SetArmedState(false);
+
+	// If currently holding no weapon then grab the sidearm weapon
+	if (CurrentWeapon == nullptr)
+	{
+		if (GetMesh()->AnimScriptInstance->Montage_Play(SidearmWeapon->GrabWeaponMontage) > 0.0f)
 		{
-			float MontageLength;
-		case 0:
-			// If currently holding no weapon then grab the sidearm weapon
-			MontageLength = AnimInstance->Montage_Play(GrabMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), GrabMontage);
-				GrabbedWeapon = SidearmWeapon;
-				WeaponToGrab = EWeaponToDo::SidearmWeapon;
-			}
-			break;
-		case 3:
-			// If currently holding the sidearm weapon then holster it
-			HolsterWeapon();
-			break;
-		case 1: case 2:
-			// If currently holding the primary or secondary weapon then holster it and grab the sidearm weapon
-			CurrentWeapon->LowerWeapon();
-			MontageLength = AnimInstance->Montage_Play(HolsterMontage);
-			if (MontageLength > 0.0f)
-			{
-				AnimInstance->Montage_JumpToSection(FName("Start"), HolsterMontage);
-				WeaponToGrab = EWeaponToDo::SidearmWeapon;
-				WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
-				WeaponToSwitchType = SidearmWeapon->WeaponInfo.WeaponType;
-				FOnMontageEnded EndedDelegate;
-				EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
-				AnimInstance->Montage_SetEndDelegate(EndedDelegate, HolsterMontage);
-			}
-			break;
+			GrabbedWeapon = SidearmWeapon;
+			WeaponToGrab = EWeaponToDo::SidearmWeapon;
+			
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), SidearmWeapon->GrabWeaponMontage);
+		}
+	}
+	// If currently holding the sidearm weapon then holster it
+	else if (CurrentWeapon == SidearmWeapon)
+	{
+		HolsterWeapon();
+	}
+	// If currently holding the primary or secondary weapon then holster it and grab the sidearm weapon
+	else
+	{
+		CurrentWeapon->LowerWeapon();
+		if (GetMesh()->AnimScriptInstance->Montage_Play(CurrentWeapon->HolsterWeaponMontage) > 0.0f)
+		{
+			WeaponToGrab = EWeaponToDo::SidearmWeapon;
+			WeaponToHolsterType = CurrentWeapon->WeaponInfo.WeaponType;
+			WeaponToSwitchType = SidearmWeapon->WeaponInfo.WeaponType;
+			
+			GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Start"), CurrentWeapon->HolsterWeaponMontage);
+			
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::HolsterWeaponMontageHandler);
+			GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, CurrentWeapon->HolsterWeaponMontage);
 		}
 	}
 }
@@ -998,23 +852,23 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 		// If character try to switch, attach the current weapon to skeletal mesh socket and set target weapon as current weapon
 		if (bSwitchWeapon)
 		{
-			AttachWeapon(CurrentWeapon, CurrentHoldingWeapon);
+			AttachWeapon(CurrentWeapon, CurrentWeapon->CurrentSocket);
 		}
 
 		switch (TargetWeapon)
 		{
-		case 0:
-			// No weapon to switch to
-			break;
-		case 1:
-			SetCurrentWeapon(WeaponToSwitch, EWeaponToDo::PrimaryWeapon);
-			break;
-		case 2:
-			SetCurrentWeapon(WeaponToSwitch, EWeaponToDo::SecondaryWeapon);
-			break;
-		case 3:
-			SetCurrentWeapon(WeaponToSwitch, EWeaponToDo::SidearmWeapon);
-			break;
+			case EWeaponToDo::PrimaryWeapon:
+				SetCurrentWeapon(WeaponToSwitch);
+				break;
+			case EWeaponToDo::SecondaryWeapon:
+				SetCurrentWeapon(WeaponToSwitch);
+				break;
+			case EWeaponToDo::SidearmWeapon:
+				SetCurrentWeapon(WeaponToSwitch);
+				break;
+			default:
+				// No weapon to switch to
+				break;
 		}
 
 		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
@@ -1025,175 +879,168 @@ void ABaseCharacter::SwitchWeaponHandler(APickupWeapon* WeaponToSwitch, EWeaponT
 	WeaponToGrab = EWeaponToDo::NoWeapon;
 }
 
-void ABaseCharacter::UpdateGrabWeaponNotifyState(ENotifyState NotifyState)
+void ABaseCharacter::UpdateGrabWeaponNotifyState(const ENotifyState NotifyState)
 {
 	switch (NotifyState)
 	{
-	case 0:
-		// Start
-		if (GrabbedWeapon)
-		{
-			SwitchWeaponHandler(GrabbedWeapon, WeaponToGrab, false);
-			GrabbedWeapon->RaiseWeapon();
-			
-			const int32 GrabbedWeaponIndex = static_cast<int32>(WeaponType);
-			UAnimMontage* MontageToPlay = GrabWeaponMontages[GrabbedWeaponIndex];
-			
-			const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
-			if (MontageLength > 0.0f)
+		case ENotifyState::Begin:
+			if (GrabbedWeapon)
 			{
-				AnimInstance->Montage_JumpToSection(FName("Grab"), MontageToPlay);
+				SwitchWeaponHandler(GrabbedWeapon, WeaponToGrab, false);
+				GrabbedWeapon->RaiseWeapon();
+				
+				if (GetMesh()->AnimScriptInstance->Montage_Play(GrabbedWeapon->GrabWeaponMontage) > 0.0f)
+				{
+					GetMesh()->AnimScriptInstance->Montage_JumpToSection(FName("Grab"), GrabbedWeapon->GrabWeaponMontage);
+				}
+				
+				GrabbedWeapon = nullptr;
 			}
-			GrabbedWeapon = nullptr;
-		}
-		bCanReload = false;
-		break;
-	case 1:
-		// End
-		StopAnimMontage();
-		SwitchIsEnded();
-		bCanReload = true;
-		break;
+		
+			bCanReload = false;
+			break;
+		case ENotifyState::End:
+			StopAnimMontage();
+			SwitchIsEnded();
+			bCanReload = true;
+			break;
 	}
 }
 
-void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, EWeaponToDo TargetWeapon) const
+void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, const EWeaponToDo TargetSocket) const
 {
-	const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+	WeaponToAttach->CurrentSocket = TargetSocket;
+	
+	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 		EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-	switch (TargetWeapon)
+	
+	switch (TargetSocket)
 	{
-	case 0:
+	case EWeaponToDo::NoWeapon:
 		// No weapon to attach
+		checkNoEntry();
 		break;
-	case 1:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon1Socket"));
+	case EWeaponToDo::PrimaryWeapon:
+		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon1Socket"));
 		break;
-	case 2:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon2Socket"));
+	case EWeaponToDo::SecondaryWeapon:
+		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon2Socket"));
 		break;
-	case 3:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("Weapon3Socket"));
+	case EWeaponToDo::SidearmWeapon:
+		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon3Socket"));
 		break;
 	}
 }
 
 void ABaseCharacter::AddRecoil_Implementation(const FRotator RotationIntensity, const float ControlTime, const float CrosshairRecoil, const float ControllerPitch)
 {
-	if (bCharacterAnimationInterface)
-	{
-		ICharacterAnimationInterface::Execute_AddRecoil(AnimInstance, RotationIntensity, ControlTime);
-	}
+	// TODO
+	// if (bCharacterAnimationInterface)
+	// {
+	// 	ICharacterAnimationInterface::Execute_AddRecoil(AnimInstance, RotationIntensity, ControlTime);
+	// }
 }
 
-void ABaseCharacter::SetArmedState(bool bArmedState)
+void ABaseCharacter::SetArmedState(const bool bArmedState)
 {
-	bIsArmed = bArmedState;
 	if (bArmedState == false)
 	{
 		SetAimState(false);
 	}
-	
-	if (bCharacterAnimationInterface)
-	{
-		if (CurrentWeapon)
-		{
-			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, bArmedState, CurrentWeapon);
-		}
-		else
-		{
-			ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
-		}
-	}
+
+	// TODO: Update anim instance
+	// if (bCharacterAnimationInterface)
+	// {
+	// 	if (CurrentWeapon)
+	// 	{
+	// 		ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, bArmedState, CurrentWeapon);
+	// 	}
+	// 	else
+	// 	{
+	// 		ICharacterAnimationInterface::Execute_SetArmedState(AnimInstance, false, CurrentWeapon);
+	// 	}
+	// }
 }
 
-bool ABaseCharacter::SetAimState(bool bIsAiming)
+bool ABaseCharacter::SetAimState(bool bNewState)
 {
-	if (bIsAiming && bIsArmed && CurrentWeapon)
+	bIsAiming = bNewState;
+	
+	if (bNewState && CurrentWeapon)
 	{
-		bIsAimed = true;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
-		
-		if (bCharacterAnimationInterface)
-		{
-			ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, true, CurrentWeapon);
-		}
-		
-		switch (MovementState)
-		{
-		case EMovementState::Walk: case EMovementState::Run: case EMovementState::Sprint:
-			// Set character movement state to walk and stop the character from running or sprinting while aiming
-			SetMovementState_Implementation(EMovementState::Walk, false, false);
-			break;
-		case EMovementState::Crouch:
-			SetMovementState_Implementation(EMovementState::Crouch, false, false);
-			break;
-		}
+
+		// TODO: Update anim instance
+		// if (bCharacterAnimationInterface)
+		// {
+		// 	ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, true, CurrentWeapon);
+		// }
+
+		// Force the character to walk while aiming
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		
 		StopAnimMontage();
 		return true;
 	}
 	
-	bIsAimed = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	StopFireWeapon();
-	if (bCharacterAnimationInterface)
-	{
-		ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, false, CurrentWeapon);
-	}
+
+	// TODO: Update anim instance
+	// if (bCharacterAnimationInterface)
+	// {
+	// 	ICharacterAnimationInterface::Execute_SetAimedState(AnimInstance, false, CurrentWeapon);
+	// }
 	
 	return false;
 }
 
 void ABaseCharacter::DropCurrentObject()
 {
-	DropWeapon(CurrentHoldingWeapon);
-	SetArmedState(false);
+	if (CurrentWeapon)
+	{
+		DropWeapon(CurrentWeapon->CurrentSocket);
+		SetArmedState(false);
+	}
 }
 
 void ABaseCharacter::MeleeAttack()
 {
 	UAnimMontage* MontageToPlay = MeleeAttackMontages[FMath::RandRange(0, MeleeAttackMontages.Num() - 1)];
-	const float MontageLength = AnimInstance->Montage_Play(MontageToPlay);
-	if (MontageLength > 0.0f)
+	if (GetMesh()->AnimScriptInstance->Montage_Play(MontageToPlay) > 0.0f)
 	{
 		GetCharacterMovement()->DisableMovement();
-		KickCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		//TODO: Capsule trace
 		
 		FOnMontageEnded EndedDelegate;
 		EndedDelegate.BindUObject(this, &ABaseCharacter::MeleeMontageHandler);
-		AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
+		GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
 	}
 }
 
 void ABaseCharacter::MeleeMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	KickCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void ABaseCharacter::KickCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (bIsAlive && OtherActor != this)
-	{
-		UGameplayStatics::ApplyDamage(OtherActor, MeleeInfo.KickDamage, GetInstigatorController(), this, MeleeInfo.KickDamageType);
-	}
-}
+// TODO: Improve melee attack
+	// if (bIsAlive && OtherActor != this)
+	// {
+	// 	UGameplayStatics::ApplyDamage(OtherActor, MeleeDamage, GetInstigatorController(), this, nullptr);
+	// }
 
 void ABaseCharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case 0: case 1: case 2: case 3:
-		// Health is full, Health is low, Health recovery started, Health recovery stopped
-		break;
-	case 4:
-		// Death
-		Death();
-		break;
+		case EHealthState::Death:
+			KillCharacter();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -1212,295 +1059,261 @@ void ABaseCharacter::SetStaminaLevel_Implementation(float Stamina, const bool bI
 	}
 }
 
-void ABaseCharacter::ToggleRagdoll(bool bStart)
+void ABaseCharacter::KillCharacter()
 {
-	if (bStart)
+	DismembermentInitiate(HealthComponent->ShotOrigin, HealthComponent->HitBoneName);
+	SetArmedState(false);
+	bIsAlive = false;
+	HealthComponent->Deactivate();
+	StaminaComponent->Deactivate();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	// Don't play the death montage if character is falling 
+	if (GetCharacterMovement()->IsFalling())
 	{
-		GetCharacterMovement()->DisableMovement();
-		GetMesh()->SetConstraintProfileForAll(FName("Ragdoll"), true);
-		GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
-		GetMesh()->SetSimulatePhysics(true);
-		MeshLocation = GetMesh()->GetComponentLocation();
-		bRagdollState = true;
-		if (bCharacterAnimationInterface)
-		{
-			ICharacterAnimationInterface::Execute_SetCompletelyStopMoving(AnimInstance, true);
-		}
+		// TODO: Enable ragdoll
+		DeathMontageHandler(nullptr, false);
 	}
 	else
 	{
-		GetMesh()->SetSimulatePhysics(false);
-		// Set back all changes to default
-		GetMesh()->SetCollisionProfileName(FName("CharacterMesh"));
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		GetMesh()->SetConstraintProfileForAll(FName("None"), true);
-		bRagdollState = false;
-		if (bCharacterAnimationInterface)
-		{
-			ICharacterAnimationInterface::Execute_SetCompletelyStopMoving(AnimInstance, false);
-		}
-	}
-}
-
-void ABaseCharacter::Death()
-{
-	if (bDoOnceDeath)
-	{
-		DismembermentInitiate(HealthComponent->ShotOrigin, HealthComponent->HitBoneName);
-		SetArmedState(false);
-		bIsAlive = false;
-		HealthComponent->DestroyComponent();
-		StaminaComponent->DestroyComponent();
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		FallCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		UAnimMontage* MontageToPlay;
 		
-		// Don't play the death montage if character is falling 
-		if (GetCharacterMovement()->IsFalling())
+		// Select a random montage based on the current movement state
+		if (bIsCrouched)
 		{
-			DeathMontageHandler(nullptr, false);
+			MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, CrouchDeathMontages.Num() - 1)].LoadSynchronous();
 		}
 		else
 		{
-			UAnimMontage* MontageToPlay = nullptr;
-			
-			// Select a random montage based on current movement state
-			switch (MovementState)
-			{
-			case EMovementState::Walk: case EMovementState::Run: case EMovementState::Sprint:
-				MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, StandUpDeathMontages.Num() - 1)].LoadSynchronous();
-				break;
-			case EMovementState::Crouch:
-				MontageToPlay = CrouchDeathMontages[FMath::RandRange(0, CrouchDeathMontages.Num() - 1)].LoadSynchronous();
-				break;
-			}
-			
-			if (AnimInstance->Montage_Play(MontageToPlay) > 0.0f)
-			{
-				FOnMontageEnded EndedDelegate;
-				EndedDelegate.BindUObject(this, &ABaseCharacter::DeathMontageHandler);
-				AnimInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
-			}
+			MontageToPlay = StandUpDeathMontages[FMath::RandRange(0, StandUpDeathMontages.Num() - 1)].LoadSynchronous();
 		}
 		
-		GetCharacterMovement()->DisableMovement();
-		StimuliSource->UnregisterFromSense(UAISense_Sight::StaticClass());
-		StimuliSource->UnregisterFromPerceptionSystem();
-		
-		// If character is AI, detach it from controller
-		if (Cast<AAIController>(GetController()))
+		if (GetMesh()->AnimScriptInstance->Montage_Play(MontageToPlay) > 0.0f)
 		{
-			DetachFromControllerPendingDestroy();
+			FOnMontageEnded EndedDelegate;
+			EndedDelegate.BindUObject(this, &ABaseCharacter::DeathMontageHandler);
+			GetMesh()->AnimScriptInstance->Montage_SetEndDelegate(EndedDelegate, MontageToPlay);
 		}
+	}
+	
+	GetCharacterMovement()->DisableMovement();
+	StimuliSource->UnregisterFromSense(UAISense_Sight::StaticClass());
+	StimuliSource->UnregisterFromPerceptionSystem();
+	
+	// If character is AI, detach it from controller
+	if (Cast<AAIController>(GetController()))
+	{
+		DetachFromControllerPendingDestroy();
 	}
 }
 
 void ABaseCharacter::DismembermentInitiate(FVector ShotOrigin, FName HitBone)
 {
-	if (HitBone != NAME_None && HitBone != "pelvis" && HitBone != "spine_01" && HitBone != "spine_02" && HitBone != "spine_03" && HitBone != "clavicle_l" && HitBone != "clavicle_r")
-	{
-		USkeletalMeshComponent* AmputatedLimb = nullptr;
-		if (HitBone == "head" || HitBone == "neck_01")
-		{
-			constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
-			GetMesh()->HideBoneByName(FName("neck_01"), PhysBodyOption);
-			AmputatedLimb = SpawnBodyPart("Head", BodyParts.Head);
-		}
-		else if (HitBone == "Thigh_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Thigh_L")))
-		{
-			AmputatedLimb = DismembermentLeftLeg(HitBone);
-		}
-		else if (HitBone == "Thigh_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Thigh_R")))
-		{
-			AmputatedLimb = DismembermentRightLeg(HitBone);
-		}
-		else if (GetMesh()->BoneIsChildOf(HitBone, FName("clavicle_l")))
-		{
-			AmputatedLimb = DismembermentLeftHand(HitBone);
-			DropWeapon(CurrentHoldingWeapon);
-		}
-		else if (GetMesh()->BoneIsChildOf(HitBone, FName("clavicle_r")))
-		{
-			AmputatedLimb = DismembermentRightHand(HitBone);
-			DropWeapon(CurrentHoldingWeapon);
-		}
-		
-		if (AmputatedLimb)
-		{
-			AmputatedLimb->AddRadialImpulse(ShotOrigin, 400.0f, 500.0f, RIF_Linear, true);
-		}
-	}
+	// TODO: Redesign
+	// if (HitBone != NAME_None && HitBone != "pelvis" && HitBone != "spine_01" && HitBone != "spine_02" && HitBone != "spine_03" && HitBone != "clavicle_l" && HitBone != "clavicle_r")
+	// {
+	// 	USkeletalMeshComponent* AmputatedLimb = nullptr;
+	// 	if (HitBone == "head" || HitBone == "neck_01")
+	// 	{
+	// 		constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
+	// 		GetMesh()->HideBoneByName(FName("neck_01"), PhysBodyOption);
+	// 		AmputatedLimb = SpawnBodyPart("Head", BodyParts.Head);
+	// 	}
+	// 	else if (HitBone == "Thigh_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Thigh_L")))
+	// 	{
+	// 		AmputatedLimb = DismembermentLeftLeg(HitBone);
+	// 	}
+	// 	else if (HitBone == "Thigh_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Thigh_R")))
+	// 	{
+	// 		AmputatedLimb = DismembermentRightLeg(HitBone);
+	// 	}
+	// 	else if (GetMesh()->BoneIsChildOf(HitBone, FName("clavicle_l")))
+	// 	{
+	// 		AmputatedLimb = DismembermentLeftHand(HitBone);
+	// 		DropWeapon(CurrentHoldingWeapon);
+	// 	}
+	// 	else if (GetMesh()->BoneIsChildOf(HitBone, FName("clavicle_r")))
+	// 	{
+	// 		AmputatedLimb = DismembermentRightHand(HitBone);
+	// 		DropWeapon(CurrentHoldingWeapon);
+	// 	}
+	// 	
+	// 	if (AmputatedLimb)
+	// 	{
+	// 		AmputatedLimb->AddRadialImpulse(ShotOrigin, 400.0f, 500.0f, RIF_Linear, true);
+	// 	}
+	// }
 }
 
 USkeletalMeshComponent* ABaseCharacter::DismembermentLeftLeg(FName HitBone)
 {
 	USkeletalMeshComponent* NewBodyPart = nullptr;
-	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
-	if (HitBone == "Thigh_L" || HitBone == "thigh_twist_01_l")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("calf_l")) && BodyParts.ThighLeft)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Thigh", BodyParts.ThighLeft);
-		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.ThighAndCalfLeft)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Thigh and Calf", BodyParts.ThighAndCalfLeft);
-		}
-		else if (BodyParts.LegLeft)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Leg", BodyParts.LegLeft);
-		}
-	}
-	else if (HitBone == "calf_l" || HitBone == "calf_twist_01_l")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.CalfLeft)
-		{
-			GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Calf", BodyParts.CalfLeft);
-		}
-		else if (BodyParts.CalfAndFootLeft)
-		{
-			GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Calf and Foot", BodyParts.CalfAndFootLeft);
-		}
-	}
-	else if (HitBone == "Foot_L" || HitBone == "ball_l" && BodyParts.FootLeft)
-	{
-		GetMesh()->HideBoneByName(FName("Foot_L"), PhysBodyOption);
-		NewBodyPart = SpawnBodyPart("Left Foot", BodyParts.FootLeft);
-	}
+	// constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
+	// if (HitBone == "Thigh_L" || HitBone == "thigh_twist_01_l")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("calf_l")) && BodyParts.ThighLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Thigh", BodyParts.ThighLeft);
+	// 	}
+	// 	else if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.ThighAndCalfLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Thigh and Calf", BodyParts.ThighAndCalfLeft);
+	// 	}
+	// 	else if (BodyParts.LegLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Leg", BodyParts.LegLeft);
+	// 	}
+	// }
+	// else if (HitBone == "calf_l" || HitBone == "calf_twist_01_l")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("Foot_L")) && BodyParts.CalfLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Calf", BodyParts.CalfLeft);
+	// 	}
+	// 	else if (BodyParts.CalfAndFootLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("calf_l"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Calf and Foot", BodyParts.CalfAndFootLeft);
+	// 	}
+	// }
+	// else if (HitBone == "Foot_L" || HitBone == "ball_l" && BodyParts.FootLeft)
+	// {
+	// 	GetMesh()->HideBoneByName(FName("Foot_L"), PhysBodyOption);
+	// 	NewBodyPart = SpawnBodyPart("Left Foot", BodyParts.FootLeft);
+	// }
 	return NewBodyPart;
 }
 
 USkeletalMeshComponent* ABaseCharacter::DismembermentRightLeg(FName HitBone)
 {
 	USkeletalMeshComponent* NewBodyPart = nullptr;
-	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
-	if (HitBone == "Thigh_R" || HitBone == "thigh_twist_01_r")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("calf_r")) && BodyParts.ThighRight)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Thigh", BodyParts.ThighRight);
-		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.ThighAndCalfRight)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Thigh and Calf", BodyParts.ThighAndCalfRight);
-		}
-		else if (BodyParts.LegRight)
-		{
-			GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Leg", BodyParts.LegRight);
-		}
-	}
-	else if (HitBone == "calf_r" || HitBone == "calf_twist_01_r")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.CalfRight)
-		{
-			GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Calf", BodyParts.CalfRight);
-		}
-		else if (BodyParts.CalfAndFootRight)
-		{
-			GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Calf and Foot", BodyParts.CalfAndFootRight);
-		}
-	}
-	else if (HitBone == "Foot_R" || HitBone == "ball_r" && BodyParts.FootRight)
-	{
-		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
-		NewBodyPart = SpawnBodyPart("Right Foot", BodyParts.FootRight);
-	}
+	// constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
+	// if (HitBone == "Thigh_R" || HitBone == "thigh_twist_01_r")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("calf_r")) && BodyParts.ThighRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Thigh", BodyParts.ThighRight);
+	// 	}
+	// 	else if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.ThighAndCalfRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Thigh and Calf", BodyParts.ThighAndCalfRight);
+	// 	}
+	// 	else if (BodyParts.LegRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("Thigh_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Leg", BodyParts.LegRight);
+	// 	}
+	// }
+	// else if (HitBone == "calf_r" || HitBone == "calf_twist_01_r")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("Foot_R")) && BodyParts.CalfRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Calf", BodyParts.CalfRight);
+	// 	}
+	// 	else if (BodyParts.CalfAndFootRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Calf and Foot", BodyParts.CalfAndFootRight);
+	// 	}
+	// }
+	// else if (HitBone == "Foot_R" || HitBone == "ball_r" && BodyParts.FootRight)
+	// {
+	// 	GetMesh()->HideBoneByName(FName("calf_r"), PhysBodyOption);
+	// 	NewBodyPart = SpawnBodyPart("Right Foot", BodyParts.FootRight);
+	// }
 	return NewBodyPart;
 }
 
 USkeletalMeshComponent* ABaseCharacter::DismembermentLeftHand(FName HitBone)
 {
 	USkeletalMeshComponent* NewBodyPart = nullptr;
-	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
-	if (HitBone == "UpperArm_L")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_l")) && BodyParts.UpperArmLeft)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Upper Arm", BodyParts.UpperArmLeft);
-		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.UpperArmAndLowerArmLeft)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmLeft);
-		}
-		else if (BodyParts.ArmLeft)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Arm", BodyParts.ArmLeft);
-		}
-	}
-	else if (HitBone == "lowerarm_l" || HitBone == "lowerarm_twist_01_l")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.LowerArmLeft)
-		{
-			GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Lower Arm", BodyParts.LowerArmLeft);
-		}
-		else if (BodyParts.LowerArmAndHandLeft)
-		{
-			GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Left Lower Arm and Hand", BodyParts.LowerArmAndHandLeft);
-		}
-	}
-	else if (HitBone == "Hand_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_L")) && BodyParts.HandLeft)
-	{
-		GetMesh()->HideBoneByName(FName("Hand_L"), PhysBodyOption);
-		NewBodyPart = SpawnBodyPart("Left Hand", BodyParts.HandLeft);
-	}
+	// constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
+	// if (HitBone == "UpperArm_L")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_l")) && BodyParts.UpperArmLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Upper Arm", BodyParts.UpperArmLeft);
+	// 	}
+	// 	else if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.UpperArmAndLowerArmLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmLeft);
+	// 	}
+	// 	else if (BodyParts.ArmLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_L"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Arm", BodyParts.ArmLeft);
+	// 	}
+	// }
+	// else if (HitBone == "lowerarm_l" || HitBone == "lowerarm_twist_01_l")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("Hand_L")) && BodyParts.LowerArmLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Lower Arm", BodyParts.LowerArmLeft);
+	// 	}
+	// 	else if (BodyParts.LowerArmAndHandLeft)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("lowerarm_l"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Left Lower Arm and Hand", BodyParts.LowerArmAndHandLeft);
+	// 	}
+	// }
+	// else if (HitBone == "Hand_L" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_L")) && BodyParts.HandLeft)
+	// {
+	// 	GetMesh()->HideBoneByName(FName("Hand_L"), PhysBodyOption);
+	// 	NewBodyPart = SpawnBodyPart("Left Hand", BodyParts.HandLeft);
+	// }
 	return NewBodyPart;
 }
 
 USkeletalMeshComponent* ABaseCharacter::DismembermentRightHand(FName HitBone)
 {
 	USkeletalMeshComponent* NewBodyPart = nullptr;
-	constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
-	if (HitBone == "UpperArm_R")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_r")) && BodyParts.UpperArmRight)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Upper Arm", BodyParts.UpperArmRight);
-		}
-		else if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.UpperArmAndLowerArmRight)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmRight);
-		}
-		else if (BodyParts.ArmRight)
-		{
-			GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Arm", BodyParts.ArmRight);
-		}
-	}
-	else if (HitBone == "lowerarm_r" || HitBone == "lowerarm_twist_01_r")
-	{
-		if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.LowerArmRight)
-		{
-			GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Lower Arm", BodyParts.LowerArmRight);
-		}
-		else if (BodyParts.LowerArmAndHandRight)
-		{
-			GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
-			NewBodyPart = SpawnBodyPart("Right Lower Arm and Hand", BodyParts.LowerArmAndHandRight);
-		}
-	}
-	else if (HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")) && BodyParts.HandRight)
-	{
-		GetMesh()->HideBoneByName(FName("Hand_R"), PhysBodyOption);
-		NewBodyPart = SpawnBodyPart("Right Hand", BodyParts.HandRight);
-	}
+	// constexpr EPhysBodyOp PhysBodyOption = PBO_Term;
+	// if (HitBone == "UpperArm_R")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("lowerarm_r")) && BodyParts.UpperArmRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Upper Arm", BodyParts.UpperArmRight);
+	// 	}
+	// 	else if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.UpperArmAndLowerArmRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Upper Arm and Lower Arm", BodyParts.UpperArmAndLowerArmRight);
+	// 	}
+	// 	else if (BodyParts.ArmRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("UpperArm_R"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Arm", BodyParts.ArmRight);
+	// 	}
+	// }
+	// else if (HitBone == "lowerarm_r" || HitBone == "lowerarm_twist_01_r")
+	// {
+	// 	if (GetMesh()->IsBoneHiddenByName(FName("Hand_R")) && BodyParts.LowerArmRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Lower Arm", BodyParts.LowerArmRight);
+	// 	}
+	// 	else if (BodyParts.LowerArmAndHandRight)
+	// 	{
+	// 		GetMesh()->HideBoneByName(FName("lowerarm_r"), PhysBodyOption);
+	// 		NewBodyPart = SpawnBodyPart("Right Lower Arm and Hand", BodyParts.LowerArmAndHandRight);
+	// 	}
+	// }
+	// else if (HitBone == "Hand_R" || GetMesh()->BoneIsChildOf(HitBone, FName("Hand_R")) && BodyParts.HandRight)
+	// {
+	// 	GetMesh()->HideBoneByName(FName("Hand_R"), PhysBodyOption);
+	// 	NewBodyPart = SpawnBodyPart("Right Hand", BodyParts.HandRight);
+	// }
 	return NewBodyPart;
 }
 
@@ -1522,7 +1335,17 @@ USkeletalMeshComponent* ABaseCharacter::SpawnBodyPart(FName Name, USkeletalMesh*
 
 void ABaseCharacter::DeathMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted)
 {
-	ToggleRagdoll(true);
+	GetCharacterMovement()->DisableMovement();
+	GetMesh()->SetConstraintProfileForAll(FName("Ragdoll"), true);
+	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
+
+	// TODO: Stop anim instance
+	// if (bCharacterAnimationInterface)
+	// {
+	// 	ICharacterAnimationInterface::Execute_SetCompletelyStopMoving(AnimInstance, true);
+	// }
+	
 	GetMesh()->bPauseAnims = true;
 	GetMesh()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
 	// Drop all weapons
@@ -1580,205 +1403,38 @@ void ABaseCharacter::Destroyed()
 
 void ABaseCharacter::PlayIdleAnimation()
 {
-	// Play montage only when character is in walking state and standing
-	if (MovementState == EMovementState::Walk)
+	// Play montage only when the character is stationary
+	if (bIsAiming == false && GetCharacterMovement()->Velocity.Length() == 0.0f)
 	{
+		UAnimMontage* MontageToPlay;
+		
 		// If the character is holding a weapon but not aiming it, play idle montage based on weapon type
-		if (bIsAimed == false && bIsArmed)
+		if (CurrentWeapon)
 		{
-			const int32 Index = static_cast<int32>(WeaponType);
-			IdleMontage = ArmedIdleMontages[Index];
+			MontageToPlay = CurrentWeapon->IdleMontage;
 		}
 		// If the character is not holding a weapon play a random idle animation
-		else if (bIsAimed == false && bIsArmed == false)
+		else
 		{
-			IdleMontage = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
+			MontageToPlay = IdleMontages[FMath::RandRange(0, IdleMontages.Num() - 1)];
 		}
 		
-		const float MontageLength = PlayAnimMontage(IdleMontage);
-		if (MontageLength > 0.0f)
+		if (GetMesh()->AnimScriptInstance->Montage_Play(MontageToPlay) > 0.0f)
 		{
 			bCanHolster = false;
 		}
 	}
 }
 
-void ABaseCharacter::StartJump()
-{
-	if (MovementState != EMovementState::Crouch)
-	{
-		Jump();
-	}
-}
-
 void ABaseCharacter::Landed(const FHitResult& Hit)
 {
+	Super::Landed(Hit);
+	
 	// TODO: Use CMC crouch
-	if (MovementState == EMovementState::Crouch)
-	{
-		Crouch();
-	}
-}
-
-void ABaseCharacter::ToggleCrouch()
-{
-	// If idle montage is playing stop it and then toggle crouch
-	if (IdleMontage && AnimInstance->Montage_IsPlaying(IdleMontage))
-	{
-		StopAnimMontage();
-	}
-	
-	switch (MovementState)
-	{
-	case 0: case 1: case 2: case 4:
-		Crouch();
-		SetMovementState_Implementation(EMovementState::Crouch, true, false);
-		break;
-	case 3:
-		UnCrouch();
-		SetMovementState_Implementation(EMovementState::Walk, true, false);
-		break;
-	}
-}
-
-void ABaseCharacter::FallCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (bIsAlive)
-	{
-		// Apply fall damage if velocity between character and other component is higher than MinVelocityToApplyFallDamage
-		const float Velocity = (OtherComp->GetPhysicsLinearVelocity() - GetVelocity()).Size();
-		if (Velocity > MinVelocityToApplyFallDamage)
-		{
-			const TSubclassOf<UDamageType> DamageType;
-			UGameplayStatics::ApplyDamage(this, Velocity * FallDamageMultiplier, GetInstigatorController(), this, DamageType);
-			ToggleRagdoll(true);
-			GetWorld()->GetTimerManager().SetTimer(CheckForFallingTimer, this, &ABaseCharacter::CheckForFalling, StandingDelay, true);
-		}
-	}
-}
-
-void ABaseCharacter::CheckForFalling()
-{
-	FHitResult OutHit;
-	const FVector Start = GetMesh()->GetSocketLocation(FName("pelvis"));
-	const FVector End = Start + FVector(0.0f, 0.0f, -1.0f) * 100.0f;
-	FCollisionQueryParams CollisionQueryParams;
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility);
-
-	// If Character is on the ground and not moving
-	if (bHit && GetVelocity().Size() < 10.0f)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(CheckForFallingTimer);
-		CachePose();
-		
-		// Wait for pose to be cached	
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABaseCharacter::StandUp, 0.2f);
-	}
-}
-
-void ABaseCharacter::CachePose()
-{
-	// TODO: Delete
-	/*SetGetupOrientation();
-	if (CalculateFacingDirection())
-	{
-		// Character is facing down
-		StandUpMontage = StandUpFromFrontMontages[FMath::RandRange(0, StandUpFromFrontMontages.Num() - 1)];
-	}
-	else
-	{
-		// Character is facing up
-		StandUpMontage = StandUpFromBackMontages[FMath::RandRange(0, StandUpFromBackMontages.Num() - 1)];
-	}
-
-	// Two frame delay for caching the pose
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUObject(this, &ABaseCharacter::OneFrameDelay);
-	GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);*/
-}
-
-void ABaseCharacter::SetGetupOrientation()
-{
-	FTransform NewTransform;
-	NewTransform.SetLocation(MeshLocation);
-	const FVector Z = FVector(0.0f, 0.0f, 1.0f);
-	const FVector NeckLocation = GetMesh()->GetSocketLocation(FName("neck_01"));
-	const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
-	const FVector X = CalculateFacingDirection() ? NeckLocation - PelvisLocation : PelvisLocation - NeckLocation;
-	NewTransform.SetRotation(UKismetMathLibrary::MakeRotFromZX(Z, X).Quaternion());
-	
-	SetActorTransform(NewTransform);
-}
-
-void ABaseCharacter::StandUp()
-{
-	ToggleRagdoll(false);
-	const float MontageLength = AnimInstance->Montage_Play(StandUpMontage);
-	
-	if (MontageLength > 0.0f)
-	{
-		FOnMontageEnded EndedDelegate;
-		EndedDelegate.BindUObject(this, &ABaseCharacter::StanUpMontageHandler);
-		AnimInstance->Montage_SetEndDelegate(EndedDelegate, StandUpMontage);
-	}
-}
-
-void ABaseCharacter::CalculateCapsuleLocation()
-{
-	FVector CapsuleLocation;
-	FHitResult HitResult;
-	const FVector Start = GetMesh()->GetSocketLocation(TEXT("pelvis"));
-	const FVector End = Start + FVector(0.0f, 0.0f, -1.0f) * 100.0f;
-	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(this);
-
-	// If a blocking hit is found
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionQueryParams))
-	{
-		CapsuleLocation = HitResult.Location + MeshLocationOffset;
-	}
-	else
-	{
-		CapsuleLocation = GetMesh()->GetSocketLocation(TEXT("pelvis")) + MeshLocationOffset;
-	}
-	
-	MeshLocation = FMath::VInterpTo(MeshLocation, CapsuleLocation,  GetWorld()->GetDeltaSeconds(), 2.5f);
-}
-
-bool ABaseCharacter::CalculateFacingDirection() const
-{
-	const FVector RightVector = UKismetMathLibrary::GetRightVector(GetMesh()->GetSocketRotation(FName("pelvis")));
-	const float DotProduct = UKismetMathLibrary::Dot_VectorVector(RightVector, FVector(0.0f, 0.0f, 1.0f));
-	if (DotProduct >= 0.0f)
-	{
-		return false;
-	}
-	
-	return true;
-}
-
-void ABaseCharacter::OneFrameDelay()
-{
-	DelayedFrames++;
-	if (DelayedFrames == 1)
-	{
-		// Recall this function to perform a two-frame delay
-		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindUObject(this, &ABaseCharacter::OneFrameDelay);
-		GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-	}
-	else if (DelayedFrames > 1)
-	{
-		AnimInstance->SavePoseSnapshot(FName("FinalPose"));
-		DelayedFrames = 0;
-	}
-}
-
-void ABaseCharacter::StanUpMontageHandler(UAnimMontage* AnimMontage, bool bInterrupted) const
-{
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	// if (MovementState == EMovementState::Crouch)
+	// {
+	// 	Crouch();
+	// }
 }
 
 void ABaseCharacter::SwitchIsEnded()

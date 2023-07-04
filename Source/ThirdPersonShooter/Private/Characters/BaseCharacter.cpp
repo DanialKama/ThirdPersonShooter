@@ -278,30 +278,27 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 		if (WeaponToEquip->WeaponInfo.WeaponType == EWeaponType::Pistol || WeaponToEquip->WeaponInfo.WeaponType == EWeaponType::SMG)
 		{
 			SidearmWeapon = WeaponToEquip;
-			SetCurrentWeapon(SidearmWeapon);
+			WeaponToEquip->CurrentSocket = EWeaponToDo::SidearmWeapon;
+			SetCurrentWeapon(WeaponToEquip);
 		}
 		// If the primary weapon is valid then the secondary weapon replace with the new weapon
 		else if (PrimaryWeapon)
 		{
 			SecondaryWeapon = WeaponToEquip;
-			SetCurrentWeapon(SecondaryWeapon);
+			WeaponToEquip->CurrentSocket = EWeaponToDo::SecondaryWeapon;
+			SetCurrentWeapon(WeaponToEquip);
 		}
 		// The primary weapon is only replaced when it is invalid
 		else
 		{
 			PrimaryWeapon = WeaponToEquip;
-			SetCurrentWeapon(PrimaryWeapon);
+			WeaponToEquip->CurrentSocket = EWeaponToDo::PrimaryWeapon;
+			SetCurrentWeapon(WeaponToEquip);
 		}
 
 		WeaponToEquip->RaiseWeapon();
 		SetArmedState(true);
 	}
-
-	UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
-	AnimInstance->Movement = WeaponToEquip->Movement;
-	AnimInstance->MovementAim = WeaponToEquip->MovementAim;
-	AnimInstance->MovementCrouch = WeaponToEquip->MovementCrouch;
-	AnimInstance->MovementCrouchAim = WeaponToEquip->MovementCrouchAim;
 }
 
 void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
@@ -358,7 +355,15 @@ void ABaseCharacter::DropWeapon(EWeaponToDo WeaponToDrop)
 
 void ABaseCharacter::SetCurrentWeapon(APickupWeapon* NewWeapon)
 {
-	if (NewWeapon == nullptr)
+	if (NewWeapon)
+	{
+		UAnimInstance_Shooter* AnimInstance = Cast<UAnimInstance_Shooter>(GetMesh()->AnimScriptInstance);
+		AnimInstance->Movement = NewWeapon->Movement;
+		AnimInstance->MovementAim = NewWeapon->MovementAim;
+		AnimInstance->MovementCrouch = NewWeapon->MovementCrouch;
+		AnimInstance->MovementCrouchAim = NewWeapon->MovementCrouchAim;
+	}
+	else
 	{
 		SetAimState(false);
 		ResetAim();

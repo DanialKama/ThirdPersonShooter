@@ -257,12 +257,12 @@ void APickupWeapon::CalculateLineTrace(FVector& Start, FVector& End) const
 	}
 }
 
-FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncludesNegative) const
+FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncludesNegative)
 {
 	// Distance From Center can be a random value from 0 to Radius or just Radius
-	float DistanceFromCenter;
-	// DistanceFromCenter = FMath::FRandRange(0.0f, Radius); // Option 1
-	DistanceFromCenter = Radius; // Option 2
+	const float DistanceFromCenter = FMath::FRandRange(0.0f, Radius);	// Option 1
+	// const float DistanceFromCenter = Radius;	// Option 2
+	
 	const float Angle = FMath::FRandRange(0.0f, 360.0f);
 
 	FRotator Points;
@@ -281,7 +281,7 @@ FRotator APickupWeapon::RandomPointInCircle(const float Radius, const bool bIncl
 	return Points;
 }
 
-void APickupWeapon::RaiseWeapon()
+void APickupWeapon::RaiseWeapon() const
 {
 	UGameplayStatics::SpawnSoundAttached(WeaponDefaults.RaiseSound, SkeletalMesh, TEXT("root"), FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 	const FAmmoComponentInfo AmmoComponentInfo = AmmoComponent->GetAmmoComponentInfo();

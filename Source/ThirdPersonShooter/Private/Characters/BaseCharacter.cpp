@@ -250,20 +250,20 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 		WeaponToEquip->LowerWeapon();
 		switch (TargetSlot)
 		{
-		case EWeaponToDo::PrimaryWeapon:
-			AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
-			PrimaryWeapon = WeaponToEquip;
-			break;
-		case EWeaponToDo::SecondaryWeapon:
-			AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
-			SecondaryWeapon = WeaponToEquip;
-			break;
-		case EWeaponToDo::SidearmWeapon:
-			AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
-			SidearmWeapon = WeaponToEquip;
-			break;
-		default:
-			checkNoEntry();
+            case EWeaponToDo::PrimaryWeapon:
+                AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
+                PrimaryWeapon = WeaponToEquip;
+                break;
+            case EWeaponToDo::SecondaryWeapon:
+                AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
+                SecondaryWeapon = WeaponToEquip;
+                break;
+            case EWeaponToDo::SidearmWeapon:
+                AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
+                SidearmWeapon = WeaponToEquip;
+                break;
+            default:
+                checkNoEntry();
 		}
 	}
 	else
@@ -273,8 +273,7 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 		WeaponToEquip->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
 
 		// Check if the new weapon is a sidearm then replace it with the old sidearm
-		const EWeaponType NewWeaponType = WeaponToEquip->WeaponInfo.WeaponType;
-		if (NewWeaponType == EWeaponType::Pistol || NewWeaponType == EWeaponType::SMG)
+		if (WeaponToEquip->WeaponInfo.WeaponType == EWeaponType::Pistol || WeaponToEquip->WeaponInfo.WeaponType == EWeaponType::SMG)
 		{
 			SidearmWeapon = WeaponToEquip;
 			SetCurrentWeapon(SidearmWeapon);
@@ -629,18 +628,18 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 				{
 					switch (WeaponToGrab)
 					{
-					case EWeaponToDo::PrimaryWeapon:
-						SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
-						break;
-					case EWeaponToDo::SecondaryWeapon:
-						SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
-						break;
-					case EWeaponToDo::SidearmWeapon:
-						SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
-						break;
-					default:
-						// No Weapon = nothing to switch
-						break;
+                        case EWeaponToDo::PrimaryWeapon:
+                            SwitchWeaponHandler(PrimaryWeapon, EWeaponToDo::PrimaryWeapon, true);
+                            break;
+                        case EWeaponToDo::SecondaryWeapon:
+                            SwitchWeaponHandler(SecondaryWeapon, EWeaponToDo::SecondaryWeapon, true);
+                            break;
+                        case EWeaponToDo::SidearmWeapon:
+                            SwitchWeaponHandler(SidearmWeapon, EWeaponToDo::SidearmWeapon, true);
+                            break;
+                        default:
+                            // No Weapon = nothing to switch
+                            break;
 					}
 				}
 				// Switching or holstering a sidearm weapon requires more steps to do
@@ -654,21 +653,21 @@ void ABaseCharacter::UpdateHolsterWeaponNotifyState(ENotifyState NotifyState)
 					
 					switch (WeaponToGrab)
 					{
-					case 0:
-						// No Weapon = nothing to switch
-						break;
-					case 1:
-						// Primary Weapon
-						SwitchToPrimary();
-						break;
-					case 2:
-						// Secondary Weapon
-						SwitchToSecondary();
-						break;
-					case 3:
-						// Sidearm Weapon
-						SwitchToSidearm();
-						break;
+                        case 0:
+                            // No Weapon = nothing to switch
+                            break;
+                        case 1:
+                            // Primary Weapon
+                            SwitchToPrimary();
+                            break;
+                        case 2:
+                            // Secondary Weapon
+                            SwitchToSecondary();
+                            break;
+                        case 3:
+                            // Sidearm Weapon
+                            SwitchToSidearm();
+                            break;
 					}
 				}
 				bCanReload = true;
@@ -890,19 +889,19 @@ void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, const EWeaponTo
 	
 	switch (TargetSocket)
 	{
-	case EWeaponToDo::NoWeapon:
-		// No weapon to attach
-		checkNoEntry();
-		break;
-	case EWeaponToDo::PrimaryWeapon:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon1Socket"));
-		break;
-	case EWeaponToDo::SecondaryWeapon:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon2Socket"));
-		break;
-	case EWeaponToDo::SidearmWeapon:
-		WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon3Socket"));
-		break;
+        case EWeaponToDo::NoWeapon:
+            // No weapon to attach
+            checkNoEntry();
+            break;
+        case EWeaponToDo::PrimaryWeapon:
+            WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon1Socket"));
+            break;
+        case EWeaponToDo::SecondaryWeapon:
+            WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon2Socket"));
+            break;
+        case EWeaponToDo::SidearmWeapon:
+            WeaponToAttach->AttachToComponent(GetMesh(), AttachmentRules, FName("Weapon3Socket"));
+            break;
 	}
 }
 

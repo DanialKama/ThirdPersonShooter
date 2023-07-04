@@ -42,11 +42,6 @@ void AAICharacter::BeginPlay()
 void AAICharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	if (NewController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DEF AIC IS VALID!!!"));
-	}
 	
 	AIController = Cast<AShooterAIController>(NewController);
 	if (AIController && AIController->GetClass()->ImplementsInterface(UAIControllerInterface::StaticClass()))
@@ -64,10 +59,6 @@ void AAICharacter::PossessedBy(AController* NewController)
 			bWidgetInterface = true;
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CUSTOM AIC IS NOT VALID!!!"));
-	}
 }
 
 void AAICharacter::SetPrimaryWeapon()
@@ -81,7 +72,6 @@ void AAICharacter::SetPrimaryWeapon()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
 		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
 		{
@@ -104,17 +94,16 @@ void AAICharacter::SetSidearmWeapon()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 		SpawnParameters.Instigator = GetInstigator();
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
 		if (APickupWeapon* NewWeapon = GetWorld()->SpawnActor<APickupWeapon>(WeaponToSpawn, Location, Rotation, SpawnParameters))
 		{
 			SetPickup_Implementation(EItemType::Weapon, NewWeapon);
 			Interact_Implementation();
 
-			/*if (AIController->MaxFiringDistance == -1.0f)
-			{
-				AIController->MaxFiringDistance = NewWeapon->WeaponInfo.EffectiveRange;
-			}*/
+			// if (AIController->MaxFiringDistance == -1.0f)
+			// {
+			// 	AIController->MaxFiringDistance = NewWeapon->WeaponInfo.EffectiveRange;
+			// }
 		}
 	}
 }

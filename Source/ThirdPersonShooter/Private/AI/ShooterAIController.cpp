@@ -365,7 +365,7 @@ void AShooterAIController::TryToUseWeapon()
 void AShooterAIController::SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState)
 {
 	WeaponState = NewWeaponState;
-	switch (WeaponState)
+	switch (NewWeaponState)
 	{
 		case EWeaponState::Idle:
 			if (AmmoComponentInfo.bNoAmmoLeftToReload && ControlledPawn->CurrentWeapon->AmmoComponent->CurrentMagazineAmmo == 0)

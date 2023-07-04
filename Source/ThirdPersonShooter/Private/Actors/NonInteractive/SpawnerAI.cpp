@@ -85,8 +85,7 @@ void ASpawnerAI::UpdateSpawnQueue()
 
 		UClass* LoadedAsset = SpawnList[ReadyToSpawn[i]].CharacterToSpawn.LoadSynchronous();
 
-		AAICharacter* NewCharacter = Cast<AAICharacter>(GetWorld()->SpawnActor(LoadedAsset, &SpawnTransform));
-		if (NewCharacter)
+		if (AAICharacter* NewCharacter = Cast<AAICharacter>(GetWorld()->SpawnActor(LoadedAsset, &SpawnTransform)))
 		{
 			NewCharacter->Spawner = this;
 		

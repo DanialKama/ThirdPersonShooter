@@ -428,16 +428,14 @@ void APlayerCharacter::SetHealthState_Implementation(EHealthState HealthState)
 {
 	switch (HealthState)
 	{
-	case 0: case 1: case 2: case 3:
-		// Full, Low, Recovery started, Recovery stopped
-		break;
-	case 4:
-		// Death
-		if (HUDRef)
-		{
-			HUDRef->SetUIVisibility(ESlateVisibility::Hidden);
-		}
-		break;
+		case EHealthState::Death:
+			if (HUDRef)
+			{
+				HUDRef->SetUIVisibility(ESlateVisibility::Hidden);
+			}
+			break;
+		default:
+			break;
 	}
 	
 	Super::SetHealthState_Implementation(HealthState);

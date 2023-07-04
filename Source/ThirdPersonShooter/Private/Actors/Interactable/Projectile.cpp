@@ -174,40 +174,40 @@ FHitInfo AProjectile::GetHitInfo() const
 	// Switch on surface types to calculate the appropriate effect
 	switch (SwitchExpression)
 	{
-	case 1: case 2: case 3: case 4:
-		// Head Flesh, Body Flesh, Hand Flesh, Leg Flesh
-		Result.Decal = FleshDecal;
-		Result.Particle = FleshHitParticle;
-		Result.Sound = FleshHitSound;
-		return Result;
-	case 5:
-		// Wood
-		Result.Decal = WoodDecal;
-		Result.Particle = WoodHitParticle;
-		Result.Sound = ObjectHitSound;
-		return Result;
-	case 6:
-		// Metal
-		Result.Decal = MetalDecal;
-		Result.Particle = MetalHitParticle;
-		Result.Sound = ObjectHitSound;
-		return Result;
-	case 7:
-		// Stone
-		Result.Decal = StoneDecal;
-		Result.Particle = StoneHitParticle;
-		Result.Sound = ObjectHitSound;
-		return Result;
-	case 8:
-		// Dirt
-		Result.Decal = DirtDecal;
-		Result.Particle = DirtHitParticle;
-		Result.Sound = ObjectHitSound;
-		return Result;
-	case 0: default:
-		Result.Decal = StoneDecal;
-		Result.Particle = StoneHitParticle;
-		Result.Sound = ObjectHitSound;
-		return Result;
+        case 1: case 2: case 3: case 4:
+            // Head Flesh, Body Flesh, Hand Flesh, Leg Flesh
+            Result.Decal = FleshDecal;
+            Result.Particle = FleshHitParticle;
+            Result.Sound = FleshHitSound;
+            return Result;
+        case 5:
+            // Wood
+            Result.Decal = WoodDecal;
+            Result.Particle = WoodHitParticle;
+            Result.Sound = ObjectHitSound;
+            return Result;
+        case 6:
+            // Metal
+            Result.Decal = MetalDecal;
+            Result.Particle = MetalHitParticle;
+            Result.Sound = ObjectHitSound;
+            return Result;
+        case 7:
+            // Stone
+            Result.Decal = StoneDecal;
+            Result.Particle = StoneHitParticle;
+            Result.Sound = ObjectHitSound;
+            return Result;
+        case 8:
+            // Dirt
+            Result.Decal = DirtDecal;
+            Result.Particle = DirtHitParticle;
+            Result.Sound = ObjectHitSound;
+            return Result;
+        case 0: default:
+            Result.Decal = StoneDecal;
+            Result.Particle = StoneHitParticle;
+            Result.Sound = ObjectHitSound;
+            return Result;
 	}
 }

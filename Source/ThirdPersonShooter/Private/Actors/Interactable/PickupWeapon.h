@@ -101,7 +101,7 @@ public:
 	
 	void StartFireWeapon();
 	void StopFireWeapon();
-	void RaiseWeapon();
+	void RaiseWeapon() const;
 	void LowerWeapon() const;
 	void SetMagazineVisibility(bool bVisible) const;
 	void ReloadWeapon() const;
@@ -130,7 +130,7 @@ private:
 	 *	@param Radius Circle radius
 	 *	@param bIncludesNegative Set Includes Negative to false if do not want negative numbers in output (mostly used for player character
 	 */
-	FRotator RandomPointInCircle(float Radius, bool bIncludesNegative) const;
+	static FRotator RandomPointInCircle(float Radius, bool bIncludesNegative);
 
 	UFUNCTION()
 	void CoolDownDelay();

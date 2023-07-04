@@ -14,6 +14,7 @@ ASpawnerAI::ASpawnerAI()
 
 #if WITH_EDITORONLY_DATA
 	bEnableAutoLODGeneration = false;
+	bDrawDebug = false;
 #endif
 	
 	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
@@ -26,10 +27,17 @@ void ASpawnerAI::BeginPlay()
 	Super::BeginPlay();
 	
 	// Start spawning if there is any actor to spawn
-	if (SpawnList.Num() > 0)
+	if (SpawnList.IsEmpty() == false)
 	{
 		StartSpawn();
 	}
+
+#if WITH_EDITORONLY_DATA
+	if (bDrawDebug)
+	{
+		DrawDebugCircle(GetWorld(), SceneComponent->GetComponentLocation(), Range, 36, FLinearColor::Green.ToFColor(true), false, 10.0f, SDPG_World, 5.0f, FVector(0,1,0), FVector(1,0,0), false);
+	}
+#endif
 }
 
 void ASpawnerAI::EnterSpawnQueue(const FSpawnData& SpawnData)
@@ -93,7 +101,7 @@ void ASpawnerAI::UpdateSpawnQueue()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("NEW CHARACTER IS NOT VALID!!!"));
+			UE_LOG(LogTemp, Warning, TEXT("Failed to spawn the AI character"));
 		}
 	}
 	

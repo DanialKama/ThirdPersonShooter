@@ -59,6 +59,11 @@ public:
 	TArray<FSpawnData> SpawnList;
 
 private:
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditInstanceOnly, Category = "Default", meta = (AllowPrivateAccess = true))
+	uint8 bDrawDebug : 1;
+#endif
+	
 	/** Spawn range */
 	UPROPERTY(EditAnywhere, Category = "Default")
 	float Range = 150.0f;

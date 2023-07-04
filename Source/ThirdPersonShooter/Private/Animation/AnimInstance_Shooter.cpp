@@ -45,9 +45,9 @@ void UAnimInstance_Shooter::NativeUpdateAnimation(float DeltaSeconds)
 		if (bIsAiming)
 		{
 			// Base aim rotation
-			AimPitch = CharacterOwner->Controller->GetControlRotation().Pitch;
+			AimPitch = FRotator::NormalizeAxis(CharacterOwner->Controller->GetControlRotation().Pitch);
 			RecoilAlpha = FMath::FInterpConstantTo(RecoilAlpha, 0.0f, DeltaSeconds, RecoilControlTime);
-			LeftHandLocation = CharacterOwner->CurrentWeapon->SkeletalMesh->GetSocketLocation(FName("LeftHandAimSocket"));;
+			LeftHandLocation = CharacterOwner->CurrentWeapon->SkeletalMesh->GetSocketLocation(FName("LeftHandAimSocket"));
 		}
 		else
 		{

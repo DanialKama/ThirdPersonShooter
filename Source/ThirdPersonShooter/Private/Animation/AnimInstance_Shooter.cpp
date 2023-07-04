@@ -37,17 +37,6 @@ void UAnimInstance_Shooter::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	}
 
-	bIsFalling = CharacterOwner->GetCharacterMovement()->MovementMode == MOVE_Falling;
-	if (bIsFalling)
-	{
-		return;
-	}
-
-	bIsCrouched = CharacterOwner->bIsCrouched;
-
-	Speed = FVector::DotProduct(CharacterOwner->GetCharacterMovement()->Velocity, CharacterOwner->GetRootComponent()->GetForwardVector());
-	Direction = FVector::DotProduct(CharacterOwner->GetCharacterMovement()->Velocity, CharacterOwner->GetRootComponent()->GetRightVector());
-
 	if (CharacterOwner->CurrentWeapon)
 	{
 		bIsArmed = true;
@@ -69,6 +58,17 @@ void UAnimInstance_Shooter::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		bIsArmed = false;
 	}
+
+	bIsFalling = CharacterOwner->GetCharacterMovement()->MovementMode == MOVE_Falling;
+	if (bIsFalling)
+	{
+		return;
+	}
+
+	bIsCrouched = CharacterOwner->bIsCrouched;
+
+	Speed = FVector::DotProduct(CharacterOwner->GetCharacterMovement()->Velocity, CharacterOwner->GetRootComponent()->GetForwardVector());
+	Direction = FVector::DotProduct(CharacterOwner->GetCharacterMovement()->Velocity, CharacterOwner->GetRootComponent()->GetRightVector());
 }
 
 void UAnimInstance_Shooter::LoadAssets()

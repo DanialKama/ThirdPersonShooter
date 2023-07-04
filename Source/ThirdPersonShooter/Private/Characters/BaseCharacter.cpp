@@ -1374,7 +1374,7 @@ void ABaseCharacter::PlayIdleAnimation()
 		// If the character is holding a weapon but not aiming it, play idle montage based on weapon type
 		if (CurrentWeapon)
 		{
-			MontageToPlay = CurrentWeapon->IdleMontage;
+			MontageToPlay = CurrentWeapon->IdleMontages[FMath::RandRange(0, CurrentWeapon->IdleMontages.Num() - 1)];
 		}
 		// If the character is not holding a weapon play a random idle animation
 		else

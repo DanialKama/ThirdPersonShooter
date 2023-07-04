@@ -206,7 +206,7 @@ private:
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
-	UAnimMontage* IdleMontage;
+	TArray<UAnimMontage*> IdleMontages;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default|Animation", meta = (AllowPrivateAccess = true))
 	UAnimMontage* StandUpReloadMontage;

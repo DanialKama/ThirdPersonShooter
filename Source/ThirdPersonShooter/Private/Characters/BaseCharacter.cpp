@@ -252,14 +252,17 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 		{
             case EWeaponToDo::PrimaryWeapon:
                 AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
+				WeaponToEquip->CurrentSocket = EWeaponToDo::PrimaryWeapon;
                 PrimaryWeapon = WeaponToEquip;
                 break;
             case EWeaponToDo::SecondaryWeapon:
                 AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
+				WeaponToEquip->CurrentSocket = EWeaponToDo::SecondaryWeapon;
                 SecondaryWeapon = WeaponToEquip;
                 break;
             case EWeaponToDo::SidearmWeapon:
                 AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
+				WeaponToEquip->CurrentSocket = EWeaponToDo::SidearmWeapon;
                 SidearmWeapon = WeaponToEquip;
                 break;
             default:
@@ -882,8 +885,6 @@ void ABaseCharacter::UpdateGrabWeaponNotifyState(const ENotifyState NotifyState)
 
 void ABaseCharacter::AttachWeapon(APickupWeapon* WeaponToAttach, const EWeaponToDo TargetSocket) const
 {
-	WeaponToAttach->CurrentSocket = TargetSocket;
-	
 	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 		EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	

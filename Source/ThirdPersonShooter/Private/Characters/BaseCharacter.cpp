@@ -268,7 +268,6 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 	}
 	else
 	{
-		WeaponToEquip->RaiseWeapon();
 		const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 		WeaponToEquip->AttachToComponent(GetMesh(), AttachmentTransformRules, FName("RightHandHoldSocket"));
 
@@ -291,6 +290,7 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 			SetCurrentWeapon(PrimaryWeapon);
 		}
 
+		WeaponToEquip->RaiseWeapon();
 		SetArmedState(true);
 	}
 

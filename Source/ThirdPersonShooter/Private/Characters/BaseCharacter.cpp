@@ -250,23 +250,23 @@ void ABaseCharacter::AddWeapon(APickupWeapon* WeaponToEquip, const EWeaponToDo T
 		WeaponToEquip->LowerWeapon();
 		switch (TargetSlot)
 		{
-            case EWeaponToDo::PrimaryWeapon:
-                AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
+			case EWeaponToDo::PrimaryWeapon:
+				AttachWeapon(WeaponToEquip, EWeaponToDo::PrimaryWeapon);
 				WeaponToEquip->CurrentSocket = EWeaponToDo::PrimaryWeapon;
-                PrimaryWeapon = WeaponToEquip;
-                break;
-            case EWeaponToDo::SecondaryWeapon:
-                AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
+				PrimaryWeapon = WeaponToEquip;
+				break;
+			case EWeaponToDo::SecondaryWeapon:
+            	AttachWeapon(WeaponToEquip, EWeaponToDo::SecondaryWeapon);
 				WeaponToEquip->CurrentSocket = EWeaponToDo::SecondaryWeapon;
-                SecondaryWeapon = WeaponToEquip;
-                break;
-            case EWeaponToDo::SidearmWeapon:
-                AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
+				SecondaryWeapon = WeaponToEquip;
+				break;
+			case EWeaponToDo::SidearmWeapon:
+				AttachWeapon(WeaponToEquip, EWeaponToDo::SidearmWeapon);
 				WeaponToEquip->CurrentSocket = EWeaponToDo::SidearmWeapon;
-                SidearmWeapon = WeaponToEquip;
-                break;
-            default:
-                checkNoEntry();
+				SidearmWeapon = WeaponToEquip;
+				break;
+			default:
+				checkNoEntry();
 		}
 	}
 	else

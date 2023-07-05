@@ -157,7 +157,6 @@ void UAnimInstance_Shooter::PlayFootstepSound(bool bIsWalking) const
 	const FVector Start = GetSkelMeshComponent()->GetOwner()->GetActorLocation();
 
 	FCollisionQueryParams CollisionParams;
-	// Ignore owner
 	CollisionParams.AddIgnoredActor(GetSkelMeshComponent()->GetOwner());
 	
 	FHitResult HitResult;
@@ -168,21 +167,20 @@ void UAnimInstance_Shooter::PlayFootstepSound(bool bIsWalking) const
 	
 	USoundBase* SoundToPlay;
 
-	// TODO: Fix switch statements
 	if (bIsWalking)
 	{
 		switch (HitResult.PhysMaterial->SurfaceType)
 		{
-			case SurfaceType1:
-				SoundToPlay = WalkOnDirtLoaded;
-				break;
-			case SurfaceType2:
-				SoundToPlay = WalkOnStoneLoaded;
-				break;
-			case SurfaceType3:
+			case SurfaceType5:
+				// Wood
 				SoundToPlay = WalkOnWoodLoaded;
 				break;
+			case SurfaceType6: case SurfaceType7:
+				// Metal, Stone
+				SoundToPlay = WalkOnStoneLoaded;
+				break;
 			default:
+				// Dirt
 				SoundToPlay = WalkOnDirtLoaded;
 		}
 	}
@@ -190,16 +188,16 @@ void UAnimInstance_Shooter::PlayFootstepSound(bool bIsWalking) const
 	{
 		switch (HitResult.PhysMaterial->SurfaceType)
 		{
-			case SurfaceType1:
-				SoundToPlay = RunOnDirtLoaded;
-				break;
-			case SurfaceType2:
-				SoundToPlay = RunOnStoneLoaded;
-				break;
-			case SurfaceType3:
+			case SurfaceType5:
+				// Wood
 				SoundToPlay = RunOnWoodLoaded;
 				break;
+			case SurfaceType6: case SurfaceType7:
+				// Metal, Stone
+				SoundToPlay = RunOnStoneLoaded;
+				break;
 			default:
+				// Dirt
 				SoundToPlay = RunOnDirtLoaded;
 		}
 	}

@@ -55,7 +55,7 @@ void AAICharacter::PossessedBy(AController* NewController)
 		Widget->InitWidget();
 		if (Widget->GetWidget() && Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 		{
-			IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), Health);
+			IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
 			bWidgetInterface = true;
 		}
 	}

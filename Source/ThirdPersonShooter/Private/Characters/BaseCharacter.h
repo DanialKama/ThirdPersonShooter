@@ -31,14 +31,16 @@ UCLASS(Abstract, meta = (DisplayName = "Base Character"))
 class ABaseCharacter : public ACharacter, public ICharacterInterface, public ICommonInterface
 {
 	GENERATED_BODY()
-	
+
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UHealthComponent> HealthComponent;
 
+private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UStaminaComponent> StaminaComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	TObjectPtr<class UAIPerceptionStimuliSourceComponent> StimuliSource;
 	
 	UPROPERTY()
@@ -105,8 +107,6 @@ public:
 	virtual void AddRecoil_Implementation(FRotator RotationIntensity, float ControlTime, float CrosshairRecoil, float ControllerPitch) override;
 	virtual FGameplayTag GetTeamTag_Implementation() override { return TeamTag; }
 
-	FORCEINLINE UHealthComponent* GetHealthComponent() const { return HealthComponent; }
-	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

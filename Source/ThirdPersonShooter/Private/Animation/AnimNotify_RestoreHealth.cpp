@@ -32,7 +32,7 @@ void UAnimNotify_RestoreHealth::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 			}
 			
 			// Full health recovery
-			Character->GetHealthComponent()->Healing(Character->GetHealthComponent()->MaxHealth);
+			Character->HealthComponent->Healing(Character->HealthComponent->MaxHealth);
 			
 			// Set AI state if the owner is AI
 			AAIController* AIController = Cast<AAIController>(Character->GetController());

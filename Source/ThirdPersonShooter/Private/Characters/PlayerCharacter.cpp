@@ -108,7 +108,7 @@ void APlayerCharacter::NextFrameBeginPlay()
 	HUDRef = Cast<AShooterHUD>(PlayerController->GetHUD());
 	if (HUDRef)
 	{
-		HUDRef->SetHealth(GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth);
+		HUDRef->SetHealth(HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
 		HUDRef->SetUIVisibility(ESlateVisibility::Visible);
 	}
 }

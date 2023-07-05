@@ -35,7 +35,7 @@ class AShooterAIController : public AAIController, public IAIControllerInterface
 // Functions
 public:
 	AShooterAIController();
-
+	
 	void TryToUseWeapon();
 	
 	virtual void SetAIState_Implementation(EAIState NewAIState) override;
@@ -44,8 +44,8 @@ public:
 	virtual void SetWeaponState_Implementation(FAmmoComponentInfo AmmoComponentInfo, EWeaponState NewWeaponState) override;
 	
 protected:
-	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual bool InitializeBlackboard(UBlackboardComponent& BlackboardComp, UBlackboardData& BlackboardAsset) override;
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
@@ -92,12 +92,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default", meta = (AllowPrivateAccess = true))
 	float MaxMeleeDistance = 200.0f;
-	
-	UPROPERTY()
-	class UBehaviorTreeComponent* BehaviorTreeComp;
-	
-	UPROPERTY()
-	UBlackboardComponent* BlackboardComp;
 	
 	EWeaponState WeaponState = EWeaponState::Idle;
 	

@@ -49,8 +49,6 @@ ABaseCharacter::ABaseCharacter()
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
 	
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
-	// TODO: Move it to the BeginPlay
-	StimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
 	
 	DeathTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("Death Timeline"));
 	
@@ -69,6 +67,8 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	CharacterTagContainer.AddTag(TeamTag);
+
+	StimuliSource->RegisterForSense(UAISense_Sight::StaticClass());
 
 	// Create material instances for every material on mesh, mainly used for death dither effect
 	TArray<UMaterialInterface*> Materials = GetMesh()->GetMaterials();

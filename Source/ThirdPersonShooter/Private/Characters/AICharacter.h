@@ -78,8 +78,5 @@ private:
 	UPROPERTY()
 	class AShooterAIController* AIController;
 	
-	UPROPERTY()
-	class UBlackboardComponent* AIBlackboard;
-	
 	FTimerHandle WidgetTimerHandle;
 };

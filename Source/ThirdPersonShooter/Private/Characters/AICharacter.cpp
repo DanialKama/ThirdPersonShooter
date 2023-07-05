@@ -5,7 +5,6 @@
 #include "Actors/Interactable/PickupWeapon.h"
 #include "Actors/NonInteractive/SpawnerAI.h"
 #include "AI/ShooterAIController.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Core/Interfaces/WidgetInterface.h"
@@ -48,11 +47,6 @@ void AAICharacter::PossessedBy(AController* NewController)
 	{
 		bAIControllerInterface = true;
 		
-		AIBlackboard = AIController->GetBlackboardComponent();
-		const float Health = GetHealthComponent()->DefaultHealth / GetHealthComponent()->MaxHealth;
-		AIBlackboard->SetValueAsFloat("Health", Health);
-		
-		Widget->InitWidget();
 		if (Widget->GetWidget() && Widget->GetWidget()->GetClass()->ImplementsInterface(UWidgetInterface::StaticClass()))
 		{
 			IWidgetInterface::Execute_UpdateActorHealth(Widget->GetWidget(), HealthComponent->DefaultHealth / HealthComponent->MaxHealth);
